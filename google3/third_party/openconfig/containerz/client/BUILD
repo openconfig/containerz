@@ -7,6 +7,7 @@ go_library(
     name = "client",
     srcs = [
         "client.go",
+        "client_google.go",
         "list.go",
         "logs.go",
         "pull.go",
@@ -16,7 +17,11 @@ go_library(
         "stop.go",
         "types.go",
     ],
-    deps = ["//third_party/openconfig/containerz/chunker"],
+    deps = [
+        "//base/go:google",
+        "//net/grpc/go:grpcprod",
+        "//third_party/openconfig/containerz/chunker",
+    ],
 )
 
 go_test(
