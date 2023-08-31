@@ -1,7 +1,4 @@
-package(
-    default_visibility = ["//third_party/openconfig/containerz:users"],
-    licenses = ["notice"],
-)
+package(licenses = ["notice"])
 
 go_library(
     name = "options",
