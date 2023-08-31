@@ -10,10 +10,6 @@ var containerCmd = &cobra.Command{
 	Use:   "container",
 	Short: "General container operations",
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		// copybara:strip_begin(google-context)
-		ctx := metadata.AppendToOutgoingContext(cmd.Context(), "deviceFqdn", addr)
-		cmd.SetContext(ctx)
-		// copybara:end_begin
 		var err error
 		containerzClient, err = client.NewClient(cmd.Context(), addr)
 		return err
