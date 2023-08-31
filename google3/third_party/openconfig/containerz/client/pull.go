@@ -5,7 +5,7 @@ import (
 	"io"
 
 	"k8s.io/klog/v2"
-	commonpb "google3/third_party/openconfig/gnoi/common/common_go_proto"
+	commonpb "github.com/openconfig/gnoi/common"
 	cpb "github.com/openconfig/gnoi/containerz"
 	tpb "github.com/openconfig/gnoi/types"
 )

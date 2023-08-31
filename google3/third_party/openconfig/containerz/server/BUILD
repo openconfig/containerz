@@ -34,8 +34,5 @@ go_test(
         "stop_test.go",
     ],
     library = ":server",
-    deps = [
-        "//third_party/openconfig/containerz/containers:options",
-        "//third_party/openconfig/gnoi/common:common_go_proto",
-    ],
+    deps = ["//third_party/openconfig/containerz/containers:options"],
 )

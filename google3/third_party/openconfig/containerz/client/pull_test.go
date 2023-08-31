@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"google.golang.org/protobuf/testing/protocmp"
-	commonpb "google3/third_party/openconfig/gnoi/common/common_go_proto"
+	commonpb "github.com/openconfig/gnoi/common"
 	cpb "github.com/openconfig/gnoi/containerz"
 )
 

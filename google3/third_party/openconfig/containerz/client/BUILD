@@ -21,7 +21,6 @@ go_library(
         "//base/go:google",
         "//net/grpc/go:grpcprod",
         "//third_party/openconfig/containerz/chunker",
-        "//third_party/openconfig/gnoi/common:common_go_proto",
     ],
 )
 
@@ -40,8 +39,5 @@ go_test(
         "types_test.go",
     ],
     library = ":client",
-    deps = [
-        "//net/grpc/go:grpctest",
-        "//third_party/openconfig/gnoi/common:common_go_proto",
-    ],
+    deps = ["//net/grpc/go:grpctest"],
 )
