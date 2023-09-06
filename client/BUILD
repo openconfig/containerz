@@ -30,5 +30,4 @@ go_test(
         "types_test.go",
     ],
     library = ":client",
-    deps = ["//net/grpc/go:grpctest"],
 )
