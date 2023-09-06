@@ -3,7 +3,7 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc/metadata"
-	"/client/client"
+	"google3/third_party/openconfig/containerz/client/client"
 	cpb "github.com/openconfig/gnoi/containerz"
 )
 

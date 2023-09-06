@@ -7,8 +7,8 @@ import (
 
 	"github.com/spf13/cobra"
 	"google3/third_party/golang/github_com/moby/moby/v/v24/client/client"
-	"/containers/docker/docker"
-	"/server/server"
+	"google3/third_party/openconfig/containerz/containers/docker/docker"
+	"google3/third_party/openconfig/containerz/server/server"
 )
 
 var (

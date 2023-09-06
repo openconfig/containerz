@@ -8,7 +8,7 @@ import (
 	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"/containers/options"
+	"google3/third_party/openconfig/containerz/containers/options"
 )
 
 // ContainerStop stops a container. If the Force option is set and a timeout

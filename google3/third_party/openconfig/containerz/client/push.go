@@ -7,7 +7,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"k8s.io/klog/v2"
-	"/chunker/chunker"
+	"google3/third_party/openconfig/containerz/chunker/chunker"
 	cpb "github.com/openconfig/gnoi/containerz"
 )
 

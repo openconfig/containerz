@@ -11,7 +11,7 @@ import (
 	"google3/third_party/golang/github_com/moby/moby/v/v24/pkg/jsonmessage/jsonmessage"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"/containers/options"
+	"google3/third_party/openconfig/containerz/containers/options"
 	cpb "github.com/openconfig/gnoi/containerz"
 	tpb "github.com/openconfig/gnoi/types"
 )

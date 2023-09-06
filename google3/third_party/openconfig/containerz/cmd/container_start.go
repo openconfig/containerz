@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"/client/client"
+	"google3/third_party/openconfig/containerz/client/client"
 )
 
 var (
