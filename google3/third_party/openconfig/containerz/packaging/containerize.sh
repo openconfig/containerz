@@ -4,7 +4,7 @@
 set -e
 
 echo "Beginning containerz build"
-blaze build --config=nocgo //third_party/openconfig/containerz:containerz
+blaze build --config=nocgo :containerz
 echo "containerz build complete, beginning docker build"
 
 CONTAINERZ_BINARY="$(cat "$(blaze info master-log)" | grep output_file | awk '{print $3}')"
