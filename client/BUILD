@@ -13,7 +13,6 @@ go_library(
         "stop.go",
         "types.go",
     ],
-    deps = ["//third_party/openconfig/containerz/chunker"],
 )
 
 go_test(

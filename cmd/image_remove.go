@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"google3/third_party/openconfig/containerz/client/client"
+	"github.com/openconfig/containerz/client"
 )
 
 var removeCmd = &cobra.Command{

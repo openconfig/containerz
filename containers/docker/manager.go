@@ -5,12 +5,12 @@ import (
 	"context"
 	"io"
 
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/container/container"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/network/network"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/registry/registry"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/types"
+	"github.com/moby/moby/v/v24/api/types/container"
+	"github.com/moby/moby/v/v24/api/types/network"
+	"github.com/moby/moby/v/v24/api/types/registry"
+	"github.com/moby/moby/v/v24/api/types"
 
-	ocispec "google3/third_party/golang/opencontainers/image_spec/specs_go/v1/v1"
+	ocispec "github.com/opencontainers/image-spec/tree/main/specs-go/v1"
 )
 
 type docker interface {

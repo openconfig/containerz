@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"io"
 
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/registry/registry"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/types"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/pkg/jsonmessage/jsonmessage"
+	"github.com/moby/moby/v/v24/api/types/registry"
+	"github.com/moby/moby/v/v24/api/types"
+	"github.com/moby/moby/v/v24/pkg/jsonmessage"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google3/third_party/openconfig/containerz/containers/options"
+	"github.com/openconfig/containerz/containers"
 	cpb "github.com/openconfig/gnoi/containerz"
 	tpb "github.com/openconfig/gnoi/types"
 )

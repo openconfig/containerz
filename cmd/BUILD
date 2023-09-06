@@ -15,10 +15,4 @@ go_library(
         "root.go",
         "start.go",
     ],
-    deps = [
-        "//third_party/golang/github_com/moby/moby/v/v24/client",
-        "//third_party/openconfig/containerz/client",
-        "//third_party/openconfig/containerz/containers/docker",
-        "//third_party/openconfig/containerz/server",
-    ],
 )

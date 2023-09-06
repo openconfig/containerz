@@ -5,7 +5,7 @@ import (
 	"context"
 	"os"
 
-	"google3/third_party/openconfig/containerz/cmd/cmd"
+	"github.com/openconfig/containerz/cmd"
 )
 
 func main() {

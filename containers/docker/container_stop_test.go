@@ -7,11 +7,11 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/container/container"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/types"
+	"github.com/moby/moby/v/v24/api/types/container"
+	"github.com/moby/moby/v/v24/api/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google3/third_party/openconfig/containerz/containers/options"
+	"github.com/openconfig/containerz/containers"
 )
 
 type fakeStoppingDocker struct {

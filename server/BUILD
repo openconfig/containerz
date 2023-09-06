@@ -12,10 +12,6 @@ go_library(
         "start.go",
         "stop.go",
     ],
-    deps = [
-        "//third_party/openconfig/containerz/chunker",
-        "//third_party/openconfig/containerz/containers:options",
-    ],
 )
 
 go_test(
@@ -31,5 +27,4 @@ go_test(
         "stop_test.go",
     ],
     library = ":server",
-    deps = ["//third_party/openconfig/containerz/containers:options"],
 )

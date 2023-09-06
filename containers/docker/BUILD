@@ -12,17 +12,6 @@ go_library(
         "image_remove.go",
         "manager.go",
     ],
-    deps = [
-        "//third_party/golang/dockerconnections/nat",
-        "//third_party/golang/github_com/moby/moby/v/v24/api/types",
-        "//third_party/golang/github_com/moby/moby/v/v24/api/types/container",
-        "//third_party/golang/github_com/moby/moby/v/v24/api/types/filters",
-        "//third_party/golang/github_com/moby/moby/v/v24/api/types/network",
-        "//third_party/golang/github_com/moby/moby/v/v24/api/types/registry",
-        "//third_party/golang/github_com/moby/moby/v/v24/pkg/jsonmessage",
-        "//third_party/golang/opencontainers/image_spec/specs_go/v1",
-        "//third_party/openconfig/containerz/containers:options",
-    ],
 )
 
 go_test(
@@ -39,15 +28,4 @@ go_test(
         "manager_test.go",
     ],
     library = ":docker",
-    deps = [
-        "//third_party/golang/dockerconnections/nat",
-        "//third_party/golang/github_com/moby/moby/v/v24/api/types",
-        "//third_party/golang/github_com/moby/moby/v/v24/api/types/container",
-        "//third_party/golang/github_com/moby/moby/v/v24/api/types/filters",
-        "//third_party/golang/github_com/moby/moby/v/v24/api/types/network",
-        "//third_party/golang/github_com/moby/moby/v/v24/api/types/registry",
-        "//third_party/golang/github_com/moby/moby/v/v24/pkg/jsonmessage",
-        "//third_party/golang/opencontainers/image_spec/specs_go/v1",
-        "//third_party/openconfig/containerz/containers:options",
-    ],
 )

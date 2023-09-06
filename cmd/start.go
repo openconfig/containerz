@@ -6,9 +6,9 @@ import (
 	"os/signal"
 
 	"github.com/spf13/cobra"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/client/client"
-	"google3/third_party/openconfig/containerz/containers/docker/docker"
-	"google3/third_party/openconfig/containerz/server/server"
+	"github.com/moby/moby/v/v24/client"
+	"github.com/moby/moby/v/v24/docker"
+	"github.com/openconfig/containerz/server"
 )
 
 var (

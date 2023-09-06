@@ -9,8 +9,8 @@ import (
 	"google.golang.org/grpc/status"
 
 	"k8s.io/klog/v2"
-	"google3/third_party/openconfig/containerz/chunker/chunker"
-	"google3/third_party/openconfig/containerz/containers/options"
+	"github.com/openconfig/containerz/chunker"
+	"github.com/openconfig/containerz/containers"
 	cpb "github.com/openconfig/gnoi/containerz"
 )
 

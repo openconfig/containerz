@@ -7,10 +7,10 @@ import (
 	"os"
 	"strings"
 
-	"google3/third_party/golang/github_com/moby/moby/v/v24/pkg/jsonmessage/jsonmessage"
+	"github.com/moby/moby/v/v24/pkg/jsonmessage"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google3/third_party/openconfig/containerz/containers/options"
+	"github.com/openconfig/containerz/containers"
 )
 
 // ContainerPush pushes the container file to the containerz server. It can optionally tag the

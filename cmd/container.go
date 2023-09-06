@@ -3,7 +3,7 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc/metadata"
-	"google3/third_party/openconfig/containerz/client/client"
+	"github.com/openconfig/containerz/client"
 )
 
 var containerCmd = &cobra.Command{
