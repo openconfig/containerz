@@ -1,7 +1,7 @@
 package server
 
 import (
-	"google3/third_party/openconfig/containerz/containers/options"
+	"/containers/options"
 	cpb "github.com/openconfig/gnoi/containerz"
 )
 

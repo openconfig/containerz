@@ -14,7 +14,7 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/testing/protocmp"
-	"google3/third_party/openconfig/containerz/containers/options"
+	"/containers/options"
 	commonpb "github.com/openconfig/gnoi/common"
 	cpb "github.com/openconfig/gnoi/containerz"
 )

@@ -8,7 +8,7 @@ import (
 
 	"google.golang.org/grpc"
 	"k8s.io/klog/v2"
-	"google3/third_party/openconfig/containerz/containers/options"
+	"/containers/options"
 
 	cpb "github.com/openconfig/gnoi/containerz"
 )
