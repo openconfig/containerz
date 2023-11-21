@@ -48,6 +48,7 @@ var startCmd = &cobra.Command{
 		}
 		mgr := docker.New(cli)
 		s := server.New(docker.New(cli), opts...)
+		mgr.Start(ctx)
 
 		// listen for ctrl-c
 		interrupt := make(chan os.Signal, 1)
@@ -56,7 +57,7 @@ var startCmd = &cobra.Command{
 			<-interrupt // wait for signal
 			cancel()
 			s.Halt(ctx)
-			mgr.Stop()
+			mgr.Stop(ctx)
 		}()
 
 		return s.Serve(ctx)

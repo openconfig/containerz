@@ -6,6 +6,7 @@ import (
 	"io"
 
 	"github.com/moby/moby/v/v24/api/types/container"
+	"github.com/moby/moby/v/v24/api/types/filters"
 	"github.com/moby/moby/v/v24/api/types/network"
 	"github.com/moby/moby/v/v24/api/types/registry"
 	"github.com/moby/moby/v/v24/api/types"
@@ -27,21 +28,33 @@ type docker interface {
 	ImageRemove(ctx context.Context, image string, options types.ImageRemoveOptions) ([]types.ImageDeleteResponseItem, error)
 	ImageTag(ctx context.Context, source, target string) error
 	RegistryLogin(ctx context.Context, auth types.AuthConfig) (registry.AuthenticateOKBody, error)
+
+	ContainersPrune(ctx context.Context, args filters.Args) (types.ContainersPruneReport, error)
+	ImagesPrune(ctx context.Context, args filters.Args) (types.ImagesPruneReport, error)
 }
 
 // Manager is a docker container orchestration manager.
 type Manager struct {
-	client docker
+	client  docker
+	janitor *Vacuum
 }
 
 // New builds a new docker manager given a docker client.
 func New(cli docker) *Manager {
 	return &Manager{
-		client: cli,
+		client:  cli,
+		janitor: NewJanitor(cli),
 	}
 }
 
+// Start starts a docker session to the host
+func (m *Manager) Start(ctx context.Context) error {
+	m.janitor.Start(ctx)
+	return nil
+}
+
 // Stop closes the connection to the docker server.
-func (m *Manager) Stop() error {
+func (m *Manager) Stop(ctx context.Context) error {
+	m.janitor.Stop(ctx)
 	return m.client.Close()
 }

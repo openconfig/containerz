@@ -7,7 +7,9 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/moby/moby/v/v24/api/types/container"
+	"github.com/moby/moby/v/v24/api/types/filters"
 	"github.com/moby/moby/v/v24/api/types/network"
 	"github.com/moby/moby/v/v24/api/types/registry"
 	"github.com/moby/moby/v/v24/api/types"
@@ -72,6 +74,14 @@ func (fakeDocker) RegistryLogin(ctx context.Context, auth types.AuthConfig) (reg
 	return registry.AuthenticateOKBody{}, fmt.Errorf("not implemented")
 }
 
+func (fakeDocker) ContainersPrune(_ context.Context, _ filters.Args) (types.ContainersPruneReport, error) {
+	return types.ContainersPruneReport{}, fmt.Errorf("not implemented")
+}
+
+func (fakeDocker) ImagesPrune(_ context.Context, _ filters.Args) (types.ImagesPruneReport, error) {
+	return types.ImagesPruneReport{}, fmt.Errorf("not implemented")
+}
+
 func TestNew(t *testing.T) {
 	want := &Manager{
 		client: &fakeDocker{},
@@ -79,7 +89,7 @@ func TestNew(t *testing.T) {
 
 	got := New(&fakeDocker{})
 
-	if diff := cmp.Diff(want, got, cmp.AllowUnexported(Manager{})); diff != "" {
+	if diff := cmp.Diff(want, got, cmp.AllowUnexported(Manager{}), cmpopts.IgnoreFields(Manager{}, "janitor")); diff != "" {
 		t.Errorf("New() returned diff (-want +got):\n%s", diff)
 	}
 }
@@ -87,10 +97,11 @@ func TestNew(t *testing.T) {
 func TestStop(t *testing.T) {
 	d := &fakeDocker{}
 	mgr := &Manager{
-		client: d,
+		client:  d,
+		janitor: NewJanitor(d),
 	}
 
-	if err := mgr.Stop(); err != nil {
+	if err := mgr.Stop(context.Background()); err != nil {
 		t.Errorf("Stop() returned error: %v", err)
 	}
 

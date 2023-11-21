@@ -10,6 +10,7 @@ go_library(
         "image_pull.go",
         "image_push.go",
         "image_remove.go",
+        "janitor.go",
         "manager.go",
     ],
 )
@@ -25,6 +26,7 @@ go_test(
         "image_pull_test.go",
         "image_push_test.go",
         "image_remove_test.go",
+        "janitor_test.go",
         "manager_test.go",
     ],
     library = ":docker",
