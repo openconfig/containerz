@@ -25,7 +25,7 @@ var removeCmd = &cobra.Command{
 	Use:   "remove",
 	Short: "Removes the image from the containerz server",
 	RunE: func(command *cobra.Command, args []string) error {
-		err := containerzClient.Remove(command.Context(), image, tag)
+		err := containerzClient.RemoveContainer(command.Context(), image, tag)
 		switch err {
 		case nil:
 			fmt.Printf("Image %s:%s has been removed.\n", image, tag)

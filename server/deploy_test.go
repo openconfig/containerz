@@ -34,30 +34,36 @@ import (
 )
 
 type fakeContainerManager struct {
-	Image    string
-	Tag      string
-	Contents string
-	Cmd      string
-	Instance string
-	Ports    map[uint32]uint32
-	Envs     map[string]string
-	Force    bool
-	Follow   bool
-	All      bool
-	Limit    int32
+	Image        string
+	Tag          string
+	Contents     string
+	Cmd          string
+	Instance     string
+	Ports        map[uint32]uint32
+	Envs         map[string]string
+	Force        bool
+	Follow       bool
+	All          bool
+	Limit        int32
+	Volumes      []*cpb.Volume
+	VolumeDriver cpb.Driver
+	VolumeOpts   proto.Message
+	VolumeLabel  map[string]string
 
-	listMsgs    []*cpb.ListResponse
-	msgs        []string
-	removeError error
+	listVols         []*cpb.ListVolumeResponse
+	listMsgs         []*cpb.ListContainerResponse
+	createVolumeName string
+	msgs             []string
+	removeError      error
 }
 
-func (f *fakeContainerManager) ContainerPull(ctx context.Context, image string, tag string, opts ...options.ImageOption) error {
+func (f *fakeContainerManager) ContainerPull(ctx context.Context, image string, tag string, opts ...options.Option) error {
 	f.Image = image
 	f.Tag = tag
 	return nil
 }
 
-func (f *fakeContainerManager) ContainerPush(ctx context.Context, file *os.File, opts ...options.ImageOption) (string, string, error) {
+func (f *fakeContainerManager) ContainerPush(ctx context.Context, file *os.File, opts ...options.Option) (string, string, error) {
 	buf, err := io.ReadAll(file)
 	if err != nil {
 		return "", "", err
@@ -66,11 +72,11 @@ func (f *fakeContainerManager) ContainerPush(ctx context.Context, file *os.File,
 	return "", "", nil
 }
 
-func (f fakeContainerManager) ContainerRemove(context.Context, string, string, ...options.ImageOption) error {
+func (f fakeContainerManager) ContainerRemove(context.Context, string, string, ...options.Option) error {
 	return f.removeError
 }
 
-func (f *fakeContainerManager) ContainerStart(_ context.Context, image string, tag string, cmd string, opts ...options.ImageOption) (string, error) {
+func (f *fakeContainerManager) ContainerStart(_ context.Context, image string, tag string, cmd string, opts ...options.Option) (string, error) {
 	optionz := options.ApplyOptions(opts...)
 	f.Image = image
 	f.Tag = tag
@@ -78,17 +84,18 @@ func (f *fakeContainerManager) ContainerStart(_ context.Context, image string, t
 	f.Ports = optionz.PortMapping
 	f.Envs = optionz.EnvMapping
 	f.Instance = optionz.InstanceName
+	f.Volumes = optionz.Volumes
 	return "", nil
 }
 
-func (f *fakeContainerManager) ContainerStop(_ context.Context, instance string, opts ...options.ImageOption) error {
+func (f *fakeContainerManager) ContainerStop(_ context.Context, instance string, opts ...options.Option) error {
 	optionz := options.ApplyOptions(opts...)
 	f.Instance = instance
 	f.Force = optionz.Force
 	return nil
 }
 
-func (f *fakeContainerManager) ContainerList(ctx context.Context, all bool, limit int32, srv options.ListStreamer, opts ...options.ImageOption) error {
+func (f *fakeContainerManager) ContainerList(ctx context.Context, all bool, limit int32, srv options.ListContainerStreamer, opts ...options.Option) error {
 	f.All = all
 	f.Limit = limit
 
@@ -100,7 +107,7 @@ func (f *fakeContainerManager) ContainerList(ctx context.Context, all bool, limi
 	return nil
 }
 
-func (f *fakeContainerManager) ContainerLogs(_ context.Context, instance string, srv options.LogStreamer, opts ...options.ImageOption) error {
+func (f *fakeContainerManager) ContainerLogs(_ context.Context, instance string, srv options.LogStreamer, opts ...options.Option) error {
 	optionz := options.ApplyOptions(opts...)
 
 	f.Follow = optionz.Follow
@@ -112,6 +119,31 @@ func (f *fakeContainerManager) ContainerLogs(_ context.Context, instance string,
 		}
 	}
 
+	return nil
+}
+
+func (f *fakeContainerManager) VolumeList(ctx context.Context, srv options.ListVolumeStreamer, opts ...options.Option) error {
+	for _, msg := range f.listVols {
+		if err := srv.Send(msg); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (f *fakeContainerManager) VolumeCreate(ctx context.Context, name string, driver cpb.Driver, opts ...options.Option) (string, error) {
+	optionz := options.ApplyOptions(opts...)
+
+	f.VolumeOpts = optionz.VolumeDriverOptions
+	f.VolumeLabel = optionz.VolumeLabels
+	if f.createVolumeName == "" {
+		f.createVolumeName = name
+	}
+	f.VolumeDriver = driver
+	return f.createVolumeName, nil
+}
+
+func (f *fakeContainerManager) VolumeRemove(ctx context.Context, name string, opts ...options.Option) error {
 	return nil
 }
 

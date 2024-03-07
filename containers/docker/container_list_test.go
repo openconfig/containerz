@@ -13,11 +13,11 @@ import (
 	cpb "github.com/openconfig/gnoi/containerz"
 )
 
-type fakeListStreamer struct {
-	msgs []*cpb.ListResponse
+type fakeListContainerStreamer struct {
+	msgs []*cpb.ListContainerResponse
 }
 
-func (f *fakeListStreamer) Send(msg *cpb.ListResponse) error {
+func (f *fakeListContainerStreamer) Send(msg *cpb.ListContainerResponse) error {
 	f.msgs = append(f.msgs, msg)
 	return nil
 }
@@ -38,12 +38,12 @@ func (f *fakeListingDocker) ContainerList(ctx context.Context, options types.Con
 func TestContainerList(t *testing.T) {
 	tests := []struct {
 		name      string
-		inOpts    []options.ImageOption
+		inOpts    []options.Option
 		inCnts    []types.Container
 		inAll     bool
 		inLimit   int32
 		wantState *fakeListingDocker
-		wantMsgs  []*cpb.ListResponse
+		wantMsgs  []*cpb.ListContainerResponse
 	}{
 		{
 			name:    "no-containers",
@@ -78,13 +78,13 @@ func TestContainerList(t *testing.T) {
 					Names: []string{"some-other-name"},
 				},
 			},
-			wantMsgs: []*cpb.ListResponse{
-				&cpb.ListResponse{
+			wantMsgs: []*cpb.ListContainerResponse{
+				&cpb.ListContainerResponse{
 					Id:        "some-id",
 					Name:      "some-name",
 					ImageName: "some-image",
 				},
-				&cpb.ListResponse{
+				&cpb.ListContainerResponse{
 					Id:        "some-other-id",
 					Name:      "some-other-name",
 					ImageName: "some-other-image",
@@ -95,7 +95,7 @@ func TestContainerList(t *testing.T) {
 			name:    "filter",
 			inAll:   true,
 			inLimit: 10,
-			inOpts: []options.ImageOption{options.WithFilter(map[options.FilterKey][]string{
+			inOpts: []options.Option{options.WithFilter(map[options.FilterKey][]string{
 				options.Image: []string{"some-image"},
 				options.State: []string{"RUNNING"},
 			})},
@@ -117,7 +117,7 @@ func TestContainerList(t *testing.T) {
 			}
 			mgr := New(fsd)
 
-			stream := &fakeListStreamer{}
+			stream := &fakeListContainerStreamer{}
 
 			if err := mgr.ContainerList(ctx, tc.inAll, tc.inLimit, stream, tc.inOpts...); err != nil {
 				t.Errorf("ContainerList(%t, %q, %+v) returned error: %v", tc.inAll, tc.inLimit, tc.inOpts, err)

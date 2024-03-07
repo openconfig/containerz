@@ -28,20 +28,20 @@ import (
 func TestContainerStart(t *testing.T) {
 	tests := []struct {
 		name      string
-		inReq     *cpb.StartRequest
+		inReq     *cpb.StartContainerRequest
 		inOpts    []Option
-		wantResp  *cpb.StartResponse
+		wantResp  *cpb.StartContainerResponse
 		wantState *fakeContainerManager
 	}{
 		{
 			name: "simple",
-			inReq: &cpb.StartRequest{
+			inReq: &cpb.StartContainerRequest{
 				ImageName: "some-image",
 				Tag:       "some-tag",
 				Cmd:       "some-cmd",
 			},
-			wantResp: &cpb.StartResponse{
-				Response: &cpb.StartResponse_StartOk{
+			wantResp: &cpb.StartContainerResponse{
+				Response: &cpb.StartContainerResponse_StartOk{
 					StartOk: &cpb.StartOK{},
 				},
 			},
@@ -53,23 +53,23 @@ func TestContainerStart(t *testing.T) {
 		},
 		{
 			name: "ports",
-			inReq: &cpb.StartRequest{
+			inReq: &cpb.StartContainerRequest{
 				ImageName: "some-image",
 				Tag:       "some-tag",
 				Cmd:       "some-cmd",
-				Ports: []*cpb.StartRequest_Port{
-					&cpb.StartRequest_Port{
+				Ports: []*cpb.StartContainerRequest_Port{
+					&cpb.StartContainerRequest_Port{
 						Internal: 1,
 						External: 2,
 					},
-					&cpb.StartRequest_Port{
+					&cpb.StartContainerRequest_Port{
 						Internal: 3,
 						External: 4,
 					},
 				},
 			},
-			wantResp: &cpb.StartResponse{
-				Response: &cpb.StartResponse_StartOk{
+			wantResp: &cpb.StartContainerResponse{
+				Response: &cpb.StartContainerResponse_StartOk{
 					StartOk: &cpb.StartOK{},
 				},
 			},
@@ -82,16 +82,16 @@ func TestContainerStart(t *testing.T) {
 		},
 		{
 			name: "env+port+instance",
-			inReq: &cpb.StartRequest{
+			inReq: &cpb.StartContainerRequest{
 				ImageName: "some-image",
 				Tag:       "some-tag",
 				Cmd:       "some-cmd",
-				Ports: []*cpb.StartRequest_Port{
-					&cpb.StartRequest_Port{
+				Ports: []*cpb.StartContainerRequest_Port{
+					&cpb.StartContainerRequest_Port{
 						Internal: 1,
 						External: 2,
 					},
-					&cpb.StartRequest_Port{
+					&cpb.StartContainerRequest_Port{
 						Internal: 3,
 						External: 4,
 					},
@@ -99,8 +99,8 @@ func TestContainerStart(t *testing.T) {
 				Environment:  map[string]string{"1": "2", "3": "4"},
 				InstanceName: "some-instance",
 			},
-			wantResp: &cpb.StartResponse{
-				Response: &cpb.StartResponse_StartOk{
+			wantResp: &cpb.StartContainerResponse{
+				Response: &cpb.StartContainerResponse_StartOk{
 					StartOk: &cpb.StartOK{},
 				},
 			},
@@ -115,14 +115,14 @@ func TestContainerStart(t *testing.T) {
 		},
 		{
 			name: "env",
-			inReq: &cpb.StartRequest{
+			inReq: &cpb.StartContainerRequest{
 				ImageName:   "some-image",
 				Tag:         "some-tag",
 				Cmd:         "some-cmd",
 				Environment: map[string]string{"1": "2", "3": "4"},
 			},
-			wantResp: &cpb.StartResponse{
-				Response: &cpb.StartResponse_StartOk{
+			wantResp: &cpb.StartContainerResponse{
+				Response: &cpb.StartContainerResponse_StartOk{
 					StartOk: &cpb.StartOK{},
 				},
 			},
@@ -131,6 +131,46 @@ func TestContainerStart(t *testing.T) {
 				Tag:   "some-tag",
 				Cmd:   "some-cmd",
 				Envs:  map[string]string{"1": "2", "3": "4"},
+			},
+		},
+		{
+			name: "volumes",
+			inReq: &cpb.StartContainerRequest{
+				ImageName: "some-image",
+				Tag:       "some-tag",
+				Cmd:       "some-cmd",
+				Volumes: []*cpb.Volume{
+					{
+						Name:       "vol1",
+						MountPoint: "/aa",
+					},
+					{
+						Name:       "vol2",
+						MountPoint: "/bb",
+						ReadOnly:   true,
+					},
+				},
+			},
+			wantResp: &cpb.StartContainerResponse{
+				Response: &cpb.StartContainerResponse_StartOk{
+					StartOk: &cpb.StartOK{},
+				},
+			},
+			wantState: &fakeContainerManager{
+				Image: "some-image",
+				Tag:   "some-tag",
+				Cmd:   "some-cmd",
+				Volumes: []*cpb.Volume{
+					{
+						Name:       "vol1",
+						MountPoint: "/aa",
+					},
+					{
+						Name:       "vol2",
+						MountPoint: "/bb",
+						ReadOnly:   true,
+					},
+				},
 			},
 		},
 	}
@@ -143,7 +183,7 @@ func TestContainerStart(t *testing.T) {
 			cli, s := startServerAndReturnClient(ctx, t, fake, tc.inOpts)
 			defer s.Halt(ctx)
 
-			resp, err := cli.Start(ctx, tc.inReq)
+			resp, err := cli.StartContainer(ctx, tc.inReq)
 			if err != nil {
 				t.Errorf("Start(%+v) returned error: %v", tc.inReq, err)
 			}
@@ -152,7 +192,7 @@ func TestContainerStart(t *testing.T) {
 				t.Errorf("Start(%+v) returned diff (-want +got):\n%s", tc.inReq, diff)
 			}
 
-			if diff := cmp.Diff(tc.wantState, fake, cmpopts.IgnoreUnexported(fakeContainerManager{}), cmpopts.SortMaps(func(a, b string) bool { return a < b })); diff != "" {
+			if diff := cmp.Diff(tc.wantState, fake, protocmp.Transform(), cmpopts.IgnoreUnexported(fakeContainerManager{}), cmpopts.SortMaps(func(a, b string) bool { return a < b })); diff != "" {
 				t.Errorf("Start(%+v) returned diff (-want +got):\n%s", tc.inReq, diff)
 			}
 		})

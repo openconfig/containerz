@@ -22,20 +22,18 @@ import (
 	cpb "github.com/openconfig/gnoi/containerz"
 )
 
-// List implements the client logic for listing the existing containers on the target system.
-func (c *Client) List(ctx context.Context, all bool, limit int32, filter map[string][]string) (<-chan *ContainerInfo, error) {
-	req := &cpb.ListRequest{
-		All:    all,
-		Limit:  limit,
-		Filter: toFilter(filter),
+// ListVolume implements the client logic for listing the existing volumes on the target system.
+func (c *Client) ListVolume(ctx context.Context, filter map[string][]string) (<-chan *VolumeInfo, error) {
+	req := &cpb.ListVolumeRequest{
+		Filter: toVolumeFilter(filter),
 	}
 
-	dcli, err := c.cli.List(ctx, req)
+	dcli, err := c.cli.ListVolume(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 
-	ch := make(chan *ContainerInfo, 100)
+	ch := make(chan *VolumeInfo, 100)
 	go func() {
 		defer dcli.CloseSend()
 		defer close(ch)
@@ -45,17 +43,18 @@ func (c *Client) List(ctx context.Context, all bool, limit int32, filter map[str
 				if err == io.EOF {
 					return
 				}
-				nonBlockingChannelSend(ctx, ch, &ContainerInfo{
+				nonBlockingChannelSend(ctx, ch, &VolumeInfo{
 					Error: err,
 				})
 				return
 			}
 
-			if nonBlockingChannelSend(ctx, ch, &ContainerInfo{
-				ID:        msg.GetId(),
-				Name:      msg.GetName(),
-				ImageName: msg.GetImageName(),
-				State:     msg.GetStatus().String(),
+			if nonBlockingChannelSend(ctx, ch, &VolumeInfo{
+				Name:         msg.GetName(),
+				Driver:       msg.GetDriver(),
+				Labels:       msg.GetLabels(),
+				Options:      msg.GetOptions(),
+				CreationTime: msg.GetCreated().AsTime(),
 			}) {
 				klog.Warningf("operation cancelled; returning")
 				return
@@ -66,7 +65,6 @@ func (c *Client) List(ctx context.Context, all bool, limit int32, filter map[str
 	return ch, nil
 }
 
-func toFilter(m map[string][]string) *cpb.ListRequest_Filter {
-	// TODO(alshabib) implement this when filter field becomes a repeated.
+func toVolumeFilter(m map[string][]string) []*cpb.ListVolumeRequest_Filter {
 	return nil
 }

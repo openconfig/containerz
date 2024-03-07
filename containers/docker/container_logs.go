@@ -14,7 +14,7 @@ import (
 
 // ContainerLogs fetches the logs from a container. It can optionally follow the logs
 // and send them back to the client.
-func (m *Manager) ContainerLogs(ctx context.Context, instance string, srv options.LogStreamer, opts ...options.ImageOption) error {
+func (m *Manager) ContainerLogs(ctx context.Context, instance string, srv options.LogStreamer, opts ...options.Option) error {
 	optionz := options.ApplyOptions(opts...)
 
 	cnts, err := m.client.ContainerList(ctx, types.ContainerListOptions{

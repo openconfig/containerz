@@ -12,20 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package server
+package cmd
 
 import (
-	"github.com/openconfig/containerz/containers"
-	cpb "github.com/openconfig/gnoi/containerz"
+	"github.com/spf13/cobra"
+	"google.golang.org/grpc/metadata"
+	"github.com/openconfig/containerz/client"
 )
 
-// Log streams the logs of a running container. If the container if no longer
-// running this operation streams the latest logs and returns.
-func (s *Server) Log(request *cpb.LogRequest, srv cpb.Containerz_LogServer) error {
-	opts := []options.Option{}
-	if request.GetFollow() {
-		opts = append(opts, options.Follow())
-	}
+var volumesCmd = &cobra.Command{
+	Use:   "volume",
+	Short: "General volume operations",
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		var err error
+		containerzClient, err = client.NewClient(cmd.Context(), addr)
+		return err
+	},
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return cmd.Help()
+	},
+}
 
-	return s.mgr.ContainerLogs(srv.Context(), request.GetInstanceName(), srv, opts...)
+func init() {
+	RootCmd.AddCommand(volumesCmd)
 }

@@ -16,34 +16,36 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"text/tabwriter"
+	"time"
 
 	"github.com/spf13/cobra"
 )
 
-var (
-	force bool
-)
-
-var cntStopCmd = &cobra.Command{
-	Use:   "stop",
-	Short: "stop a container by intance name",
+var volListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List volumes",
 	RunE: func(command *cobra.Command, args []string) error {
-		if instance == "" {
-			fmt.Println("--instance must be provided")
-		}
-
-		if err := containerzClient.StopContainer(command.Context(), instance, force); err != nil {
+		ch, err := containerzClient.ListVolume(command.Context(), nil)
+		if err != nil {
 			return err
 		}
 
-		fmt.Printf("Successfully stopped %s\n", instance)
+		writer := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', tabwriter.AlignRight)
+		fmt.Fprint(writer, "Name\tDriver\tOptions\tLabels\tCreation Time\n")
+		defer writer.Flush()
+		for info := range ch {
+			if info.Error != nil {
+				return info.Error
+			}
+			fmt.Fprintf(writer, "%s\t%s\t%v\t%v\t%s\n", info.Name, info.Driver, info.Options, info.Labels, info.CreationTime.Format(time.RFC822))
+		}
+
 		return nil
 	},
 }
 
 func init() {
-	containerCmd.AddCommand(cntStopCmd)
-
-	cntStopCmd.PersistentFlags().StringVar(&instance, "instance", "", "Container instance to stop.")
-	cntStopCmd.PersistentFlags().BoolVar(&force, "force", false, "Forcefully stop the container.")
+	volumesCmd.AddCommand(volListCmd)
 }

@@ -12,22 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package client
+package server
 
 import (
-	"context"
+	"github.com/openconfig/containerz/containers"
 
 	cpb "github.com/openconfig/gnoi/containerz"
 )
 
-// Stop stops the requested instance. Stop can also force termination.
-func (c *Client) Stop(ctx context.Context, instance string, force bool) error {
-	if _, err := c.cli.Stop(ctx, &cpb.StopRequest{
-		InstanceName: instance,
-		Force:        force,
-	}); err != nil {
-		return err
+// ListContainer returns all containers that match the spec defined in the request.
+func (s *Server) ListVolume(request *cpb.ListVolumeRequest, srv cpb.Containerz_ListVolumeServer) error {
+	filters := make(map[options.FilterKey][]string, len(request.GetFilter()))
+	for _, f := range request.GetFilter() {
+		vals, ok := filters[options.FilterKey(f.GetKey())]
+		if !ok {
+			vals = []string{}
+		}
+		filters[options.FilterKey(f.GetKey())] = append(vals, f.GetValue()...)
 	}
 
-	return nil
+	return s.mgr.VolumeList(srv.Context(), srv, options.WithFilter(filters))
 }

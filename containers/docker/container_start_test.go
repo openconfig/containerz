@@ -8,6 +8,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/docker/go-connections/nat"
 	"github.com/moby/moby/v/v24/api/types/container"
+	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/mount/mount"
 	"github.com/moby/moby/v/v24/api/types/network"
 	"github.com/moby/moby/v/v24/api/types"
 	"google.golang.org/grpc/codes"
@@ -15,6 +16,7 @@ import (
 	"github.com/openconfig/containerz/containers"
 
 	ocispec "github.com/opencontainers/image-spec/tree/main/specs-go/v1"
+	cpb "github.com/openconfig/gnoi/containerz"
 )
 
 type fakeStartingDocker struct {
@@ -24,12 +26,14 @@ type fakeStartingDocker struct {
 
 	Ports       nat.PortSet
 	Env         []string
+	Volumes     []mount.Mount
 	ContainerID string
 }
 
 func (f *fakeStartingDocker) ContainerCreate(ctx context.Context, config *container.Config, hostConfig *container.HostConfig, networkingConfig *network.NetworkingConfig, platform *ocispec.Platform, containerName string) (container.CreateResponse, error) {
 	f.Ports = config.ExposedPorts
 	f.Env = config.Env
+	f.Volumes = hostConfig.Mounts
 
 	return container.CreateResponse{
 		ID: containerName,
@@ -52,7 +56,7 @@ func (f fakeStartingDocker) ContainerList(ctx context.Context, options types.Con
 func TestContainerStart(t *testing.T) {
 	tests := []struct {
 		name        string
-		inOpts      []options.ImageOption
+		inOpts      []options.Option
 		inImage     string
 		inTag       string
 		inCmd       string
@@ -82,7 +86,7 @@ func TestContainerStart(t *testing.T) {
 					Names: []string{"/my-container"},
 				},
 			},
-			inOpts:  []options.ImageOption{options.WithInstanceName("my-container")},
+			inOpts:  []options.Option{options.WithInstanceName("my-container")},
 			wantErr: status.Errorf(codes.AlreadyExists, "instance name my-container already in use"),
 		},
 		{
@@ -104,7 +108,7 @@ func TestContainerStart(t *testing.T) {
 					},
 				},
 			},
-			inOpts:  []options.ImageOption{options.WithInstanceName("my-container"), options.WithPorts(map[uint32]uint32{1: 1})},
+			inOpts:  []options.Option{options.WithInstanceName("my-container"), options.WithPorts(map[uint32]uint32{1: 1})},
 			wantErr: status.Errorf(codes.Unavailable, "port 1 already in use"),
 		},
 		{
@@ -117,10 +121,11 @@ func TestContainerStart(t *testing.T) {
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
-			inOpts: []options.ImageOption{options.WithInstanceName("my-container"), options.WithPorts(map[uint32]uint32{1: 1})},
+			inOpts: []options.Option{options.WithInstanceName("my-container"), options.WithPorts(map[uint32]uint32{1: 1})},
 			wantState: &fakeStartingDocker{
 				Ports:       nat.PortSet{"1/tcp": struct{}{}},
 				ContainerID: "my-container",
+				Volumes:     []mount.Mount{},
 			},
 		},
 		{
@@ -133,11 +138,46 @@ func TestContainerStart(t *testing.T) {
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
-			inOpts: []options.ImageOption{options.WithInstanceName("my-container"), options.WithPorts(map[uint32]uint32{1: 1}), options.WithEnv(map[string]string{"AA": "BB"})},
+			inOpts: []options.Option{options.WithInstanceName("my-container"), options.WithPorts(map[uint32]uint32{1: 1}), options.WithEnv(map[string]string{"AA": "BB"})},
 			wantState: &fakeStartingDocker{
 				Ports:       nat.PortSet{"1/tcp": struct{}{}},
 				Env:         []string{"AA=BB"},
 				ContainerID: "my-container",
+				Volumes:     []mount.Mount{},
+			},
+		},
+		{
+			name:    "container-with-env-and-port-and-volumes",
+			inImage: "my-image",
+			inTag:   "my-tag",
+			inCmd:   "my-cmd",
+			inSummaries: []types.ImageSummary{
+				types.ImageSummary{
+					RepoTags: []string{"my-image:my-tag"},
+				},
+			},
+			inOpts: []options.Option{
+				options.WithInstanceName("my-container"),
+				options.WithPorts(map[uint32]uint32{1: 1}),
+				options.WithEnv(map[string]string{"AA": "BB"}),
+				options.WithVolumes([]*cpb.Volume{
+					&cpb.Volume{
+						Name:       "my-volume",
+						MountPoint: "/tmp",
+					},
+				}),
+			},
+			wantState: &fakeStartingDocker{
+				Ports:       nat.PortSet{"1/tcp": struct{}{}},
+				Env:         []string{"AA=BB"},
+				ContainerID: "my-container",
+				Volumes: []mount.Mount{
+					{
+						Type:   "volume",
+						Source: "my-volume",
+						Target: "/tmp",
+					},
+				},
 			},
 		},
 	}

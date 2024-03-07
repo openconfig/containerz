@@ -49,7 +49,7 @@ func TestContainerLogs(t *testing.T) {
 	tests := []struct {
 		name       string
 		inTimeout  time.Duration
-		inOpts     []options.ImageOption
+		inOpts     []options.Option
 		inInstance string
 		inMsg      string
 		inCnts     []types.Container
@@ -80,7 +80,7 @@ func TestContainerLogs(t *testing.T) {
 		{
 			name:       "instance-follow-with-logs",
 			inInstance: "instance-with-logs",
-			inOpts:     []options.ImageOption{options.Follow()},
+			inOpts:     []options.Option{options.Follow()},
 			inCnts: []types.Container{
 				types.Container{
 					Names: []string{"/instance-with-logs"},

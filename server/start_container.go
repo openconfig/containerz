@@ -21,13 +21,13 @@ import (
 	cpb "github.com/openconfig/gnoi/containerz"
 )
 
-// Start starts a container. If the image does not exist on the target,
+// StartContainer starts a container. If the image does not exist on the target,
 // Start returns an error. A started container is identified by an instance
 // name, which  can optionally be supplied by the caller otherwise the target
 // should provide one. If the instance name already exists, the target should
 // return an error.
-func (s *Server) Start(ctx context.Context, request *cpb.StartRequest) (*cpb.StartResponse, error) {
-	opts := []options.ImageOption{}
+func (s *Server) StartContainer(ctx context.Context, request *cpb.StartContainerRequest) (*cpb.StartContainerResponse, error) {
+	opts := []options.Option{}
 
 	if request.GetPorts() != nil {
 		ports := make(map[uint32]uint32, len(request.GetPorts()))
@@ -37,15 +37,15 @@ func (s *Server) Start(ctx context.Context, request *cpb.StartRequest) (*cpb.Sta
 		opts = append(opts, options.WithPorts(ports))
 	}
 
-	opts = append(opts, options.WithEnv(request.GetEnvironment()), options.WithInstanceName(request.GetInstanceName()))
+	opts = append(opts, options.WithEnv(request.GetEnvironment()), options.WithInstanceName(request.GetInstanceName()), options.WithVolumes(request.GetVolumes()))
 
 	resp, err := s.mgr.ContainerStart(ctx, request.GetImageName(), request.GetTag(), request.GetCmd(), opts...)
 	if err != nil {
 		return nil, err
 	}
 
-	return &cpb.StartResponse{
-		Response: &cpb.StartResponse_StartOk{
+	return &cpb.StartContainerResponse{
+		Response: &cpb.StartContainerResponse_StartOk{
 			StartOk: &cpb.StartOK{
 				InstanceName: resp,
 			},

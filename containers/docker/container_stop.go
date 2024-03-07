@@ -16,7 +16,7 @@ import (
 // If the Force option is set but no timeout is provided the container's StopTimeout
 // value is used, if set, otherwise the engine default.
 // If the Force option is not set, no forceful termination is performed.
-func (m *Manager) ContainerStop(ctx context.Context, instance string, opts ...options.ImageOption) error {
+func (m *Manager) ContainerStop(ctx context.Context, instance string, opts ...options.Option) error {
 	optionz := options.ApplyOptions(opts...)
 
 	cnts, err := m.client.ContainerList(ctx, types.ContainerListOptions{

@@ -45,7 +45,7 @@ func TestContainerStop(t *testing.T) {
 	tests := []struct {
 		name       string
 		inTimeout  time.Duration
-		inOpts     []options.ImageOption
+		inOpts     []options.Option
 		inInstance string
 		inCnts     []types.Container
 		wantState  *fakeStoppingDocker
@@ -73,7 +73,7 @@ func TestContainerStop(t *testing.T) {
 		{
 			name:       "stop-with-force-no-duration",
 			inInstance: "stop-with-force-no-duration",
-			inOpts:     []options.ImageOption{options.Force()},
+			inOpts:     []options.Option{options.Force()},
 			inCnts: []types.Container{
 				types.Container{
 					Names: []string{"stop-with-force-no-duration"},
@@ -88,7 +88,7 @@ func TestContainerStop(t *testing.T) {
 			name:       "stop-with-force-and-duration",
 			inInstance: "stop-with-force-and-duration",
 			inTimeout:  1500 * time.Millisecond,
-			inOpts:     []options.ImageOption{options.Force()},
+			inOpts:     []options.Option{options.Force()},
 			inCnts: []types.Container{
 				types.Container{
 					Names: []string{"stop-with-force-and-duration"},

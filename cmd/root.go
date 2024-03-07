@@ -33,5 +33,5 @@ var RootCmd = &cobra.Command{
 }
 
 func init() {
-	RootCmd.PersistentFlags().StringVar(&addr, "addr", ":9999", "Containerz listen port.")
+	RootCmd.PersistentFlags().StringVar(&addr, "addr", ":19999", "Containerz listen port.")
 }

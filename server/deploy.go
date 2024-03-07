@@ -49,7 +49,7 @@ func (s *Server) Deploy(srv cpb.Containerz_DeployServer) error {
 		return status.Error(codes.Unavailable, "must send send a TransferImage message first")
 	case *cpb.DeployRequest_ImageTransfer:
 		if req.ImageTransfer.GetRemoteDownload() != nil {
-			opts := []options.ImageOption{
+			opts := []options.Option{
 				options.WithStream(srv),
 				options.WithRegistryAuth(req.ImageTransfer.GetRemoteDownload().GetCredentials()),
 			}

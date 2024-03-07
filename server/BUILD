@@ -3,14 +3,17 @@ package(licenses = ["notice"])
 go_library(
     name = "server",
     srcs = [
+        "create_volume.go",
         "deploy.go",
-        "list.go",
+        "list_container.go",
+        "list_volume.go",
         "logs.go",
         "options.go",
-        "remove.go",
+        "remove_container.go",
+        "remove_volume.go",
         "server.go",
-        "start.go",
-        "stop.go",
+        "start_container.go",
+        "stop_container.go",
     ],
 )
 
@@ -18,13 +21,16 @@ go_test(
     name = "server_test",
     size = "small",
     srcs = [
+        "create_volume_test.go",
         "deploy_test.go",
-        "list_test.go",
+        "list_container_test.go",
+        "list_volume_test.go",
         "logs_test.go",
         "options_test.go",
-        "remove_test.go",
-        "start_test.go",
-        "stop_test.go",
+        "remove_container_test.go",
+        "remove_volume_test.go",
+        "start_container_test.go",
+        "stop_container_test.go",
     ],
     library = ":server",
 )

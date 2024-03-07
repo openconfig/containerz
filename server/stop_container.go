@@ -21,12 +21,12 @@ import (
 	cpb "github.com/openconfig/gnoi/containerz"
 )
 
-// Stop stops a container. If the container does not exist or is not running
+// StopContainer stops a container. If the container does not exist or is not running
 // this operation returns an error. This operation can, optionally, force
 // (i.e. kill) a container.
-func (s *Server) Stop(ctx context.Context, request *cpb.StopRequest) (*cpb.StopResponse, error) {
+func (s *Server) StopContainer(ctx context.Context, request *cpb.StopContainerRequest) (*cpb.StopContainerResponse, error) {
 	// TODO (alshabib): Consider adding a timeout to the request or use a containerz default.s
-	opts := []options.ImageOption{}
+	opts := []options.Option{}
 
 	if request.GetForce() {
 		opts = append(opts, options.Force())
@@ -35,5 +35,5 @@ func (s *Server) Stop(ctx context.Context, request *cpb.StopRequest) (*cpb.StopR
 	if err := s.mgr.ContainerStop(ctx, request.GetInstanceName(), opts...); err != nil {
 		return nil, err
 	}
-	return &cpb.StopResponse{}, nil
+	return &cpb.StopContainerResponse{}, nil
 }

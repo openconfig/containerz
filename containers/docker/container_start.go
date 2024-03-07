@@ -7,6 +7,7 @@ import (
 
 	"github.com/docker/go-connections/nat"
 	"github.com/moby/moby/v/v24/api/types/container"
+	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/mount/mount"
 	"github.com/moby/moby/v/v24/api/types/network"
 	"github.com/moby/moby/v/v24/api/types"
 	"google.golang.org/grpc/codes"
@@ -17,7 +18,7 @@ import (
 // ContainerStart starts a container provided the image exists and that the ports requested are not
 // currently in use.
 // TODO(alshabib) consider adding restart policy to containerz proto
-func (m *Manager) ContainerStart(ctx context.Context, image, tag, cmd string, opts ...options.ImageOption) (string, error) {
+func (m *Manager) ContainerStart(ctx context.Context, image, tag, cmd string, opts ...options.Option) (string, error) {
 	optionz := options.ApplyOptions(opts...)
 
 	images, err := m.client.ImageList(ctx, types.ImageListOptions{
@@ -43,8 +44,20 @@ func (m *Manager) ContainerStart(ctx context.Context, image, tag, cmd string, op
 		return "", err
 	}
 
+	mounts := make([]mount.Mount, 0, len(optionz.Volumes))
+	for _, vol := range optionz.Volumes {
+		mounts = append(mounts, mount.Mount{
+			Type:     "volume",
+			Source:   vol.GetName(),
+			Target:   vol.GetMountPoint(),
+			ReadOnly: vol.GetReadOnly(),
+		})
+	}
+
 	// TODO(alshabib): add resource support (i.e. CPU and memory quotas.)
-	hostConfig := &container.HostConfig{}
+	hostConfig := &container.HostConfig{
+		Mounts: mounts,
+	}
 	config := &container.Config{
 		Cmd:          strings.Split(cmd, " "),
 		Image:        ref,

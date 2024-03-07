@@ -12,7 +12,7 @@ import (
 )
 
 // ContainerList lists the containers present on the target.
-func (m *Manager) ContainerList(ctx context.Context, all bool, limit int32, srv options.ListStreamer, opts ...options.ImageOption) error {
+func (m *Manager) ContainerList(ctx context.Context, all bool, limit int32, srv options.ListContainerStreamer, opts ...options.Option) error {
 	optionz := options.ApplyOptions(opts...)
 
 	cntOpts := types.ContainerListOptions{All: all, Limit: int(limit)}
@@ -32,7 +32,7 @@ func (m *Manager) ContainerList(ctx context.Context, all bool, limit int32, srv 
 	}
 
 	for _, cnt := range cnts {
-		if err := srv.Send(&cpb.ListResponse{
+		if err := srv.Send(&cpb.ListContainerResponse{
 			Id: cnt.ID,
 			// TODO(alshabib): make Name a repeated field.
 			Name:      strings.Join(cnt.Names, ","),
@@ -49,13 +49,13 @@ func (m *Manager) ContainerList(ctx context.Context, all bool, limit int32, srv 
 	return nil
 }
 
-func stringToStatus(state string) cpb.ListResponse_Status {
+func stringToStatus(state string) cpb.ListContainerResponse_Status {
 	switch {
 	case strings.Contains(state, "Up"):
-		return cpb.ListResponse_RUNNING
+		return cpb.ListContainerResponse_RUNNING
 	case strings.Contains(state, "Exited"):
-		return cpb.ListResponse_STOPPED
+		return cpb.ListContainerResponse_STOPPED
 	default:
-		return cpb.ListResponse_UNSPECIFIED
+		return cpb.ListContainerResponse_UNSPECIFIED
 	}
 }

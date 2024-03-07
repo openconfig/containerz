@@ -28,11 +28,11 @@ import (
 type fakeRemovingContainerzServer struct {
 	fakeContainerzServer
 
-	receivedMsg *cpb.RemoveRequest
-	sendMsg     *cpb.RemoveResponse
+	receivedMsg *cpb.RemoveContainerRequest
+	sendMsg     *cpb.RemoveContainerResponse
 }
 
-func (f *fakeRemovingContainerzServer) Remove(_ context.Context, req *cpb.RemoveRequest) (*cpb.RemoveResponse, error) {
+func (f *fakeRemovingContainerzServer) RemoveContainer(_ context.Context, req *cpb.RemoveContainerRequest) (*cpb.RemoveContainerResponse, error) {
 	f.receivedMsg = req
 	return f.sendMsg, nil
 }
@@ -42,31 +42,31 @@ func TestRemove(t *testing.T) {
 		name    string
 		inImage string
 		inTag   string
-		inMsg   *cpb.RemoveResponse
+		inMsg   *cpb.RemoveContainerResponse
 
-		wantMsg *cpb.RemoveRequest
+		wantMsg *cpb.RemoveContainerRequest
 		wantErr error
 	}{
 		{
 			name: "success",
-			inMsg: &cpb.RemoveResponse{
-				Code: cpb.RemoveResponse_SUCCESS,
+			inMsg: &cpb.RemoveContainerResponse{
+				Code: cpb.RemoveContainerResponse_SUCCESS,
 			},
 			inImage: "some-image",
 			inTag:   "some-tag",
-			wantMsg: &cpb.RemoveRequest{
+			wantMsg: &cpb.RemoveContainerRequest{
 				Name: "some-image",
 				Tag:  "some-tag",
 			},
 		},
 		{
 			name: "not-found",
-			inMsg: &cpb.RemoveResponse{
-				Code: cpb.RemoveResponse_NOT_FOUND,
+			inMsg: &cpb.RemoveContainerResponse{
+				Code: cpb.RemoveContainerResponse_NOT_FOUND,
 			},
 			inImage: "some-image",
 			inTag:   "some-tag",
-			wantMsg: &cpb.RemoveRequest{
+			wantMsg: &cpb.RemoveContainerRequest{
 				Name: "some-image",
 				Tag:  "some-tag",
 			},
@@ -74,12 +74,12 @@ func TestRemove(t *testing.T) {
 		},
 		{
 			name: "running",
-			inMsg: &cpb.RemoveResponse{
-				Code: cpb.RemoveResponse_RUNNING,
+			inMsg: &cpb.RemoveContainerResponse{
+				Code: cpb.RemoveContainerResponse_RUNNING,
 			},
 			inImage: "some-image",
 			inTag:   "some-tag",
-			wantMsg: &cpb.RemoveRequest{
+			wantMsg: &cpb.RemoveContainerRequest{
 				Name: "some-image",
 				Tag:  "some-tag",
 			},
@@ -100,7 +100,7 @@ func TestRemove(t *testing.T) {
 				t.Fatalf("NewClient(%v) returned an unexpected error: %v", addr, err)
 			}
 
-			err = cli.Remove(ctx, tc.inImage, tc.inTag)
+			err = cli.RemoveContainer(ctx, tc.inImage, tc.inTag)
 			if err != nil {
 				if tc.wantErr == nil {
 					t.Fatalf("Remove(%q, %q) returned an unexpected error: %v", tc.inImage, tc.inTag, err)

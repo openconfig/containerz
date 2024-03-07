@@ -15,7 +15,7 @@ import (
 
 // ContainerPush pushes the container file to the containerz server. It can optionally tag the
 // container, otherwise it will use the name and tag provided in the file.
-func (m *Manager) ContainerPush(ctx context.Context, file *os.File, opts ...options.ImageOption) (string, string, error) {
+func (m *Manager) ContainerPush(ctx context.Context, file *os.File, opts ...options.Option) (string, string, error) {
 	if file == nil {
 		return "", "", status.Error(codes.InvalidArgument, "file must be supplied")
 	}

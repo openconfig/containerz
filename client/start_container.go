@@ -26,9 +26,9 @@ import (
 	cpb "github.com/openconfig/gnoi/containerz"
 )
 
-// Start starts a container with the provided configuration and returns its instance name if the
+// StartContainer starts a container with the provided configuration and returns its instance name if the
 // operation succeeded or an error otherwise.
-func (c *Client) Start(ctx context.Context, image string, tag string, cmd string, instance string, opts ...StartOption) (string, error) {
+func (c *Client) StartContainer(ctx context.Context, image string, tag string, cmd string, instance string, opts ...StartOption) (string, error) {
 	optionz := &startOptions{}
 	for _, opt := range opts {
 		opt(optionz)
@@ -44,32 +44,38 @@ func (c *Client) Start(ctx context.Context, image string, tag string, cmd string
 		return "", err
 	}
 
-	req := &cpb.StartRequest{
+	volumeMappings, err := volumes(optionz.volumes)
+	if err != nil {
+		return "", err
+	}
+
+	req := &cpb.StartContainerRequest{
 		ImageName:    image,
 		Tag:          tag,
 		Cmd:          cmd,
 		Ports:        portMappings,
 		Environment:  envMappings,
 		InstanceName: instance,
+		Volumes:      volumeMappings,
 	}
 
-	resp, err := c.cli.Start(ctx, req)
+	resp, err := c.cli.StartContainer(ctx, req)
 	if err != nil {
 		return "", err
 	}
 
 	switch resp.GetResponse().(type) {
-	case *cpb.StartResponse_StartOk:
+	case *cpb.StartContainerResponse_StartOk:
 		return resp.GetStartOk().GetInstanceName(), nil
-	case *cpb.StartResponse_StartError:
+	case *cpb.StartContainerResponse_StartError:
 		return "", status.Errorf(codes.Internal, "failed to start container: %s", resp.GetStartError().GetDetails())
 	default:
 		return "", status.Error(codes.Unknown, "unknown container state")
 	}
 }
 
-func ports(ports []string) ([]*cpb.StartRequest_Port, error) {
-	mapping := make([]*cpb.StartRequest_Port, 0, len(ports))
+func ports(ports []string) ([]*cpb.StartContainerRequest_Port, error) {
+	mapping := make([]*cpb.StartContainerRequest_Port, 0, len(ports))
 	for _, port := range ports {
 		parts := strings.SplitN(port, ":", 2)
 		if len(parts) != 2 {
@@ -86,7 +92,7 @@ func ports(ports []string) ([]*cpb.StartRequest_Port, error) {
 			return nil, err
 		}
 
-		mapping = append(mapping, &cpb.StartRequest_Port{Internal: uint32(in), External: uint32(out)})
+		mapping = append(mapping, &cpb.StartContainerRequest_Port{Internal: uint32(in), External: uint32(out)})
 	}
 
 	return mapping, nil
@@ -104,4 +110,29 @@ func envs(envs []string) (map[string]string, error) {
 	}
 
 	return mapping, nil
+}
+
+func volumes(volumes []string) ([]*cpb.Volume, error) {
+	vols := make([]*cpb.Volume, 0, len(volumes))
+
+	for _, volume := range volumes {
+		parts := strings.SplitN(volume, ":", 3)
+		switch len(parts) {
+		case 2:
+			vols = append(vols, &cpb.Volume{
+				Name:       parts[0],
+				MountPoint: parts[1],
+			})
+		case 3:
+			vols = append(vols, &cpb.Volume{
+				Name:       parts[0],
+				MountPoint: parts[1],
+				ReadOnly:   parts[2] == "ro",
+			})
+		default:
+			return nil, fmt.Errorf("volume definition %s is invalid", volume)
+		}
+	}
+
+	return vols, nil
 }

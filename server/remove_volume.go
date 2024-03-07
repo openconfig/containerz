@@ -15,11 +15,22 @@
 package server
 
 import (
+	"context"
+
+	"github.com/openconfig/containerz/containers"
+
 	cpb "github.com/openconfig/gnoi/containerz"
 )
 
-// List returns all containers that match the spec defined in the request.
-func (s *Server) List(request *cpb.ListRequest, srv cpb.Containerz_ListServer) error {
-	// TODO (alshabib): fix filter in proto, it needs to be a repeated field
-	return s.mgr.ContainerList(srv.Context(), request.GetAll(), request.GetLimit(), srv)
+// RemoveVolume removes a volume.
+func (s *Server) RemoveVolume(ctx context.Context, request *cpb.RemoveVolumeRequest) (*cpb.RemoveVolumeResponse, error) {
+	var opts []options.Option
+	if request.GetForce() {
+		opts = append(opts, options.Force())
+	}
+	if err := s.mgr.VolumeRemove(ctx, request.GetName(), opts...); err != nil {
+		return nil, err
+	}
+
+	return &cpb.RemoveVolumeResponse{}, nil
 }

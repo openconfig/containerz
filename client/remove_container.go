@@ -33,11 +33,11 @@ var (
 	ErrRunning = status.Error(codes.FailedPrecondition, "resource is running")
 )
 
-// Remove removes an image from the target system. It returns nil upon success. Otherwise it
+// RemoveContainer removes an image from the target system. It returns nil upon success. Otherwise it
 // returns an error indicating whether the image was not found or is associated to running
 // container.
-func (c *Client) Remove(ctx context.Context, image string, tag string) error {
-	resp, err := c.cli.Remove(ctx, &cpb.RemoveRequest{
+func (c *Client) RemoveContainer(ctx context.Context, image string, tag string) error {
+	resp, err := c.cli.RemoveContainer(ctx, &cpb.RemoveContainerRequest{
 		Name: image,
 		Tag:  tag,
 	})
@@ -46,11 +46,11 @@ func (c *Client) Remove(ctx context.Context, image string, tag string) error {
 	}
 
 	switch resp.GetCode() {
-	case cpb.RemoveResponse_SUCCESS:
+	case cpb.RemoveContainerResponse_SUCCESS:
 		return nil
-	case cpb.RemoveResponse_NOT_FOUND:
+	case cpb.RemoveContainerResponse_NOT_FOUND:
 		return ErrNotFound
-	case cpb.RemoveResponse_RUNNING:
+	case cpb.RemoveContainerResponse_RUNNING:
 		return ErrRunning
 	default:
 		return errors.New("unknwon error occurred")

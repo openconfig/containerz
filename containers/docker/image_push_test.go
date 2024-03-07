@@ -51,7 +51,7 @@ func (f *fakePushingDocker) ImageTag(ctx context.Context, source, target string)
 func TestContainerPush(t *testing.T) {
 	tests := []struct {
 		name               string
-		inOpts             []options.ImageOption
+		inOpts             []options.Option
 		inFile             *os.File
 		inImage, inTag     string
 		isJSON             bool
@@ -78,7 +78,7 @@ func TestContainerPush(t *testing.T) {
 			inFile:  os.Stdin,
 			inImage: "some-image",
 			inTag:   "some-tag",
-			inOpts:  []options.ImageOption{options.WithTarget("another-image", "another-tag")},
+			inOpts:  []options.Option{options.WithTarget("another-image", "another-tag")},
 			wantState: &fakePushingDocker{
 				Source: "some-image:some-tag",
 				Target: "another-image:another-tag",

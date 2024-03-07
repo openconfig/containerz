@@ -25,6 +25,7 @@ var (
 	cntCommand, instance string
 	ports                []string
 	envs                 []string
+	volumes              []string
 )
 
 var cntStartCmd = &cobra.Command{
@@ -35,7 +36,7 @@ var cntStartCmd = &cobra.Command{
 			return fmt.Errorf("--image must be specified")
 		}
 
-		id, err := containerzClient.Start(command.Context(), image, tag, cntCommand, instance, client.WithEnv(envs), client.WithPorts(ports))
+		id, err := containerzClient.StartContainer(command.Context(), image, tag, cntCommand, instance, client.WithEnv(envs), client.WithPorts(ports), client.WithVolumes(volumes))
 		if err != nil {
 			return err
 		}
@@ -52,4 +53,5 @@ func init() {
 	cntStartCmd.PersistentFlags().StringVar(&instance, "instance", "", "Name to give to the container.")
 	cntStartCmd.PersistentFlags().StringArrayVar(&ports, "port", []string{}, "Ports to expose (format: <internal_port>:<external_port>")
 	cntStartCmd.PersistentFlags().StringArrayVar(&envs, "env", []string{}, "Environment vars to set (format: <VAR_NAMEt>=<VAR_VALUE>")
+	cntStartCmd.PersistentFlags().StringArrayVarP(&volumes, "volume", "v", []string{}, "Volumes to attach to the container (format: <volume-name>:<mountpoint>[:ro])")
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/moby/moby/v/v24/api/types/network"
 	"github.com/moby/moby/v/v24/api/types/registry"
 	"github.com/moby/moby/v/v24/api/types"
+	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/volume/volume"
 
 	ocispec "github.com/opencontainers/image-spec/tree/main/specs-go/v1"
 )
@@ -28,6 +29,9 @@ type docker interface {
 	ImageRemove(ctx context.Context, image string, options types.ImageRemoveOptions) ([]types.ImageDeleteResponseItem, error)
 	ImageTag(ctx context.Context, source, target string) error
 	RegistryLogin(ctx context.Context, auth types.AuthConfig) (registry.AuthenticateOKBody, error)
+	VolumeCreate(ctx context.Context, options volume.CreateOptions) (volume.Volume, error)
+	VolumeList(ctx context.Context, options volume.ListOptions) (volume.ListResponse, error)
+	VolumeRemove(ctx context.Context, volumeID string, force bool) error
 
 	ContainersPrune(ctx context.Context, args filters.Args) (types.ContainersPruneReport, error)
 	ImagesPrune(ctx context.Context, args filters.Args) (types.ImagesPruneReport, error)

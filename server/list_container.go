@@ -16,16 +16,20 @@ package server
 
 import (
 	"github.com/openconfig/containerz/containers"
+
 	cpb "github.com/openconfig/gnoi/containerz"
 )
 
-// Log streams the logs of a running container. If the container if no longer
-// running this operation streams the latest logs and returns.
-func (s *Server) Log(request *cpb.LogRequest, srv cpb.Containerz_LogServer) error {
-	opts := []options.Option{}
-	if request.GetFollow() {
-		opts = append(opts, options.Follow())
+// ListContainer returns all containers that match the spec defined in the request.
+func (s *Server) ListContainer(request *cpb.ListContainerRequest, srv cpb.Containerz_ListContainerServer) error {
+	filters := make(map[options.FilterKey][]string, len(request.GetFilter()))
+	for _, f := range request.GetFilter() {
+		vals, ok := filters[options.FilterKey(f.GetKey())]
+		if !ok {
+			vals = []string{}
+		}
+		filters[options.FilterKey(f.GetKey())] = append(vals, f.GetValue()...)
 	}
 
-	return s.mgr.ContainerLogs(srv.Context(), request.GetInstanceName(), srv, opts...)
+	return s.mgr.ContainerList(srv.Context(), request.GetAll(), request.GetLimit(), srv, options.WithFilter(filters))
 }

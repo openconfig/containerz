@@ -14,5 +14,9 @@ go_library(
         "image_remove.go",
         "root.go",
         "start.go",
+        "volume.go",
+        "volume_create.go",
+        "volume_list.go",
+        "volume_remove.go",
     ],
 )

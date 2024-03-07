@@ -25,19 +25,19 @@ import (
 	cpb "github.com/openconfig/gnoi/containerz"
 )
 
-func TestList(t *testing.T) {
+func TestListContainer(t *testing.T) {
 	tests := []struct {
 		name      string
 		inErr     error
-		inCnts    []*cpb.ListResponse
-		inReq     *cpb.ListRequest
+		inCnts    []*cpb.ListContainerResponse
+		inReq     *cpb.ListContainerRequest
 		inOpts    []Option
-		wantResp  []*cpb.ListResponse
+		wantResp  []*cpb.ListContainerResponse
 		wantState *fakeContainerManager
 	}{
 		{
 			name: "no-containers",
-			inReq: &cpb.ListRequest{
+			inReq: &cpb.ListContainerRequest{
 				All:   true,
 				Limit: 10,
 			},
@@ -45,19 +45,19 @@ func TestList(t *testing.T) {
 				All:   true,
 				Limit: 10,
 			},
-			wantResp: []*cpb.ListResponse{},
+			wantResp: []*cpb.ListContainerResponse{},
 		},
 		{
 			name: "containers",
-			inReq: &cpb.ListRequest{
+			inReq: &cpb.ListContainerRequest{
 				All:   true,
 				Limit: 10,
 			},
-			inCnts: []*cpb.ListResponse{
-				&cpb.ListResponse{
+			inCnts: []*cpb.ListContainerResponse{
+				&cpb.ListContainerResponse{
 					Id: "some-id",
 				},
-				&cpb.ListResponse{
+				&cpb.ListContainerResponse{
 					Id: "other-id",
 				},
 			},
@@ -65,11 +65,11 @@ func TestList(t *testing.T) {
 				All:   true,
 				Limit: 10,
 			},
-			wantResp: []*cpb.ListResponse{
-				&cpb.ListResponse{
+			wantResp: []*cpb.ListContainerResponse{
+				&cpb.ListContainerResponse{
 					Id: "some-id",
 				},
-				&cpb.ListResponse{
+				&cpb.ListContainerResponse{
 					Id: "other-id",
 				},
 			},
@@ -85,12 +85,12 @@ func TestList(t *testing.T) {
 			cli, s := startServerAndReturnClient(ctx, t, fake, tc.inOpts)
 			defer s.Halt(ctx)
 
-			lCli, err := cli.List(ctx, tc.inReq)
+			lCli, err := cli.ListContainer(ctx, tc.inReq)
 			if err != nil {
 				t.Errorf("List(%+v) returned error: %v", tc.inReq, err)
 			}
 
-			gotResp := []*cpb.ListResponse{}
+			gotResp := []*cpb.ListContainerResponse{}
 			for {
 				msg, err := lCli.Recv()
 				if err != nil {

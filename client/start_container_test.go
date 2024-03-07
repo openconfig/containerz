@@ -28,11 +28,11 @@ import (
 type fakeStartingContainerzServer struct {
 	fakeContainerzServer
 
-	receivedMsg *cpb.StartRequest
-	sendMsg     *cpb.StartResponse
+	receivedMsg *cpb.StartContainerRequest
+	sendMsg     *cpb.StartContainerResponse
 }
 
-func (f *fakeStartingContainerzServer) Start(ctx context.Context, req *cpb.StartRequest) (*cpb.StartResponse, error) {
+func (f *fakeStartingContainerzServer) StartContainer(ctx context.Context, req *cpb.StartContainerRequest) (*cpb.StartContainerResponse, error) {
 	f.receivedMsg = req
 	return f.sendMsg, nil
 }
@@ -46,9 +46,10 @@ func TestStart(t *testing.T) {
 		inInstance string
 		inPorts    []string
 		inEnvs     []string
-		inMsg      *cpb.StartResponse
+		inVols     []string
+		inMsg      *cpb.StartContainerResponse
 
-		wantMsg *cpb.StartRequest
+		wantMsg *cpb.StartContainerRequest
 		wantID  string
 		wantErr error
 	}{
@@ -58,15 +59,15 @@ func TestStart(t *testing.T) {
 			inTag:      "some-tag",
 			inInstance: "some-instance",
 			inCmd:      "some-cmd",
-			inMsg: &cpb.StartResponse{
-				Response: &cpb.StartResponse_StartOk{
+			inMsg: &cpb.StartContainerResponse{
+				Response: &cpb.StartContainerResponse_StartOk{
 					StartOk: &cpb.StartOK{
 						InstanceName: "some-instance",
 					},
 				},
 			},
 			wantID: "some-instance",
-			wantMsg: &cpb.StartRequest{
+			wantMsg: &cpb.StartContainerRequest{
 				ImageName:    "some-image",
 				Tag:          "some-tag",
 				Cmd:          "some-cmd",
@@ -79,14 +80,14 @@ func TestStart(t *testing.T) {
 			inTag:      "some-tag",
 			inInstance: "some-instance",
 			inCmd:      "some-cmd",
-			inMsg: &cpb.StartResponse{
-				Response: &cpb.StartResponse_StartError{
+			inMsg: &cpb.StartContainerResponse{
+				Response: &cpb.StartContainerResponse_StartError{
 					StartError: &cpb.StartError{
 						Details: "oh no!",
 					},
 				},
 			},
-			wantMsg: &cpb.StartRequest{
+			wantMsg: &cpb.StartContainerRequest{
 				ImageName:    "some-image",
 				Tag:          "some-tag",
 				Cmd:          "some-cmd",
@@ -101,25 +102,25 @@ func TestStart(t *testing.T) {
 			inInstance: "some-instance",
 			inCmd:      "some-cmd",
 			inPorts:    []string{"1:1", "2:2"},
-			inMsg: &cpb.StartResponse{
-				Response: &cpb.StartResponse_StartOk{
+			inMsg: &cpb.StartContainerResponse{
+				Response: &cpb.StartContainerResponse_StartOk{
 					StartOk: &cpb.StartOK{
 						InstanceName: "some-instance",
 					},
 				},
 			},
 			wantID: "some-instance",
-			wantMsg: &cpb.StartRequest{
+			wantMsg: &cpb.StartContainerRequest{
 				ImageName:    "some-image",
 				Tag:          "some-tag",
 				Cmd:          "some-cmd",
 				InstanceName: "some-instance",
-				Ports: []*cpb.StartRequest_Port{
-					&cpb.StartRequest_Port{
+				Ports: []*cpb.StartContainerRequest_Port{
+					&cpb.StartContainerRequest_Port{
 						Internal: 1,
 						External: 1,
 					},
-					&cpb.StartRequest_Port{
+					&cpb.StartContainerRequest_Port{
 						Internal: 2,
 						External: 2,
 					},
@@ -133,20 +134,55 @@ func TestStart(t *testing.T) {
 			inInstance: "some-instance",
 			inCmd:      "some-cmd",
 			inEnvs:     []string{"env1=cool", "env2=cooler"},
-			inMsg: &cpb.StartResponse{
-				Response: &cpb.StartResponse_StartOk{
+			inMsg: &cpb.StartContainerResponse{
+				Response: &cpb.StartContainerResponse_StartOk{
 					StartOk: &cpb.StartOK{
 						InstanceName: "some-instance",
 					},
 				},
 			},
 			wantID: "some-instance",
-			wantMsg: &cpb.StartRequest{
+			wantMsg: &cpb.StartContainerRequest{
 				ImageName:    "some-image",
 				Tag:          "some-tag",
 				Cmd:          "some-cmd",
 				InstanceName: "some-instance",
 				Environment:  map[string]string{"env1": "cool", "env2": "cooler"},
+			},
+		},
+		{
+			name:       "simple-with-envs-and-volumes",
+			inImage:    "some-image",
+			inTag:      "some-tag",
+			inInstance: "some-instance",
+			inCmd:      "some-cmd",
+			inEnvs:     []string{"env1=cool", "env2=cooler"},
+			inVols:     []string{"vol1:/aa", "vol2:/bb:ro"},
+			inMsg: &cpb.StartContainerResponse{
+				Response: &cpb.StartContainerResponse_StartOk{
+					StartOk: &cpb.StartOK{
+						InstanceName: "some-instance",
+					},
+				},
+			},
+			wantID: "some-instance",
+			wantMsg: &cpb.StartContainerRequest{
+				ImageName:    "some-image",
+				Tag:          "some-tag",
+				Cmd:          "some-cmd",
+				InstanceName: "some-instance",
+				Environment:  map[string]string{"env1": "cool", "env2": "cooler"},
+				Volumes: []*cpb.Volume{
+					&cpb.Volume{
+						Name:       "vol1",
+						MountPoint: "/aa",
+					},
+					&cpb.Volume{
+						Name:       "vol2",
+						MountPoint: "/bb",
+						ReadOnly:   true,
+					},
+				},
 			},
 		},
 	}
@@ -164,7 +200,7 @@ func TestStart(t *testing.T) {
 				t.Fatalf("NewClient(%v) returned an unexpected error: %v", addr, err)
 			}
 
-			gotID, err := cli.Start(ctx, tc.inImage, tc.inTag, tc.inCmd, tc.inInstance, WithPorts(tc.inPorts), WithEnv(tc.inEnvs))
+			gotID, err := cli.StartContainer(ctx, tc.inImage, tc.inTag, tc.inCmd, tc.inInstance, WithPorts(tc.inPorts), WithEnv(tc.inEnvs), WithVolumes(tc.inVols))
 			if err != nil {
 				if tc.wantErr == nil {
 					t.Fatalf("Start(%q, %q, %q, %q, %v, %v) returned an unexpected error: %v", tc.inImage, tc.inTag, tc.inCmd, tc.inInstance, tc.inPorts, tc.inEnvs, err)

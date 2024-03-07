@@ -16,6 +16,7 @@ package client
 
 import (
 	"context"
+	"time"
 
 	"k8s.io/klog/v2"
 )
@@ -39,6 +40,16 @@ type ContainerInfo struct {
 	Error error
 }
 
+// VolumeInfo contains information about a volume on the target system.
+type VolumeInfo struct {
+	Name         string
+	Driver       string
+	Labels       map[string]string
+	Options      map[string]string
+	CreationTime time.Time
+	Error        error
+}
+
 // LogMessage contains the log message retrieved from the target system as well as any error that
 // may have occurred
 type LogMessage struct {
@@ -48,12 +59,13 @@ type LogMessage struct {
 }
 
 type startOptions struct {
-	envs  []string
-	ports []string
+	envs    []string
+	ports   []string
+	volumes []string
 }
 
 type nonBlockTypes interface {
-	*Progress | *ContainerInfo | *LogMessage
+	*Progress | *ContainerInfo | *LogMessage | *VolumeInfo
 }
 
 // StartOption is an option passed to a start container call.
@@ -70,6 +82,13 @@ func WithEnv(envs []string) StartOption {
 func WithPorts(ports []string) StartOption {
 	return func(opt *startOptions) {
 		opt.ports = ports
+	}
+}
+
+// WithVolumes sets the volumes to be passed to the start operation.
+func WithVolumes(volumes []string) StartOption {
+	return func(opt *startOptions) {
+		opt.volumes = volumes
 	}
 }
 

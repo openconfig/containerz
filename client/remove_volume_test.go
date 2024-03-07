@@ -24,32 +24,32 @@ import (
 	cpb "github.com/openconfig/gnoi/containerz"
 )
 
-type fakeStoppingContainerzServer struct {
+type fakeRemoveVolumeContainerzServer struct {
 	fakeContainerzServer
 
-	receivedMsg *cpb.StopRequest
+	receivedMsg *cpb.RemoveVolumeRequest
 }
 
-func (f *fakeStoppingContainerzServer) Stop(ctx context.Context, req *cpb.StopRequest) (*cpb.StopResponse, error) {
+func (f *fakeRemoveVolumeContainerzServer) RemoveVolume(ctx context.Context, req *cpb.RemoveVolumeRequest) (*cpb.RemoveVolumeResponse, error) {
 	f.receivedMsg = req
-	return &cpb.StopResponse{}, nil
+	return &cpb.RemoveVolumeResponse{}, nil
 }
 
-func TestStop(t *testing.T) {
+func TestRemoveVolume(t *testing.T) {
 	tests := []struct {
-		name       string
-		inInstance string
-		inForce    bool
+		name    string
+		inName  string
+		inForce bool
 
-		wantMsg *cpb.StopRequest
+		wantMsg *cpb.RemoveVolumeRequest
 	}{
 		{
-			name:       "simple",
-			inInstance: "some-instance",
-			inForce:    true,
-			wantMsg: &cpb.StopRequest{
-				InstanceName: "some-instance",
-				Force:        true,
+			name:    "simple",
+			inName:  "some-volume",
+			inForce: true,
+			wantMsg: &cpb.RemoveVolumeRequest{
+				Name:  "some-volume",
+				Force: true,
 			},
 		},
 	}
@@ -57,7 +57,7 @@ func TestStop(t *testing.T) {
 	ctx := context.Background()
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			fcm := &fakeStoppingContainerzServer{}
+			fcm := &fakeRemoveVolumeContainerzServer{}
 			addr, stop := newServer(t, fcm)
 			defer stop()
 			cli, err := NewClient(ctx, addr)
@@ -65,12 +65,12 @@ func TestStop(t *testing.T) {
 				t.Fatalf("NewClient(%v) returned an unexpected error: %v", addr, err)
 			}
 
-			if err := cli.Stop(ctx, tc.inInstance, tc.inForce); err != nil {
-				t.Fatalf("Stop(%q, %t) returned an unexpected error: %v", tc.inInstance, tc.inForce, err)
+			if err := cli.RemoveVolume(ctx, tc.inName, tc.inForce); err != nil {
+				t.Fatalf("RemoveVolume(%q, %t) returned an unexpected error: %v", tc.inName, tc.inForce, err)
 			}
 
 			if diff := cmp.Diff(fcm.receivedMsg, tc.wantMsg, protocmp.Transform()); diff != "" {
-				t.Errorf("Stop(%q, %t) returned diff(-want, +got):\n%s", tc.inInstance, tc.inForce, diff)
+				t.Errorf("RemoveVolume(%q, %t) returned diff(-want, +got):\n%s", tc.inName, tc.inForce, diff)
 			}
 		})
 	}

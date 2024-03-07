@@ -20,30 +20,22 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	force bool
-)
-
-var cntStopCmd = &cobra.Command{
-	Use:   "stop",
-	Short: "stop a container by intance name",
+var volRemoveCmd = &cobra.Command{
+	Use:   "remove",
+	Short: "Remove volumes",
 	RunE: func(command *cobra.Command, args []string) error {
-		if instance == "" {
-			fmt.Println("--instance must be provided")
-		}
-
-		if err := containerzClient.StopContainer(command.Context(), instance, force); err != nil {
+		if err := containerzClient.RemoveVolume(command.Context(), name, force); err != nil {
 			return err
 		}
 
-		fmt.Printf("Successfully stopped %s\n", instance)
+		fmt.Printf("Successfully removed volume %q\n", name)
 		return nil
 	},
 }
 
 func init() {
-	containerCmd.AddCommand(cntStopCmd)
+	volumesCmd.AddCommand(volRemoveCmd)
 
-	cntStopCmd.PersistentFlags().StringVar(&instance, "instance", "", "Container instance to stop.")
-	cntStopCmd.PersistentFlags().BoolVar(&force, "force", false, "Forcefully stop the container.")
+	volRemoveCmd.PersistentFlags().StringVar(&name, "name", "", "Name of the volume to remove.")
+	volRemoveCmd.PersistentFlags().BoolVar(&force, "force", false, "Force removal of the volume.")
 }

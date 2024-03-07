@@ -36,7 +36,7 @@ func (f *fakeRemovingDocker) ImageRemove(ctx context.Context, image string, opti
 func TestContainerRemove(t *testing.T) {
 	tests := []struct {
 		name        string
-		inOpts      []options.ImageOption
+		inOpts      []options.Option
 		inImage     string
 		inTag       string
 		inSummaries []types.ImageSummary
@@ -70,7 +70,7 @@ func TestContainerRemove(t *testing.T) {
 			name:    "container-running-with-force",
 			inImage: "container-running",
 			inTag:   "running-tag",
-			inOpts:  []options.ImageOption{options.Force()},
+			inOpts:  []options.Option{options.Force()},
 			inSummaries: []types.ImageSummary{
 				types.ImageSummary{
 					RepoTags: []string{"container-running:running-tag"},

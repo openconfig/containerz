@@ -31,7 +31,7 @@ var cntListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List containers",
 	RunE: func(command *cobra.Command, args []string) error {
-		ch, err := containerzClient.List(command.Context(), all, limit, nil)
+		ch, err := containerzClient.ListContainer(command.Context(), all, limit, nil)
 		if err != nil {
 			return err
 		}

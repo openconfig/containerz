@@ -64,7 +64,7 @@ func TestContainerPull(t *testing.T) {
 		name      string
 		inImage   string
 		inTag     string
-		inOpts    []options.ImageOption
+		inOpts    []options.Option
 		wantState *fakePullingDocker
 		wantResp  []*cpb.DeployResponse
 		wantErr   error
@@ -83,12 +83,12 @@ func TestContainerPull(t *testing.T) {
 		{
 			name:    "non-nil-creds",
 			inImage: "some-image",
-			inOpts:  []options.ImageOption{options.WithRegistryAuth(&tpb.Credentials{})},
+			inOpts:  []options.Option{options.WithRegistryAuth(&tpb.Credentials{})},
 			wantErr: status.Error(codes.Unimplemented, "registry auth not yet implemented"),
 		},
 		{
 			name: "pull-with-tag",
-			inOpts: []options.ImageOption{
+			inOpts: []options.Option{
 				options.WithTarget("another-name", "another-tag"),
 			},
 			inImage: "some-image",
@@ -100,7 +100,7 @@ func TestContainerPull(t *testing.T) {
 		},
 		{
 			name: "pull-with-stream",
-			inOpts: []options.ImageOption{
+			inOpts: []options.Option{
 				options.WithStream(fakeStream),
 			},
 			inImage: "some-image",
@@ -119,7 +119,7 @@ func TestContainerPull(t *testing.T) {
 		},
 		{
 			name: "pull-with-stream-and-tag",
-			inOpts: []options.ImageOption{
+			inOpts: []options.Option{
 				options.WithStream(fakeStream),
 				options.WithTarget("another-name", "another-tag"),
 			},

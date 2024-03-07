@@ -12,20 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package server
+package client
 
 import (
-	"github.com/openconfig/containerz/containers"
+	"context"
+
 	cpb "github.com/openconfig/gnoi/containerz"
 )
 
-// Log streams the logs of a running container. If the container if no longer
-// running this operation streams the latest logs and returns.
-func (s *Server) Log(request *cpb.LogRequest, srv cpb.Containerz_LogServer) error {
-	opts := []options.Option{}
-	if request.GetFollow() {
-		opts = append(opts, options.Follow())
+// StopContainer stops the requested instance. Stop can also force termination.
+func (c *Client) StopContainer(ctx context.Context, instance string, force bool) error {
+	if _, err := c.cli.StopContainer(ctx, &cpb.StopContainerRequest{
+		InstanceName: instance,
+		Force:        force,
+	}); err != nil {
+		return err
 	}
 
-	return s.mgr.ContainerLogs(srv.Context(), request.GetInstanceName(), srv, opts...)
+	return nil
 }

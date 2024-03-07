@@ -30,32 +30,32 @@ func TestContainerRemove(t *testing.T) {
 	tests := []struct {
 		name     string
 		inErr    error
-		inReq    *cpb.RemoveRequest
+		inReq    *cpb.RemoveContainerRequest
 		inOpts   []Option
-		wantResp *cpb.RemoveResponse
+		wantResp *cpb.RemoveContainerResponse
 	}{
 		{
 			name:  "success",
-			inReq: &cpb.RemoveRequest{},
-			wantResp: &cpb.RemoveResponse{
-				Code: cpb.RemoveResponse_SUCCESS,
+			inReq: &cpb.RemoveContainerRequest{},
+			wantResp: &cpb.RemoveContainerResponse{
+				Code: cpb.RemoveContainerResponse_SUCCESS,
 			},
 		},
 		{
 			name:  "not-found",
-			inReq: &cpb.RemoveRequest{},
+			inReq: &cpb.RemoveContainerRequest{},
 			inErr: status.Error(codes.NotFound, "image not found"),
-			wantResp: &cpb.RemoveResponse{
-				Code:   cpb.RemoveResponse_NOT_FOUND,
+			wantResp: &cpb.RemoveContainerResponse{
+				Code:   cpb.RemoveContainerResponse_NOT_FOUND,
 				Detail: "image not found",
 			},
 		},
 		{
 			name:  "running-container",
-			inReq: &cpb.RemoveRequest{},
+			inReq: &cpb.RemoveContainerRequest{},
 			inErr: status.Error(codes.Unavailable, "container running"),
-			wantResp: &cpb.RemoveResponse{
-				Code:   cpb.RemoveResponse_RUNNING,
+			wantResp: &cpb.RemoveContainerResponse{
+				Code:   cpb.RemoveContainerResponse_RUNNING,
 				Detail: "container running",
 			},
 		},
@@ -70,7 +70,7 @@ func TestContainerRemove(t *testing.T) {
 			cli, s := startServerAndReturnClient(ctx, t, fake, tc.inOpts)
 			defer s.Halt(ctx)
 
-			resp, err := cli.Remove(ctx, tc.inReq)
+			resp, err := cli.RemoveContainer(ctx, tc.inReq)
 			if err != nil {
 				t.Errorf("Remove(%+v) returned error: %v", tc.inReq, err)
 			}

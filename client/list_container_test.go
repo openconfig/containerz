@@ -26,11 +26,11 @@ import (
 type fakeListingContainerzServer struct {
 	fakeContainerzServer
 
-	sendMsgs         []*cpb.ListResponse
-	receivedMessages []*cpb.ListRequest
+	sendMsgs         []*cpb.ListContainerResponse
+	receivedMessages []*cpb.ListContainerRequest
 }
 
-func (f *fakeListingContainerzServer) List(req *cpb.ListRequest, srv cpb.Containerz_ListServer) error {
+func (f *fakeListingContainerzServer) ListContainer(req *cpb.ListContainerRequest, srv cpb.Containerz_ListContainerServer) error {
 	f.receivedMessages = append(f.receivedMessages, req)
 
 	for _, resp := range f.sendMsgs {
@@ -48,20 +48,20 @@ func TestList(t *testing.T) {
 		inAll    bool
 		inLimit  int32
 		inFilter map[string][]string
-		inMsgs   []*cpb.ListResponse
+		inMsgs   []*cpb.ListContainerResponse
 
 		wantInfo []*ContainerInfo
-		wantMsgs []*cpb.ListRequest
+		wantMsgs []*cpb.ListContainerRequest
 	}{
 		{
 			name:  "all-no-limit",
 			inAll: true,
-			inMsgs: []*cpb.ListResponse{
+			inMsgs: []*cpb.ListContainerResponse{
 				{
 					Id:        "some-id",
 					Name:      "some-name",
 					ImageName: "some-image",
-					Status:    cpb.ListResponse_RUNNING,
+					Status:    cpb.ListContainerResponse_RUNNING,
 				},
 			},
 			wantInfo: []*ContainerInfo{
@@ -72,8 +72,8 @@ func TestList(t *testing.T) {
 					State:     "RUNNING",
 				},
 			},
-			wantMsgs: []*cpb.ListRequest{
-				&cpb.ListRequest{
+			wantMsgs: []*cpb.ListContainerRequest{
+				&cpb.ListContainerRequest{
 					All:   true,
 					Limit: 0,
 				},
@@ -83,12 +83,12 @@ func TestList(t *testing.T) {
 			name:    "all-with-limit",
 			inAll:   true,
 			inLimit: 10,
-			inMsgs: []*cpb.ListResponse{
+			inMsgs: []*cpb.ListContainerResponse{
 				{
 					Id:        "some-id",
 					Name:      "some-name",
 					ImageName: "some-image",
-					Status:    cpb.ListResponse_RUNNING,
+					Status:    cpb.ListContainerResponse_RUNNING,
 				},
 			},
 			wantInfo: []*ContainerInfo{
@@ -99,8 +99,8 @@ func TestList(t *testing.T) {
 					State:     "RUNNING",
 				},
 			},
-			wantMsgs: []*cpb.ListRequest{
-				&cpb.ListRequest{
+			wantMsgs: []*cpb.ListContainerRequest{
+				&cpb.ListContainerRequest{
 					All:   true,
 					Limit: 10,
 				},
@@ -122,7 +122,7 @@ func TestList(t *testing.T) {
 			doneCh := make(chan struct{})
 			got := []*ContainerInfo{}
 
-			ch, err := cli.List(ctx, tc.inAll, tc.inLimit, tc.inFilter)
+			ch, err := cli.ListContainer(ctx, tc.inAll, tc.inLimit, tc.inFilter)
 			if err != nil {
 				t.Fatalf("List(%t, %d, %v) returned an unexpected error: %v", tc.inAll, tc.inLimit, tc.inFilter, err)
 			}

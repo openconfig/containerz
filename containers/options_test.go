@@ -29,7 +29,7 @@ type fakeStream struct{}
 func (f fakeStream) Send(_ *cpb.DeployResponse) error { return nil }
 
 func TestWithTarget(t *testing.T) {
-	p := &imageOptions{}
+	p := &options{}
 
 	WithTarget("my-image", "my-tag")(p)
 
@@ -44,7 +44,7 @@ func TestWithTarget(t *testing.T) {
 }
 
 func TestWithRegistryAuth(t *testing.T) {
-	p := &imageOptions{}
+	p := &options{}
 
 	WithRegistryAuth(&tpb.Credentials{})(p)
 
@@ -54,7 +54,7 @@ func TestWithRegistryAuth(t *testing.T) {
 }
 
 func TestWithStream(t *testing.T) {
-	p := &imageOptions{}
+	p := &options{}
 
 	WithStream(&fakeStream{})(p)
 
@@ -64,7 +64,7 @@ func TestWithStream(t *testing.T) {
 }
 
 func TestWithInstanceName(t *testing.T) {
-	p := &imageOptions{}
+	p := &options{}
 
 	WithInstanceName("some-instance")(p)
 
@@ -74,7 +74,7 @@ func TestWithInstanceName(t *testing.T) {
 }
 
 func TestWithPorts(t *testing.T) {
-	p := &imageOptions{}
+	p := &options{}
 
 	in := map[uint32]uint32{1: 2}
 	WithPorts(in)(p)
@@ -85,7 +85,7 @@ func TestWithPorts(t *testing.T) {
 }
 
 func TestWithEnv(t *testing.T) {
-	p := &imageOptions{}
+	p := &options{}
 
 	in := map[string]string{"a": "b"}
 	WithEnv(in)(p)
@@ -96,7 +96,7 @@ func TestWithEnv(t *testing.T) {
 }
 
 func TestForce(t *testing.T) {
-	p := &imageOptions{}
+	p := &options{}
 
 	Force()(p)
 
@@ -106,7 +106,7 @@ func TestForce(t *testing.T) {
 }
 
 func TestFollow(t *testing.T) {
-	p := &imageOptions{}
+	p := &options{}
 
 	Follow()(p)
 
@@ -116,7 +116,7 @@ func TestFollow(t *testing.T) {
 }
 
 func TestWithSince(t *testing.T) {
-	p := &imageOptions{}
+	p := &options{}
 
 	WithSince(time.Second)(p)
 
@@ -126,7 +126,7 @@ func TestWithSince(t *testing.T) {
 }
 
 func TestWithUntil(t *testing.T) {
-	p := &imageOptions{}
+	p := &options{}
 
 	WithUntil(time.Second)(p)
 
@@ -137,24 +137,24 @@ func TestWithUntil(t *testing.T) {
 
 func TestApplyOptions(t *testing.T) {
 	tests := []struct {
-		inOpts []ImageOption
-		want   *imageOptions
+		inOpts []Option
+		want   *options
 	}{
 		{
-			inOpts: []ImageOption{WithTarget("my-image", "my-tag")},
-			want:   &imageOptions{TargetName: "my-image", TargetTag: "my-tag"},
+			inOpts: []Option{WithTarget("my-image", "my-tag")},
+			want:   &options{TargetName: "my-image", TargetTag: "my-tag"},
 		},
 		{
-			inOpts: []ImageOption{WithTarget("my-image", "")},
-			want:   &imageOptions{TargetName: "my-image", TargetTag: "latest"},
+			inOpts: []Option{WithTarget("my-image", "")},
+			want:   &options{TargetName: "my-image", TargetTag: "latest"},
 		},
 		{
-			inOpts: []ImageOption{WithTarget("my-image", "my-tag"), WithRegistryAuth(&tpb.Credentials{})},
-			want:   &imageOptions{TargetName: "my-image", TargetTag: "my-tag", Credentials: &tpb.Credentials{}},
+			inOpts: []Option{WithTarget("my-image", "my-tag"), WithRegistryAuth(&tpb.Credentials{})},
+			want:   &options{TargetName: "my-image", TargetTag: "my-tag", Credentials: &tpb.Credentials{}},
 		},
 		{
-			inOpts: []ImageOption{WithTarget("my-image", "my-tag"), WithRegistryAuth(&tpb.Credentials{}), WithStream(&fakeStream{})},
-			want:   &imageOptions{TargetName: "my-image", TargetTag: "my-tag", Credentials: &tpb.Credentials{}, StreamClient: &fakeStream{}},
+			inOpts: []Option{WithTarget("my-image", "my-tag"), WithRegistryAuth(&tpb.Credentials{}), WithStream(&fakeStream{})},
+			want:   &options{TargetName: "my-image", TargetTag: "my-tag", Credentials: &tpb.Credentials{}, StreamClient: &fakeStream{}},
 		},
 	}
 

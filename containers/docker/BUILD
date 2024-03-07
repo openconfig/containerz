@@ -12,6 +12,14 @@ go_library(
         "image_remove.go",
         "janitor.go",
         "manager.go",
+        "volume_create.go",
+        "volume_list.go",
+        "volume_remove.go",
+    ],
+    deps = [
+        "//google/protobuf:timestamp_go_proto",
+        "//third_party/golang/github_com/moby/moby/v/v24/api/types/mount",
+        "//third_party/golang/github_com/moby/moby/v/v24/api/types/volume",
     ],
 )
 
@@ -28,6 +36,14 @@ go_test(
         "image_remove_test.go",
         "janitor_test.go",
         "manager_test.go",
+        "volume_create_test.go",
+        "volume_list_test.go",
+        "volume_remove_test.go",
     ],
     library = ":docker",
+    deps = [
+        "//google/protobuf:timestamp_go_proto",
+        "//third_party/golang/github_com/moby/moby/v/v24/api/types/mount",
+        "//third_party/golang/github_com/moby/moby/v/v24/api/types/volume",
+    ],
 )

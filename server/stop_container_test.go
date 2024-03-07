@@ -27,17 +27,17 @@ import (
 func TestStop(t *testing.T) {
 	tests := []struct {
 		name      string
-		inReq     *cpb.StopRequest
+		inReq     *cpb.StopContainerRequest
 		inOpts    []Option
-		wantResp  *cpb.StopResponse
+		wantResp  *cpb.StopContainerResponse
 		wantState *fakeContainerManager
 	}{
 		{
 			name: "no-force",
-			inReq: &cpb.StopRequest{
+			inReq: &cpb.StopContainerRequest{
 				InstanceName: "some-name",
 			},
-			wantResp: &cpb.StopResponse{},
+			wantResp: &cpb.StopContainerResponse{},
 			wantState: &fakeContainerManager{
 				Instance: "some-name",
 				Force:    false,
@@ -45,11 +45,11 @@ func TestStop(t *testing.T) {
 		},
 		{
 			name: "nforce",
-			inReq: &cpb.StopRequest{
+			inReq: &cpb.StopContainerRequest{
 				InstanceName: "some-name",
 				Force:        true,
 			},
-			wantResp: &cpb.StopResponse{},
+			wantResp: &cpb.StopContainerResponse{},
 			wantState: &fakeContainerManager{
 				Instance: "some-name",
 				Force:    true,
@@ -65,7 +65,7 @@ func TestStop(t *testing.T) {
 			cli, s := startServerAndReturnClient(ctx, t, fake, tc.inOpts)
 			defer s.Halt(ctx)
 
-			resp, err := cli.Stop(ctx, tc.inReq)
+			resp, err := cli.StopContainer(ctx, tc.inReq)
 			if err != nil {
 				t.Errorf("Stop(%+v) returned error: %v", tc.inReq, err)
 			}
