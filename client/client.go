@@ -25,7 +25,8 @@ import (
 )
 
 var (
-	dial = grpc.DialContext
+	// Dial is the dailer to use to read containerz
+	Dial = grpc.DialContext
 )
 
 // Client is a grpc containerz client.
@@ -37,7 +38,7 @@ type Client struct {
 func NewClient(ctx context.Context, addr string) (*Client, error) {
 	tls := &tls.Config{InsecureSkipVerify: true} // NOLINT
 	tlsCred := grpc.WithTransportCredentials(credentials.NewTLS(tls))
-	conn, err := dial(ctx, addr, tlsCred)
+	conn, err := Dial(ctx, addr, tlsCred)
 	if err != nil {
 		return nil, err
 	}

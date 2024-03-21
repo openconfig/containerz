@@ -16,7 +16,6 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"google.golang.org/grpc/metadata"
 	"github.com/openconfig/containerz/client"
 )
 
@@ -24,6 +23,7 @@ var volumesCmd = &cobra.Command{
 	Use:   "volume",
 	Short: "General volume operations",
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		RootCmd.PersistentPreRun(cmd, args)
 		var err error
 		containerzClient, err = client.NewClient(cmd.Context(), addr)
 		return err

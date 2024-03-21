@@ -56,7 +56,9 @@ func (m *Manager) ContainerStart(ctx context.Context, image, tag, cmd string, op
 
 	// TODO(alshabib): add resource support (i.e. CPU and memory quotas.)
 	hostConfig := &container.HostConfig{
-		Mounts: mounts,
+		Mounts:      mounts,
+		NetworkMode: "host", // TODO(alshabib): make this configurable.
+		AutoRemove:  true,
 	}
 	config := &container.Config{
 		Cmd:          strings.Split(cmd, " "),

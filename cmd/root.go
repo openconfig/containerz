@@ -16,7 +16,12 @@
 package cmd
 
 import (
+	"context"
+
 	"github.com/spf13/cobra"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
+	"github.com/openconfig/containerz/client"
 )
 
 var (
@@ -27,6 +32,8 @@ var (
 var RootCmd = &cobra.Command{
 	Use:   "containerz",
 	Short: "Containerz suite of CLI tools",
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+	},
 	Run: func(command *cobra.Command, args []string) {
 		command.HelpFunc()(command, args)
 	},

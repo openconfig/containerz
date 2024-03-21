@@ -31,8 +31,9 @@ var (
 )
 
 var startCmd = &cobra.Command{
-	Use:   "start",
-	Short: "Launch the containerz server",
+	Use:              "start",
+	Short:            "Launch the containerz server",
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {},
 	RunE: func(command *cobra.Command, args []string) error {
 		ctx, cancel := context.WithCancel(command.Context())
 		defer cancel()
@@ -67,5 +68,5 @@ var startCmd = &cobra.Command{
 func init() {
 	RootCmd.AddCommand(startCmd)
 	startCmd.PersistentFlags().StringVar(&dockerHost, "docker_host", "unix:///var/run/docker.sock", "Docker host to connect to.")
-	startCmd.PersistentFlags().IntVar(&chunkSize, "chunk_size", 64000, "the size of the chunks supported by this server")
+	startCmd.PersistentFlags().IntVar(&chunkSize, "chunk_size", 3000000, "the size of the chunks supported by this server")
 }

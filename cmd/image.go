@@ -16,7 +16,6 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"google.golang.org/grpc/metadata"
 	"github.com/openconfig/containerz/client"
 	cpb "github.com/openconfig/gnoi/containerz"
 )
@@ -31,6 +30,7 @@ var imageCmd = &cobra.Command{
 	Use:   "image",
 	Short: "General image operations",
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		RootCmd.PersistentPreRun(cmd, args)
 		var err error
 		containerzClient, err = client.NewClient(cmd.Context(), addr)
 		return err

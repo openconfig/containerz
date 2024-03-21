@@ -19,4 +19,8 @@ go_library(
         "volume_list.go",
         "volume_remove.go",
     ],
+    deps = [
+        "//base/go:google",
+        "//net/grpc/go:grpcprod",
+    ],
 )
