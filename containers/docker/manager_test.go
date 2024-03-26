@@ -13,7 +13,7 @@ import (
 	"github.com/moby/moby/v/v24/api/types/network"
 	"github.com/moby/moby/v/v24/api/types/registry"
 	"github.com/moby/moby/v/v24/api/types"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/volume/volume"
+	"github.com/moby/moby/v/v24/api/types/volume"
 
 	ocispec "github.com/opencontainers/image-spec/tree/main/specs-go/v1"
 )

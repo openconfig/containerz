@@ -19,7 +19,6 @@ go_library(
     deps = [
         "//google/protobuf:timestamp_go_proto",
         "//third_party/golang/github_com/moby/moby/v/v24/api/types/mount",
-        "//third_party/golang/github_com/moby/moby/v/v24/api/types/volume",
     ],
 )
 
@@ -44,6 +43,5 @@ go_test(
     deps = [
         "//google/protobuf:timestamp_go_proto",
         "//third_party/golang/github_com/moby/moby/v/v24/api/types/mount",
-        "//third_party/golang/github_com/moby/moby/v/v24/api/types/volume",
     ],
 )

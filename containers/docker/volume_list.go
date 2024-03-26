@@ -22,7 +22,7 @@ import (
 
 	tpb "google3/google/protobuf/timestamp_go_proto"
 	"github.com/moby/moby/v/v24/api/types/filters"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/volume/volume"
+	"github.com/moby/moby/v/v24/api/types/volume"
 	"github.com/openconfig/containerz/containers"
 	cpb "github.com/openconfig/gnoi/containerz"
 )

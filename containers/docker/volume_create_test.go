@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/volume/volume"
+	"github.com/moby/moby/v/v24/api/types/volume"
 	"github.com/openconfig/containerz/containers"
 	cpb "github.com/openconfig/gnoi/containerz"
 )

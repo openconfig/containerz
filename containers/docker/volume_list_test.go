@@ -23,7 +23,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/moby/moby/v/v24/api/types/filters"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/volume/volume"
+	"github.com/moby/moby/v/v24/api/types/volume"
 	"google.golang.org/protobuf/testing/protocmp"
 	"github.com/openconfig/containerz/containers"
 	cpb "github.com/openconfig/gnoi/containerz"
