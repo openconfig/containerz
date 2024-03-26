@@ -19,7 +19,7 @@ import (
 	"testing"
 	"time"
 
-	tpb "google3/google/protobuf/timestamp_go_proto"
+	tpb "github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/moby/moby/v/v24/api/types/filters"

@@ -36,5 +36,4 @@ go_test(
         "types_test.go",
     ],
     library = ":client",
-    deps = ["//google/protobuf:timestamp_go_proto"],
 )

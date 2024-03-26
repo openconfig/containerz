@@ -20,7 +20,7 @@ import (
 	"io"
 	"time"
 
-	tpb "google3/google/protobuf/timestamp_go_proto"
+	tpb "github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/moby/moby/v/v24/api/types/filters"
 	"github.com/moby/moby/v/v24/api/types/volume"
 	"github.com/openconfig/containerz/containers"

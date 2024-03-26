@@ -16,10 +16,7 @@ go_library(
         "volume_list.go",
         "volume_remove.go",
     ],
-    deps = [
-        "//google/protobuf:timestamp_go_proto",
-        "//third_party/golang/github_com/moby/moby/v/v24/api/types/mount",
-    ],
+    deps = ["//third_party/golang/github_com/moby/moby/v/v24/api/types/mount"],
 )
 
 go_test(
@@ -40,8 +37,5 @@ go_test(
         "volume_remove_test.go",
     ],
     library = ":docker",
-    deps = [
-        "//google/protobuf:timestamp_go_proto",
-        "//third_party/golang/github_com/moby/moby/v/v24/api/types/mount",
-    ],
+    deps = ["//third_party/golang/github_com/moby/moby/v/v24/api/types/mount"],
 )

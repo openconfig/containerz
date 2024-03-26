@@ -19,7 +19,7 @@ import (
 	"testing"
 	"time"
 
-	tpb "google3/google/protobuf/timestamp_go_proto"
+	tpb "github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/google/go-cmp/cmp"
 	"google.golang.org/protobuf/testing/protocmp"
 	cpb "github.com/openconfig/gnoi/containerz"
