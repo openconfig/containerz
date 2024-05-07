@@ -20,8 +20,8 @@ import (
 	"os/signal"
 
 	"github.com/spf13/cobra"
-	"github.com/moby/moby/v/v24/client"
-	"github.com/moby/moby/v/v24/docker"
+	"github.com/docker/docker/client"
+	"github.com/openconfig/containerz/containers/docker"
 	"github.com/openconfig/containerz/server"
 )
 

@@ -5,14 +5,14 @@ import (
 	"context"
 	"io"
 
-	"github.com/moby/moby/v/v24/api/types/container"
-	"github.com/moby/moby/v/v24/api/types/filters"
-	"github.com/moby/moby/v/v24/api/types/network"
-	"github.com/moby/moby/v/v24/api/types/registry"
-	"github.com/moby/moby/v/v24/api/types"
-	"github.com/moby/moby/v/v24/api/types/volume"
+	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/network"
+	"github.com/docker/docker/api/types/registry"
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/volume"
 
-	ocispec "github.com/opencontainers/image-spec/tree/main/specs-go/v1"
+	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
 type docker interface {

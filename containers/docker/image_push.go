@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/moby/moby/v/v24/pkg/jsonmessage"
+	"github.com/moby/moby/pkg/jsonmessage"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"github.com/openconfig/containerz/containers"

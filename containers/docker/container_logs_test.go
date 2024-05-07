@@ -9,7 +9,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/moby/moby/v/v24/api/types"
+	"github.com/docker/docker/api/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"github.com/openconfig/containerz/containers"

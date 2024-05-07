@@ -6,8 +6,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/moby/moby/v/v24/api/types/filters"
-	"github.com/moby/moby/v/v24/api/types"
+	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types"
 	"google.golang.org/protobuf/testing/protocmp"
 	"github.com/openconfig/containerz/containers"
 	cpb "github.com/openconfig/gnoi/containerz"
