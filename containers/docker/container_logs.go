@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/moby/moby/v/v24/api/types"
+	"github.com/docker/docker/api/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"github.com/openconfig/containerz/containers"

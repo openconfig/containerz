@@ -5,8 +5,8 @@ import (
 	"io"
 	"strings"
 
-	"github.com/moby/moby/v/v24/api/types/filters"
-	"github.com/moby/moby/v/v24/api/types"
+	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types"
 	"github.com/openconfig/containerz/containers"
 	cpb "github.com/openconfig/gnoi/containerz"
 )

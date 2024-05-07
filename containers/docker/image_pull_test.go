@@ -9,8 +9,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/moby/moby/v/v24/api/types"
-	"github.com/moby/moby/v/v24/pkg/jsonmessage"
+	"github.com/docker/docker/api/types"
+	"github.com/moby/moby/pkg/jsonmessage"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/testing/protocmp"

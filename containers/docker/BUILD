@@ -16,7 +16,6 @@ go_library(
         "volume_list.go",
         "volume_remove.go",
     ],
-    deps = ["//third_party/golang/github_com/moby/moby/v/v24/api/types/mount"],
 )
 
 go_test(
@@ -37,5 +36,4 @@ go_test(
         "volume_remove_test.go",
     ],
     library = ":docker",
-    deps = ["//third_party/golang/github_com/moby/moby/v/v24/api/types/mount"],
 )

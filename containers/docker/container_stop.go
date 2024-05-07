@@ -4,10 +4,11 @@ import (
 	"context"
 	"time"
 
-	"github.com/moby/moby/v/v24/api/types/container"
-	"github.com/moby/moby/v/v24/api/types"
+	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"k8s.io/klog/v2"
 	"github.com/openconfig/containerz/containers"
 )
 
@@ -49,7 +50,7 @@ func (m *Manager) ContainerStop(ctx context.Context, instance string, opts ...op
 	}
 
 	if err := m.client.ContainerStop(ctx, instance, container.StopOptions{Timeout: pDuration}); err != nil {
-		return err
+		klog.Warningf("container %s was not running", instance)
 	}
 
 	if err := m.client.ContainerRemove(ctx, instance, types.ContainerRemoveOptions{

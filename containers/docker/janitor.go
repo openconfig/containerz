@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/moby/moby/v/v24/api/types/filters"
+	"github.com/docker/docker/api/types/filters"
 	"k8s.io/klog/v2"
 )
 

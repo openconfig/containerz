@@ -20,9 +20,9 @@ import (
 	"io"
 	"time"
 
-	tpb "github.com/golang/protobuf/ptypes/timestamp"
-	"github.com/moby/moby/v/v24/api/types/filters"
-	"github.com/moby/moby/v/v24/api/types/volume"
+	tpb "google.golang.org/protobuf/types/known/timestamppb"
+	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/volume"
 	"github.com/openconfig/containerz/containers"
 	cpb "github.com/openconfig/gnoi/containerz"
 )

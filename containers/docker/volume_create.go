@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/moby/moby/v/v24/api/types/volume"
+	"github.com/docker/docker/api/types/volume"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"github.com/openconfig/containerz/containers"

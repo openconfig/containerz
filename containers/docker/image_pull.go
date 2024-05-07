@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/moby/moby/v/v24/api/types/registry"
-	"github.com/moby/moby/v/v24/api/types"
-	"github.com/moby/moby/v/v24/pkg/jsonmessage"
+	"github.com/docker/docker/api/types/registry"
+	"github.com/docker/docker/api/types"
+	"github.com/moby/moby/pkg/jsonmessage"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"github.com/openconfig/containerz/containers"

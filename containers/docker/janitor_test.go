@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/moby/moby/v/v24/api/types/filters"
-	"github.com/moby/moby/v/v24/api/types"
+	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types"
 )
 
 type fakeVacuumingDocker struct {

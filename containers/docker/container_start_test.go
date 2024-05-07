@@ -7,15 +7,15 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/docker/go-connections/nat"
-	"github.com/moby/moby/v/v24/api/types/container"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/mount/mount"
-	"github.com/moby/moby/v/v24/api/types/network"
-	"github.com/moby/moby/v/v24/api/types"
+	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/mount"
+	"github.com/docker/docker/api/types/network"
+	"github.com/docker/docker/api/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"github.com/openconfig/containerz/containers"
 
-	ocispec "github.com/opencontainers/image-spec/tree/main/specs-go/v1"
+	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	cpb "github.com/openconfig/gnoi/containerz"
 )
 

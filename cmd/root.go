@@ -16,12 +16,8 @@
 package cmd
 
 import (
-	"context"
 
 	"github.com/spf13/cobra"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/metadata"
-	"github.com/openconfig/containerz/client"
 )
 
 var (
