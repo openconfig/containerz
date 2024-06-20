@@ -1,6 +1,6 @@
 module github.com/openconfig/containerz
 
-go 1.23
+go 1.21
 
 require (
 	github.com/briandowns/spinner v1.23.0
