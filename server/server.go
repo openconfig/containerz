@@ -16,15 +16,26 @@
 package server
 
 import (
+	"bytes"
 	"context"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
+	"crypto/tls"
+	"crypto/x509"
+	"crypto/x509/pkix"
+	"encoding/pem"
+	"fmt"
+	"math/big"
 	"net"
 	"os"
+	"time"
 
-	"google.golang.org/grpc"
-	"k8s.io/klog/v2"
-	"github.com/openconfig/containerz/containers"
-
+	options "github.com/openconfig/containerz/containers"
 	cpb "github.com/openconfig/gnoi/containerz"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
+	"k8s.io/klog/v2"
 )
 
 type containerManager interface {
@@ -141,8 +152,12 @@ type Server struct {
 
 // New constructs a new containerz server
 func New(mgr containerManager, opts ...Option) *Server {
+	cred, err := selfSignedCert()
+	if err != nil {
+		klog.Fatalf("unable to self sign a cert: %v", err)
+	}
 	s := &Server{
-		grpcServer:  grpc.NewServer(),
+		grpcServer:  grpc.NewServer(grpc.Creds(cred)),
 		tmpLocation: "/tmp",
 		chunkSize:   5e6, // 5mb chunks
 		mgr:         mgr,
@@ -152,8 +167,7 @@ func New(mgr containerManager, opts ...Option) *Server {
 	for _, opt := range opts {
 		opt(s)
 	}
-
-	var err error
+	
 	s.lis, err = net.Listen("tcp", s.addr)
 	if err != nil {
 		klog.Fatalf("server start: %e", err)
@@ -179,4 +193,69 @@ func (s *Server) Halt(ctx context.Context) {
 		s.grpcServer.GracefulStop()
 	}
 	klog.Info("server stopped")
+}
+
+func selfSignedCert() (credentials.TransportCredentials, error) {
+	cert, err := newCert()
+	if err != nil {
+		return nil, err
+	}
+	return credentials.NewTLS(&tls.Config{
+		Certificates: []tls.Certificate{cert},
+		ServerName:   "containerz.openconfig.net",
+	}), nil
+}
+
+func newCert() (tls.Certificate, error) {
+	notBefore := time.Now()
+	notAfter := notBefore.AddDate(0, 0, 7)
+
+	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
+	serialNumber, err := rand.Int(rand.Reader, serialNumberLimit)
+	if err != nil {
+		return tls.Certificate{}, err
+	}
+	template := x509.Certificate{
+		SerialNumber: serialNumber,
+		Subject: pkix.Name{
+			Organization: []string{"OpenConfig"},
+		},
+		DNSNames:  []string{"containerz.openconfig.net"},
+		NotBefore: notBefore,
+		NotAfter:  notAfter,
+
+		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
+		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+		BasicConstraintsValid: true,
+	}
+
+	priv, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	if err != nil {
+		return tls.Certificate{}, err
+	}
+	derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, &priv.PublicKey, priv)
+	if err != nil {
+		return tls.Certificate{}, err
+	}
+
+	certBuf := &bytes.Buffer{}
+	pem.Encode(certBuf, &pem.Block{Type: "CERTIFICATE", Bytes: derBytes})
+	keyBuf := &bytes.Buffer{}
+	pem.Encode(keyBuf, &pem.Block{Type: "EC PRIVATE KEY", Bytes: pemBlockForKey(priv)})
+
+	return tls.X509KeyPair(certBuf.Bytes(), keyBuf.Bytes())
+}
+
+func pemBlockForKey(priv any) []byte {
+	switch k := priv.(type) {
+	case *ecdsa.PrivateKey:
+		b, err := x509.MarshalECPrivateKey(k)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Unable to marshal ECDSA private key: %v", err)
+			os.Exit(2)
+		}
+		return b
+	default:
+		return nil
+	}
 }
