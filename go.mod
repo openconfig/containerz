@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/briandowns/spinner v1.23.0
-	github.com/docker/docker v26.1.4+incompatible
+	github.com/docker/docker v26.1.5+incompatible
 	github.com/docker/go-connections v0.5.0
 	github.com/google/go-cmp v0.6.0
 	github.com/moby/moby v24.0.9+incompatible
