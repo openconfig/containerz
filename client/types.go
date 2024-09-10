@@ -40,6 +40,15 @@ type ContainerInfo struct {
 	Error error
 }
 
+// ImageInfo contains information about a container on the target system.
+type ImageInfo struct {
+	ID        string
+	ImageName string
+	Tag     string
+
+	Error error
+}
+
 // VolumeInfo contains information about a volume on the target system.
 type VolumeInfo struct {
 	Name         string
@@ -65,11 +74,18 @@ type startOptions struct {
 }
 
 type nonBlockTypes interface {
-	*Progress | *ContainerInfo | *LogMessage | *VolumeInfo
+	*Progress | *ContainerInfo | *LogMessage | *VolumeInfo | *ImageInfo
 }
 
 // StartOption is an option passed to a start container call.
 type StartOption func(*startOptions)
+
+type listOptions struct {
+	filter   []string
+}
+// ListOption is an option passed to a list container call.
+type ListOption func(*listOptions)
+
 
 // WithEnv sets the environment to be passed to the start operation.
 func WithEnv(envs []string) StartOption {
@@ -89,6 +105,12 @@ func WithPorts(ports []string) StartOption {
 func WithVolumes(volumes []string) StartOption {
 	return func(opt *startOptions) {
 		opt.volumes = volumes
+	}
+}
+// WithFilter sets the filters to be passed to the list operation.
+func WithFilters(filter []string) ListOption {
+	return func(opt *listOptions) {
+		opt.filter = filter
 	}
 }
 

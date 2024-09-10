@@ -17,6 +17,8 @@ package cmd
 import (
 	"fmt"
 	"time"
+        "context"
+        "google.golang.org/grpc/metadata"
 
 	"github.com/spf13/cobra"
 	"github.com/briandowns/spinner"
@@ -37,8 +39,11 @@ var pushCmd = &cobra.Command{
 		if image == "" {
 			output = "image"
 		}
-
-		ch, err := containerzClient.PushImage(command.Context(), image, tag, file)
+                ctx, cancel := context.WithCancel(command.Context())
+                defer cancel()
+                ctx = metadata.AppendToOutgoingContext(ctx, "username","cisco", "password", "cisco123")
+                ch, err := containerzClient.PushImage(ctx, image, tag, file)
+		//ch, err := containerzClient.PushImage(command.Context(), image, tag, file)
 		if err != nil {
 			return err
 		}

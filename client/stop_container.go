@@ -17,17 +17,25 @@ package client
 import (
 	"context"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	cpb "github.com/openconfig/gnoi/containerz"
 )
 
 // StopContainer stops the requested instance. Stop can also force termination.
-func (c *Client) StopContainer(ctx context.Context, instance string, force bool) error {
-	if _, err := c.cli.StopContainer(ctx, &cpb.StopContainerRequest{
+func (c *Client) StopContainer(ctx context.Context, instance string, force bool, restart bool) error {
+	resp, err := c.cli.StopContainer(ctx, &cpb.StopContainerRequest{
 		InstanceName: instance,
 		Force:        force,
-	}); err != nil {
+		Restart:      restart,
+	})
+        if err != nil {
 		return err
 	}
+        if resp != nil {
+                errorCode := resp.GetCode().String()
+                return status.Errorf(codes.Internal, "Failed to stop container: %s (Error Code: %s)", resp.GetDetails(), errorCode)
+        }
 
 	return nil
 }

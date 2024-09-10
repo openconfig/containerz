@@ -18,24 +18,29 @@ import (
 	"fmt"
 	"os"
 	"text/tabwriter"
-
+        "context"
+        "google.golang.org/grpc/metadata"
 	"github.com/spf13/cobra"
 )
 
 var (
 	all   bool
 	limit int32
+	filter              []string
 )
 
 var cntListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List containers",
 	RunE: func(command *cobra.Command, args []string) error {
-		ch, err := containerzClient.ListContainer(command.Context(), all, limit, nil)
+                ctx, cancel := context.WithCancel(command.Context())
+                defer cancel()
+                ctx = metadata.AppendToOutgoingContext(ctx, "username","cisco", "password", "cisco123")
+                ch, err := containerzClient.ListContainer(ctx, all, limit, filter)
 		if err != nil {
 			return err
 		}
-
+                //fmt.Printf("Filters: %v\n", filter)
 		writer := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', tabwriter.AlignRight)
 		fmt.Fprint(writer, "ID\tName\tImage\tState\n")
 		defer writer.Flush()
@@ -55,4 +60,5 @@ func init() {
 
 	cntListCmd.PersistentFlags().BoolVar(&all, "all", false, "Return all containers.")
 	cntListCmd.PersistentFlags().Int32Var(&limit, "limit", -1, "number of containers to return")
+	cntListCmd.PersistentFlags().StringArrayVarP(&filter, "filter", "f", []string{}, "filter to apply" )
 }

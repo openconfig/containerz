@@ -15,6 +15,8 @@ go_library(
         "start_container.go",
         "stop_container.go",
         "types.go",
+        "list_image.go"
+        "update_container.go",
     ],
 )
 

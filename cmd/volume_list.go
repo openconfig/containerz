@@ -19,6 +19,8 @@ import (
 	"os"
 	"text/tabwriter"
 	"time"
+        "context"
+        "google.golang.org/grpc/metadata"
 
 	"github.com/spf13/cobra"
 )
@@ -27,7 +29,10 @@ var volListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List volumes",
 	RunE: func(command *cobra.Command, args []string) error {
-		ch, err := containerzClient.ListVolume(command.Context(), nil)
+                ctx, cancel := context.WithCancel(command.Context())
+                defer cancel()
+                ctx = metadata.AppendToOutgoingContext(ctx, "username","cisco", "password", "cisco123")
+		ch, err := containerzClient.ListVolume(ctx, nil)
 		if err != nil {
 			return err
 		}

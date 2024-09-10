@@ -16,6 +16,8 @@ package cmd
 
 import (
 	"fmt"
+        "context"
+        "google.golang.org/grpc/metadata"
 
 	"github.com/spf13/cobra"
 )
@@ -24,7 +26,10 @@ var volRemoveCmd = &cobra.Command{
 	Use:   "remove",
 	Short: "Remove volumes",
 	RunE: func(command *cobra.Command, args []string) error {
-		if err := containerzClient.RemoveVolume(command.Context(), name, force); err != nil {
+                ctx, cancel := context.WithCancel(command.Context())
+                defer cancel()
+                ctx = metadata.AppendToOutgoingContext(ctx, "username","cisco", "password", "cisco123")
+		if err := containerzClient.RemoveVolume(ctx, name, force); err != nil {
 			return err
 		}
 

@@ -16,12 +16,15 @@ package cmd
 
 import (
 	"fmt"
+        "context"
+        "google.golang.org/grpc/metadata"
 
 	"github.com/spf13/cobra"
 )
 
 var (
 	force bool
+	restart bool
 )
 
 var cntStopCmd = &cobra.Command{
@@ -31,8 +34,11 @@ var cntStopCmd = &cobra.Command{
 		if instance == "" {
 			fmt.Println("--instance must be provided")
 		}
+                ctx, cancel := context.WithCancel(command.Context())
+                defer cancel()
+                ctx = metadata.AppendToOutgoingContext(ctx, "username","cisco", "password", "cisco123")
 
-		if err := containerzClient.StopContainer(command.Context(), instance, force); err != nil {
+		if err := containerzClient.StopContainer(ctx, instance, force,restart); err != nil {
 			return err
 		}
 
@@ -46,4 +52,5 @@ func init() {
 
 	cntStopCmd.PersistentFlags().StringVar(&instance, "instance", "", "Container instance to stop.")
 	cntStopCmd.PersistentFlags().BoolVar(&force, "force", false, "Forcefully stop the container.")
+	cntStopCmd.PersistentFlags().BoolVar(&restart, "restart", false, "restart the container.")
 }

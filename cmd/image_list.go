@@ -16,39 +16,38 @@ package cmd
 
 import (
 	"fmt"
-	"time"
-
+	"os"
+	"text/tabwriter"
         "context"
         "google.golang.org/grpc/metadata"
 	"github.com/spf13/cobra"
-	"github.com/briandowns/spinner"
 )
 
-var pullCmd = &cobra.Command{
-	Use:   "pull",
-	Short: "Pull the specified container image",
+var (
+	imgLimit int32
+	imgFilter              []string
+)
+
+var listCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List Images",
 	RunE: func(command *cobra.Command, args []string) error {
-		if image == "" {
-			return fmt.Errorf("--image must be specified")
-		}
-
-		s := spinner.New(spinner.CharSets[69], 100*time.Millisecond)
-		s.Start()
-		defer s.Stop()
-		s.Prefix = fmt.Sprintf("Pulling %s/%s ", image, tag)
-		s.Suffix = " 0"
-		s.FinalMSG = fmt.Sprintf("Pulled %s/%s\n", image, tag)
-
                 ctx, cancel := context.WithCancel(command.Context())
                 defer cancel()
                 ctx = metadata.AppendToOutgoingContext(ctx, "username","cisco", "password", "cisco123")
-		ch, err := containerzClient.PullImage(ctx, image, tag, nil)
+                ch, err := containerzClient.ListImage(ctx, imgLimit, imgFilter)
 		if err != nil {
 			return err
 		}
-
-		for progress := range ch {
-			s.Suffix = fmt.Sprintf(" %d", progress.BytesReceived)
+                //fmt.Printf("Filters: %v\n", filter)
+		writer := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', tabwriter.AlignRight)
+		fmt.Fprint(writer, "ID\tImage\tTag\n")
+		defer writer.Flush()
+		for info := range ch {
+			if info.Error != nil {
+				return info.Error
+			}
+			fmt.Fprintf(writer, "%s\t%s\t%s\n", info.ID[:5], info.ImageName, info.Tag)
 		}
 
 		return nil
@@ -56,5 +55,8 @@ var pullCmd = &cobra.Command{
 }
 
 func init() {
-	imageCmd.AddCommand(pullCmd)
+	imageCmd.AddCommand(listCmd)
+
+	listCmd.PersistentFlags().Int32Var(&imgLimit, "limit", -1, "number of containers to return")
+	listCmd.PersistentFlags().StringArrayVarP(&imgFilter, "filter", "f", []string{}, "filter to apply" )
 }

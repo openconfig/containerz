@@ -36,7 +36,10 @@ func (c *Client) PullImage(ctx context.Context, image string, tag string, creds 
 			ImageTransfer: &cpb.ImageTransfer{
 				Name:           image,
 				Tag:            tag,
-				RemoteDownload: &commonpb.RemoteDownload{},
+				RemoteDownload: &commonpb.RemoteDownload{
+                                Protocol:      commonpb.RemoteDownload_HTTP,
+                                Path:          "192.168.122.1:8080/vrf-relay.tar.gz",
+ 				SourceAddress: "10.0.0.0",},
 			},
 		},
 	}); err != nil {

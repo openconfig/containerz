@@ -8,11 +8,11 @@ require (
 	github.com/docker/go-connections v0.5.0
 	github.com/google/go-cmp v0.6.0
 	github.com/moby/moby v24.0.9+incompatible
-	github.com/openconfig/gnoi v0.4.1-0.20240501161656-1d16819bab6a
+	github.com/openconfig/gnoi v0.5.0
 	github.com/opencontainers/image-spec v1.1.0
 	github.com/spf13/cobra v1.8.0
 	golang.org/x/sys v0.20.0
-	google.golang.org/grpc v1.63.2
+	google.golang.org/grpc v1.64.0
 	google.golang.org/protobuf v1.34.1
 	k8s.io/klog/v2 v2.120.1
 )

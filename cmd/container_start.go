@@ -16,6 +16,8 @@ package cmd
 
 import (
 	"fmt"
+        "context"
+        "google.golang.org/grpc/metadata"
 
 	"github.com/spf13/cobra"
 	"github.com/openconfig/containerz/client"
@@ -35,8 +37,11 @@ var cntStartCmd = &cobra.Command{
 		if image == "" {
 			return fmt.Errorf("--image must be specified")
 		}
+                ctx, cancel := context.WithCancel(command.Context())
+                defer cancel()
+                ctx = metadata.AppendToOutgoingContext(ctx, "username","cisco", "password", "cisco123")
 
-		id, err := containerzClient.StartContainer(command.Context(), image, tag, cntCommand, instance, client.WithEnv(envs), client.WithPorts(ports), client.WithVolumes(volumes))
+		id, err := containerzClient.StartContainer(ctx, image, tag, cntCommand, instance, client.WithEnv(envs), client.WithPorts(ports), client.WithVolumes(volumes))
 		if err != nil {
 			return err
 		}

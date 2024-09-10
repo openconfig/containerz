@@ -68,7 +68,9 @@ func (c *Client) StartContainer(ctx context.Context, image string, tag string, c
 	case *cpb.StartContainerResponse_StartOk:
 		return resp.GetStartOk().GetInstanceName(), nil
 	case *cpb.StartContainerResponse_StartError:
-		return "", status.Errorf(codes.Internal, "failed to start container: %s", resp.GetStartError().GetDetails())
+                errorCode := resp.GetStartError().GetErrorCode().String()
+                return "", status.Errorf(codes.Internal, "Failed to start container: %s (Error Code: %s)", resp.GetStartError().GetDetails(), errorCode)
+		//return "", status.Errorf(resp.GetStartError().GetErrorCode(), "failed to start container: %s", resp.GetStartError().GetDetails())
 	default:
 		return "", status.Error(codes.Unknown, "unknown container state")
 	}

@@ -16,16 +16,26 @@ package cmd
 
 import (
 	"fmt"
+        "context"
+        "google.golang.org/grpc/metadata"
 
 	"github.com/spf13/cobra"
 	"github.com/openconfig/containerz/client"
 )
 
+var (
+	imgForce bool
+)
+
+
 var removeCmd = &cobra.Command{
 	Use:   "remove",
 	Short: "Removes the image from the containerz server",
 	RunE: func(command *cobra.Command, args []string) error {
-		err := containerzClient.RemoveContainer(command.Context(), image, tag)
+                ctx, cancel := context.WithCancel(command.Context())
+                defer cancel()
+                ctx = metadata.AppendToOutgoingContext(ctx, "username","cisco", "password", "cisco123")
+		err := containerzClient.RemoveContainer(ctx, image, tag,imgForce)
 		switch err {
 		case nil:
 			fmt.Printf("Image %s:%s has been removed.\n", image, tag)
@@ -42,4 +52,5 @@ var removeCmd = &cobra.Command{
 
 func init() {
 	imageCmd.AddCommand(removeCmd)
+	removeCmd.PersistentFlags().BoolVar(&imgForce, "force", false, "Forcefully stop the container.")
 }

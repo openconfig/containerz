@@ -16,6 +16,8 @@ package cmd
 
 import (
 	"fmt"
+        "context"
+        "google.golang.org/grpc/metadata"
 
 	"github.com/spf13/cobra"
 )
@@ -32,7 +34,10 @@ var cntLogCmd = &cobra.Command{
 			fmt.Println("--instance must be provided")
 		}
 
-		ch, err := containerzClient.Logs(command.Context(), instance, follow)
+                ctx, cancel := context.WithCancel(command.Context())
+                defer cancel()
+                ctx = metadata.AppendToOutgoingContext(ctx, "username","cisco", "password", "cisco123")
+		ch, err := containerzClient.Logs(ctx, instance, follow)
 		if err != nil {
 			return err
 		}

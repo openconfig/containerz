@@ -23,24 +23,23 @@ import (
 	cpb "github.com/openconfig/gnoi/containerz"
 )
 
-// ListContainer implements the client logic for listing the existing containers on the target system.
-func (c *Client) ListContainer(ctx context.Context, all bool, limit int32, filter []string) (<-chan *ContainerInfo, error) {
-       	filters, err := filters(filter)
+// ListImage implements the client logic for listing the existing containers on the target system.
+func (c *Client) ListImage(ctx context.Context, limit int32, filter []string) (<-chan *ImageInfo, error) {
+       	imgFilters, err := imgFilters(filter)
 	if err != nil {
 		return nil, err
 	} 
-	req := &cpb.ListContainerRequest{
-		All:    all,
+	req := &cpb.ListImageRequest{
 		Limit:  limit,
-		Filter: filters,
+		Filter: imgFilters,
 	}
 
-	dcli, err := c.cli.ListContainer(ctx, req)
+	dcli, err := c.cli.ListImage(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 
-	ch := make(chan *ContainerInfo, 100)
+	ch := make(chan *ImageInfo, 100)
 	go func() {
 		defer dcli.CloseSend()
 		defer close(ch)
@@ -50,35 +49,35 @@ func (c *Client) ListContainer(ctx context.Context, all bool, limit int32, filte
 				if err == io.EOF {
 					return
 				}
-				nonBlockingChannelSend(ctx, ch, &ContainerInfo{
+				nonBlockingChannelSend(ctx, ch, &ImageInfo{
 					Error: err,
 				})
 				return
 			}
 
-			if nonBlockingChannelSend(ctx, ch, &ContainerInfo{
+			if nonBlockingChannelSend(ctx, ch, &ImageInfo{
 				ID:        msg.GetId(),
-				Name:      msg.GetName(),
 				ImageName: msg.GetImageName(),
-				State:     msg.GetStatus().String(),
+				Tag:     msg.GetTag(),
 			}) {
 				klog.Warningf("operation cancelled; returning")
 				return
 			}
+
 		}
 	}()
 
 	return ch, nil
 }
-func filters (filters []string) ([]*cpb.ListContainerRequest_Filter, error) {
-	mapping := make([]*cpb.ListContainerRequest_Filter, 0, len(filters))
+func imgFilters (filters []string) ([]*cpb.ListImageRequest_Filter, error) {
+	mapping := make([]*cpb.ListImageRequest_Filter, 0, len(filters))
 	for _, f := range filters {
 		parts := strings.Split(f, "=")
 		if len(parts) != 2 {
 			return nil, fmt.Errorf("invalid filter: %s", f)
 		}
                 values := strings.Split(parts[1], ",")
-		mapping = append(mapping, &cpb.ListContainerRequest_Filter{
+		mapping = append(mapping, &cpb.ListImageRequest_Filter{
 			Key:   parts[0],
 			Value: values,
 		})
