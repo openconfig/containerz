@@ -17,38 +17,41 @@ package server
 import (
 	"context"
 
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-	"github.com/openconfig/containerz/containers"
 	cpb "github.com/openconfig/gnoi/containerz"
 )
 
-// RemoveContainer deletes containers that match the spec defined in the request. If
-// the specified container does not exist, this operation is a no-op.
+// RemoveContainer deletes images that match the spec defined in the
+// request. If the image is associated to a running container then an error
+// is returned. If the specified container image does not exist, this
+// operation is a no-op.
+//
+// Deprecated - use RemoveImage instead.
 func (s *Server) RemoveContainer(ctx context.Context, request *cpb.RemoveContainerRequest) (*cpb.RemoveContainerResponse, error) {
-	// TODO(alshabib: add force to proto)
-	if err := s.mgr.ContainerRemove(ctx, request.GetName(), request.GetTag(), options.Force()); err != nil {
-		stErr, ok := status.FromError(err)
-		if !ok {
-			return nil, status.Errorf(codes.Internal, "unknown containerz state: %v", err)
-		}
+	req := &cpb.RemoveImageRequest{
+		Name:  request.GetName(),
+		Tag:   request.GetTag(),
+		Force: request.GetForce(),
+	}
 
-		switch stErr.Code() {
-		case codes.NotFound:
-			return &cpb.RemoveContainerResponse{
-				Code:   cpb.RemoveContainerResponse_NOT_FOUND,
-				Detail: stErr.Message(),
-			}, nil
-		case codes.Unavailable:
-			return &cpb.RemoveContainerResponse{
-				Code:   cpb.RemoveContainerResponse_RUNNING,
-				Detail: stErr.Message(),
-			}, nil
-		}
+	imgResp, err := s.RemoveImage(ctx, req)
+	if err != nil {
 		return nil, err
 	}
 
+	var code cpb.RemoveContainerResponse_Code
+	switch imgResp.GetCode() {
+	case cpb.RemoveImageResponse_SUCCESS:
+		code = cpb.RemoveContainerResponse_SUCCESS
+	case cpb.RemoveImageResponse_NOT_FOUND:
+		code = cpb.RemoveContainerResponse_NOT_FOUND
+	case cpb.RemoveImageResponse_RUNNING:
+		code = cpb.RemoveContainerResponse_RUNNING
+	default:
+		code = cpb.RemoveContainerResponse_UNSPECIFIED
+	}
+
 	return &cpb.RemoveContainerResponse{
-		Code: cpb.RemoveContainerResponse_SUCCESS,
+		Code:   code,
+		Detail: imgResp.GetDetail(),
 	}, nil
 }

@@ -39,19 +39,23 @@ func (f *fakeStartingContainerzServer) StartContainer(ctx context.Context, req *
 
 func TestStart(t *testing.T) {
 	tests := []struct {
-		name       string
-		inImage    string
-		inTag      string
-		inCmd      string
-		inInstance string
-		inPorts    []string
-		inEnvs     []string
-		inVols     []string
-		inMsg      *cpb.StartContainerResponse
-
-		wantMsg *cpb.StartContainerRequest
-		wantID  string
-		wantErr error
+		name            string
+		inImage         string
+		inTag           string
+		inCmd           string
+		inInstance      string
+		inPorts         []string
+		inEnvs          []string
+		inVols          []string
+		inMsg           *cpb.StartContainerResponse
+		inNetwork       string
+		inRestartPolicy string
+		inRunAs         string
+		inCapAdd        []string
+		inCapRemove     []string
+		wantMsg         *cpb.StartContainerRequest
+		wantID          string
+		wantErr         error
 	}{
 		{
 			name:       "simple",
@@ -185,6 +189,175 @@ func TestStart(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:       "simple-with-network",
+			inImage:    "some-image",
+			inTag:      "some-tag",
+			inInstance: "some-instance",
+			inCmd:      "some-cmd",
+			inNetwork:  "some-network",
+			inMsg: &cpb.StartContainerResponse{
+				Response: &cpb.StartContainerResponse_StartOk{
+					StartOk: &cpb.StartOK{
+						InstanceName: "some-instance",
+					},
+				},
+			},
+			wantID: "some-instance",
+			wantMsg: &cpb.StartContainerRequest{
+				ImageName:    "some-image",
+				Tag:          "some-tag",
+				Cmd:          "some-cmd",
+				InstanceName: "some-instance",
+				Network:      "some-network",
+			},
+		},
+		{
+			name:       "simple-with-runas-only-user",
+			inImage:    "some-image",
+			inTag:      "some-tag",
+			inInstance: "some-instance",
+			inCmd:      "some-cmd",
+			inRunAs:    "my-user",
+			inMsg: &cpb.StartContainerResponse{
+				Response: &cpb.StartContainerResponse_StartOk{
+					StartOk: &cpb.StartOK{
+						InstanceName: "some-instance",
+					},
+				},
+			},
+			wantID: "some-instance",
+			wantMsg: &cpb.StartContainerRequest{
+				ImageName:    "some-image",
+				Tag:          "some-tag",
+				Cmd:          "some-cmd",
+				InstanceName: "some-instance",
+				RunAs: &cpb.StartContainerRequest_RunAs{
+					User: "my-user",
+				},
+			},
+		},
+		{
+			name:       "simple-with-runas-with-group",
+			inImage:    "some-image",
+			inTag:      "some-tag",
+			inInstance: "some-instance",
+			inCmd:      "some-cmd",
+			inRunAs:    "my-user:my-group",
+			inMsg: &cpb.StartContainerResponse{
+				Response: &cpb.StartContainerResponse_StartOk{
+					StartOk: &cpb.StartOK{
+						InstanceName: "some-instance",
+					},
+				},
+			},
+			wantID: "some-instance",
+			wantMsg: &cpb.StartContainerRequest{
+				ImageName:    "some-image",
+				Tag:          "some-tag",
+				Cmd:          "some-cmd",
+				InstanceName: "some-instance",
+				RunAs: &cpb.StartContainerRequest_RunAs{
+					User:  "my-user",
+					Group: "my-group",
+				},
+			},
+		},
+		{
+			name:        "simple-with-capabilities",
+			inImage:     "some-image",
+			inTag:       "some-tag",
+			inInstance:  "some-instance",
+			inCmd:       "some-cmd",
+			inCapAdd:    []string{"cap1", "cap2"},
+			inCapRemove: []string{"cap3", "cap4"},
+			inMsg: &cpb.StartContainerResponse{
+				Response: &cpb.StartContainerResponse_StartOk{
+					StartOk: &cpb.StartOK{
+						InstanceName: "some-instance",
+					},
+				},
+			},
+			wantID: "some-instance",
+			wantMsg: &cpb.StartContainerRequest{
+				ImageName:    "some-image",
+				Tag:          "some-tag",
+				Cmd:          "some-cmd",
+				InstanceName: "some-instance",
+				Cap: &cpb.StartContainerRequest_Capabilities{
+					Add:    []string{"cap1", "cap2"},
+					Remove: []string{"cap3", "cap4"},
+				},
+			},
+		},
+		{
+			name:            "simple-with-policy-no-attempts",
+			inImage:         "some-image",
+			inTag:           "some-tag",
+			inInstance:      "some-instance",
+			inCmd:           "some-cmd",
+			inRestartPolicy: "always",
+			inMsg: &cpb.StartContainerResponse{
+				Response: &cpb.StartContainerResponse_StartOk{
+					StartOk: &cpb.StartOK{
+						InstanceName: "some-instance",
+					},
+				},
+			},
+			wantID: "some-instance",
+			wantMsg: &cpb.StartContainerRequest{
+				ImageName:    "some-image",
+				Tag:          "some-tag",
+				Cmd:          "some-cmd",
+				InstanceName: "some-instance",
+				Restart: &cpb.StartContainerRequest_Restart{
+					Policy:   cpb.StartContainerRequest_Restart_ALWAYS,
+					Attempts: 0,
+				},
+			},
+		},
+		{
+			name:            "simple-with-policy-with-attempts",
+			inImage:         "some-image",
+			inTag:           "some-tag",
+			inInstance:      "some-instance",
+			inCmd:           "some-cmd",
+			inRestartPolicy: "always:3",
+			inMsg: &cpb.StartContainerResponse{
+				Response: &cpb.StartContainerResponse_StartOk{
+					StartOk: &cpb.StartOK{
+						InstanceName: "some-instance",
+					},
+				},
+			},
+			wantID: "some-instance",
+			wantMsg: &cpb.StartContainerRequest{
+				ImageName:    "some-image",
+				Tag:          "some-tag",
+				Cmd:          "some-cmd",
+				InstanceName: "some-instance",
+				Restart: &cpb.StartContainerRequest_Restart{
+					Policy:   cpb.StartContainerRequest_Restart_ALWAYS,
+					Attempts: 3,
+				},
+			},
+		},
+		{
+			name:            "simple-with-unrecognized-policy",
+			inImage:         "some-image",
+			inTag:           "some-tag",
+			inInstance:      "some-instance",
+			inCmd:           "some-cmd",
+			inRestartPolicy: "my-policy",
+			inMsg: &cpb.StartContainerResponse{
+				Response: &cpb.StartContainerResponse_StartOk{
+					StartOk: &cpb.StartOK{
+						InstanceName: "some-instance",
+					},
+				},
+			},
+			wantErr: status.Error(codes.FailedPrecondition, "restart policy `my-policy` is none of always, on-failure, unless-stopped, none"),
+		},
 	}
 
 	ctx := context.Background()
@@ -200,7 +373,16 @@ func TestStart(t *testing.T) {
 				t.Fatalf("NewClient(%v) returned an unexpected error: %v", addr, err)
 			}
 
-			gotID, err := cli.StartContainer(ctx, tc.inImage, tc.inTag, tc.inCmd, tc.inInstance, WithPorts(tc.inPorts), WithEnv(tc.inEnvs), WithVolumes(tc.inVols))
+			opts := []StartOption{
+				WithPorts(tc.inPorts),
+				WithEnv(tc.inEnvs),
+				WithVolumes(tc.inVols),
+				WithNetwork(tc.inNetwork),
+				WithRestartPolicy(tc.inRestartPolicy),
+				WithRunAs(tc.inRunAs),
+				WithCapabilities(tc.inCapAdd, tc.inCapRemove),
+			}
+			gotID, err := cli.StartContainer(ctx, tc.inImage, tc.inTag, tc.inCmd, tc.inInstance, opts...)
 			if err != nil {
 				if tc.wantErr == nil {
 					t.Fatalf("Start(%q, %q, %q, %q, %v, %v) returned an unexpected error: %v", tc.inImage, tc.inTag, tc.inCmd, tc.inInstance, tc.inPorts, tc.inEnvs, err)

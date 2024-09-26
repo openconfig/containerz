@@ -16,12 +16,9 @@ package client
 
 import (
 	"context"
-	"errors"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-
-	cpb "github.com/openconfig/gnoi/containerz"
 )
 
 var (
@@ -36,23 +33,12 @@ var (
 // RemoveContainer removes an image from the target system. It returns nil upon success. Otherwise it
 // returns an error indicating whether the image was not found or is associated to running
 // container.
-func (c *Client) RemoveContainer(ctx context.Context, image string, tag string) error {
-	resp, err := c.cli.RemoveContainer(ctx, &cpb.RemoveContainerRequest{
-		Name: image,
-		Tag:  tag,
-	})
-	if err != nil {
-		return err
+//
+// Deprecated -- Use ImageRemove instead.
+func (c *Client) RemoveContainer(ctx context.Context, image string, tag string, forceopt ...bool) error {
+	force := false
+	if len(forceopt) > 0 {
+		force = forceopt[0]
 	}
-
-	switch resp.GetCode() {
-	case cpb.RemoveContainerResponse_SUCCESS:
-		return nil
-	case cpb.RemoveContainerResponse_NOT_FOUND:
-		return ErrNotFound
-	case cpb.RemoveContainerResponse_RUNNING:
-		return ErrRunning
-	default:
-		return errors.New("unknwon error occurred")
-	}
+	return c.RemoveImage(ctx, image, tag, force)
 }

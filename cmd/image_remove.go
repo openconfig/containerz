@@ -21,11 +21,14 @@ import (
 	"github.com/openconfig/containerz/client"
 )
 
+var (
+	forceImgRemoval bool
+)
 var removeCmd = &cobra.Command{
 	Use:   "remove",
 	Short: "Removes the image from the containerz server",
 	RunE: func(command *cobra.Command, args []string) error {
-		err := containerzClient.RemoveContainer(command.Context(), image, tag)
+		err := containerzClient.RemoveImage(command.Context(), image, tag, forceImgRemoval)
 		switch err {
 		case nil:
 			fmt.Printf("Image %s:%s has been removed.\n", image, tag)
@@ -42,4 +45,5 @@ var removeCmd = &cobra.Command{
 
 func init() {
 	imageCmd.AddCommand(removeCmd)
+	removeCmd.PersistentFlags().BoolVarP(&forceImgRemoval, "force", "f", false, "Force Image removal.")
 }

@@ -20,10 +20,12 @@ import (
 	"os"
 
 	"github.com/openconfig/containerz/cmd"
+
 )
 
 func main() {
-	if err := cmd.RootCmd.ExecuteContext(context.Background()); err != nil {
+	ctx := context.Background()
+	if err := cmd.RootCmd.ExecuteContext(ctx); err != nil {
 		// no need to report error; cobra already did
 		os.Exit(1)
 	}

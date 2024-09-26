@@ -60,12 +60,12 @@ func (j *Vacuum) vacuum(ctx context.Context) {
 		case <-tick.C:
 			cntReport, err := j.cli.ContainersPrune(ctx, filters.NewArgs())
 			if err != nil {
-				klog.Error("unable to vacuum containers %v", err)
+				klog.Errorf("unable to vacuum containers %v", err)
 			}
 
 			imgReport, err := j.cli.ImagesPrune(ctx, filters.NewArgs())
 			if err != nil {
-				klog.Error("unable to vacuum images %v", err)
+				klog.Errorf("unable to vacuum images %v", err)
 			}
 
 			klog.Infof("Removed %d containers reclaiming %d bytes", len(cntReport.ContainersDeleted), cntReport.SpaceReclaimed)

@@ -29,34 +29,9 @@ import (
 // StartContainer starts a container with the provided configuration and returns its instance name if the
 // operation succeeded or an error otherwise.
 func (c *Client) StartContainer(ctx context.Context, image string, tag string, cmd string, instance string, opts ...StartOption) (string, error) {
-	optionz := &startOptions{}
-	for _, opt := range opts {
-		opt(optionz)
-	}
-
-	portMappings, err := ports(optionz.ports)
+	req, err := startContainerRequestWithOptions(ctx, image, tag, cmd, instance, opts...)
 	if err != nil {
 		return "", err
-	}
-
-	envMappings, err := envs(optionz.envs)
-	if err != nil {
-		return "", err
-	}
-
-	volumeMappings, err := volumes(optionz.volumes)
-	if err != nil {
-		return "", err
-	}
-
-	req := &cpb.StartContainerRequest{
-		ImageName:    image,
-		Tag:          tag,
-		Cmd:          cmd,
-		Ports:        portMappings,
-		Environment:  envMappings,
-		InstanceName: instance,
-		Volumes:      volumeMappings,
 	}
 
 	resp, err := c.cli.StartContainer(ctx, req)
@@ -72,6 +47,57 @@ func (c *Client) StartContainer(ctx context.Context, image string, tag string, c
 	default:
 		return "", status.Error(codes.Unknown, "unknown container state")
 	}
+}
+
+func startContainerRequestWithOptions(ctx context.Context, image string, tag string, cmd string, instance string, opts ...StartOption) (*cpb.StartContainerRequest, error) {
+	optionz := &startOptions{}
+	for _, opt := range opts {
+		opt(optionz)
+	}
+
+	portMappings, err := ports(optionz.ports)
+	if err != nil {
+		return nil, err
+	}
+
+	envMappings, err := envs(optionz.envs)
+	if err != nil {
+		return nil, err
+	}
+
+	volumeMappings, err := volumes(optionz.volumes)
+	if err != nil {
+		return nil, err
+	}
+
+	capabilities, err := capabilities(optionz.capAdd, optionz.capRemove)
+	if err != nil {
+		return nil, err
+	}
+
+	runAs, err := runAs(optionz.runAs)
+	if err != nil {
+		return nil, err
+	}
+
+	restartPolicy, err := restart(optionz.policy)
+	if err != nil {
+		return nil, err
+	}
+
+	return &cpb.StartContainerRequest{
+		ImageName:    image,
+		Tag:          tag,
+		Cmd:          cmd,
+		Ports:        portMappings,
+		Environment:  envMappings,
+		InstanceName: instance,
+		Volumes:      volumeMappings,
+		Network:      optionz.network,
+		Cap:          capabilities,
+		RunAs:        runAs,
+		Restart:      restartPolicy,
+	}, nil
 }
 
 func ports(ports []string) ([]*cpb.StartContainerRequest_Port, error) {
@@ -135,4 +161,65 @@ func volumes(volumes []string) ([]*cpb.Volume, error) {
 	}
 
 	return vols, nil
+}
+
+func runAs(runAs string) (*cpb.StartContainerRequest_RunAs, error) {
+	if runAs == "" {
+		return nil, nil
+	}
+	parts := strings.SplitN(runAs, ":", 2)
+	switch len(parts) {
+	case 1:
+		return &cpb.StartContainerRequest_RunAs{
+			User: parts[0],
+		}, nil
+	case 2:
+		return &cpb.StartContainerRequest_RunAs{
+			User:  parts[0],
+			Group: parts[1],
+		}, nil
+	default:
+		return nil, fmt.Errorf("runAs definition %s is invalid", runAs)
+	}
+}
+
+func restart(policy string) (*cpb.StartContainerRequest_Restart, error) {
+	if policy == "" {
+		return nil, nil
+	}
+	parts := strings.SplitN(policy, ":", 2)
+	var attempts int
+	var err error
+	if len(parts) == 2 {
+		attempts, err = strconv.Atoi(parts[1])
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse attempts in restart policy: %v", err)
+		}
+	}
+
+	var polType cpb.StartContainerRequest_Restart_Policy
+	switch strings.ToLower(parts[0]) {
+	case "always":
+		polType = cpb.StartContainerRequest_Restart_ALWAYS
+	case "on-failure":
+		polType = cpb.StartContainerRequest_Restart_ON_FAILURE
+	case "unless-stopped":
+		polType = cpb.StartContainerRequest_Restart_UNLESS_STOPPED
+	case "none":
+		polType = cpb.StartContainerRequest_Restart_NONE
+	default:
+		return nil, status.Errorf(codes.FailedPrecondition, "restart policy `%s` is none of always, on-failure, unless-stopped, none", parts[0])
+	}
+
+	return &cpb.StartContainerRequest_Restart{
+		Policy:   polType,
+		Attempts: uint32(attempts),
+	}, nil
+}
+
+func capabilities(capAdd, capRemove []string) (*cpb.StartContainerRequest_Capabilities, error) {
+	return &cpb.StartContainerRequest_Capabilities{
+		Add:    capAdd,
+		Remove: capRemove,
+	}, nil
 }

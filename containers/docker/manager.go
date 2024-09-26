@@ -4,6 +4,7 @@ package docker
 import (
 	"context"
 	"io"
+	"sync"
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
@@ -18,6 +19,7 @@ import (
 type docker interface {
 	Close() error
 	ContainerCreate(ctx context.Context, config *container.Config, hostConfig *container.HostConfig, networkingConfig *network.NetworkingConfig, platform *ocispec.Platform, containerName string) (container.CreateResponse, error)
+	ContainerInspect(ctx context.Context, container string) (types.ContainerJSON, error)
 	ContainerList(ctx context.Context, options types.ContainerListOptions) ([]types.Container, error)
 	ContainerLogs(ctx context.Context, container string, options types.ContainerLogsOptions) (io.ReadCloser, error)
 	ContainerRemove(ctx context.Context, container string, options types.ContainerRemoveOptions) error
@@ -39,15 +41,18 @@ type docker interface {
 
 // Manager is a docker container orchestration manager.
 type Manager struct {
-	client  docker
-	janitor *Vacuum
+	client           docker
+	janitor          *Vacuum
+	updateInProgress map[string]struct{}
+	mu               sync.Mutex
 }
 
 // New builds a new docker manager given a docker client.
 func New(cli docker) *Manager {
 	return &Manager{
-		client:  cli,
-		janitor: NewJanitor(cli),
+		client:           cli,
+		janitor:          NewJanitor(cli),
+		updateInProgress: make(map[string]struct{}),
 	}
 }
 

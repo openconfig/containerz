@@ -13,11 +13,12 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"github.com/openconfig/containerz/containers"
+
+	cpb "github.com/openconfig/gnoi/containerz"
 )
 
 // ContainerStart starts a container provided the image exists and that the ports requested are not
 // currently in use.
-// TODO(alshabib) consider adding restart policy to containerz proto
 func (m *Manager) ContainerStart(ctx context.Context, image, tag, cmd string, opts ...options.Option) (string, error) {
 	optionz := options.ApplyOptions(opts...)
 
@@ -57,7 +58,7 @@ func (m *Manager) ContainerStart(ctx context.Context, image, tag, cmd string, op
 	// TODO(alshabib): add resource support (i.e. CPU and memory quotas.)
 	hostConfig := &container.HostConfig{
 		Mounts:      mounts,
-		NetworkMode: "host", // TODO(alshabib): make this configurable.
+		NetworkMode: "host",
 		AutoRemove:  true,
 	}
 	config := &container.Config{
@@ -101,6 +102,55 @@ func (m *Manager) ContainerStart(ctx context.Context, image, tag, cmd string, op
 		for envName, envVal := range optionz.EnvMapping {
 			config.Env = append(config.Env, fmt.Sprintf("%s=%s", envName, envVal))
 		}
+	}
+
+	// Handle Network
+	if optionz.Network != "" {
+		hostConfig.NetworkMode = container.NetworkMode(optionz.Network)
+	}
+
+	// Handle Capabilities
+	if optionz.Capabilities != nil {
+		caps := optionz.Capabilities.(*cpb.StartContainerRequest_Capabilities)
+		hostConfig.CapAdd = caps.GetAdd()
+		hostConfig.CapDrop = caps.GetRemove()
+	}
+
+	// Handle RestartPolicy
+	if optionz.RestartPolicy != nil {
+		restartPolicy := optionz.RestartPolicy.(*cpb.StartContainerRequest_Restart)
+
+		var policy string
+		switch restartPolicy.GetPolicy() {
+		case cpb.StartContainerRequest_Restart_ALWAYS:
+			policy = "always"
+		case cpb.StartContainerRequest_Restart_ON_FAILURE:
+			policy = "on-failure"
+		case cpb.StartContainerRequest_Restart_NONE:
+			policy = "no"
+		case cpb.StartContainerRequest_Restart_UNLESS_STOPPED:
+			policy = "unless-stopped"
+		default:
+			return "", status.Errorf(codes.FailedPrecondition, "unkown restart policy '%v'", restartPolicy.GetPolicy())
+		}
+
+		hostConfig.RestartPolicy = container.RestartPolicy{
+			Name:              policy,
+			MaximumRetryCount: int(restartPolicy.GetAttempts()),
+		}
+	}
+
+	// Handle RunAs
+	if optionz.RunAs != nil {
+		runAs := optionz.RunAs.(*cpb.StartContainerRequest_RunAs)
+		user := runAs.GetUser()
+		if user == "" {
+			return "", status.Errorf(codes.FailedPrecondition, "user can not be empty in RunAs option")
+		}
+		if runAs.GetGroup() != "" {
+			user = fmt.Sprintf("%s:%s", user, runAs.GetGroup())
+		}
+		config.User = user
 	}
 
 	resp, err := m.client.ContainerCreate(ctx, config, hostConfig, &network.NetworkingConfig{}, nil, optionz.InstanceName)

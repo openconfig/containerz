@@ -173,6 +173,104 @@ func TestContainerStart(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "network",
+			inReq: &cpb.StartContainerRequest{
+				ImageName: "some-image",
+				Tag:       "some-tag",
+				Cmd:       "some-cmd",
+				Network:   "some-network",
+			},
+			wantResp: &cpb.StartContainerResponse{
+				Response: &cpb.StartContainerResponse_StartOk{
+					StartOk: &cpb.StartOK{},
+				},
+			},
+			wantState: &fakeContainerManager{
+				Image:   "some-image",
+				Tag:     "some-tag",
+				Cmd:     "some-cmd",
+				Network: "some-network",
+			},
+		},
+		{
+			name: "capabilities",
+			inReq: &cpb.StartContainerRequest{
+				ImageName: "some-image",
+				Tag:       "some-tag",
+				Cmd:       "some-cmd",
+				Cap: &cpb.StartContainerRequest_Capabilities{
+					Add:    []string{"cap1", "cap2"},
+					Remove: []string{"cap3", "cap4"},
+				},
+			},
+			wantResp: &cpb.StartContainerResponse{
+				Response: &cpb.StartContainerResponse_StartOk{
+					StartOk: &cpb.StartOK{},
+				},
+			},
+			wantState: &fakeContainerManager{
+				Image: "some-image",
+				Tag:   "some-tag",
+				Cmd:   "some-cmd",
+				Capabilities: &cpb.StartContainerRequest_Capabilities{
+					Add:    []string{"cap1", "cap2"},
+					Remove: []string{"cap3", "cap4"},
+				},
+			},
+		},
+		{
+			name: "restart-policy",
+			inReq: &cpb.StartContainerRequest{
+				ImageName: "some-image",
+				Tag:       "some-tag",
+				Cmd:       "some-cmd",
+				Restart: &cpb.StartContainerRequest_Restart{
+					Policy:   cpb.StartContainerRequest_Restart_ON_FAILURE,
+					Attempts: 3,
+				},
+			},
+			wantResp: &cpb.StartContainerResponse{
+				Response: &cpb.StartContainerResponse_StartOk{
+					StartOk: &cpb.StartOK{},
+				},
+			},
+			wantState: &fakeContainerManager{
+				Image: "some-image",
+				Tag:   "some-tag",
+				Cmd:   "some-cmd",
+				RestartPolicy: &cpb.StartContainerRequest_Restart{
+					Policy:   cpb.StartContainerRequest_Restart_ON_FAILURE,
+					Attempts: 3,
+				},
+			},
+		},
+		{
+			name: "run-as",
+			inReq: &cpb.StartContainerRequest{
+				ImageName: "some-image",
+				Tag:       "some-tag",
+				Cmd:       "some-cmd",
+				RunAs: &cpb.StartContainerRequest_RunAs{
+					User:  "some-user",
+					Group: "some-group",
+				},
+			},
+			wantResp: &cpb.StartContainerResponse{
+				Response: &cpb.StartContainerResponse_StartOk{
+					StartOk: &cpb.StartOK{},
+				},
+			},
+			wantState: &fakeContainerManager{
+				Image: "some-image",
+				Tag:   "some-tag",
+				Cmd:   "some-cmd",
+				RunAs: &cpb.StartContainerRequest_RunAs{
+					User:  "some-user",
+					Group: "some-group",
+				},
+			},
+		},
 	}
 
 	for _, tc := range tests {

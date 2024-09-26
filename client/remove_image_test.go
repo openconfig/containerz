@@ -25,7 +25,19 @@ import (
 	cpb "github.com/openconfig/gnoi/containerz"
 )
 
-func TestRemove(t *testing.T) {
+type fakeImageRemovingContainerzServer struct {
+	fakeContainerzServer
+
+	receivedMsg *cpb.RemoveImageRequest
+	sendMsg     *cpb.RemoveImageResponse
+}
+
+func (f *fakeImageRemovingContainerzServer) RemoveImage(_ context.Context, req *cpb.RemoveImageRequest) (*cpb.RemoveImageResponse, error) {
+	f.receivedMsg = req
+	return f.sendMsg, nil
+}
+
+func TestImageRemove(t *testing.T) {
 	tests := []struct {
 		name    string
 		inImage string
@@ -106,19 +118,19 @@ func TestRemove(t *testing.T) {
 				t.Fatalf("NewClient(%v) returned an unexpected error: %v", addr, err)
 			}
 
-			err = cli.RemoveContainer(ctx, tc.inImage, tc.inTag, tc.inForce)
+			err = cli.RemoveImage(ctx, tc.inImage, tc.inTag, tc.inForce)
 			if err != nil {
 				if tc.wantErr == nil {
-					t.Fatalf("Remove(%q, %q, %t) returned an unexpected error: %v", tc.inImage, tc.inTag, tc.inForce, err)
+					t.Fatalf("RemoveImage(%q, %q, %t) returned an unexpected error: %v", tc.inImage, tc.inTag, tc.inForce, err)
 				}
 			}
 
 			if diff := cmp.Diff(tc.wantMsg, fcm.receivedMsg, protocmp.Transform()); diff != "" {
-				t.Errorf("Remove(%q, %q, %t) returned diff (-got, +want):\n%s", tc.inImage, tc.inTag, tc.inForce, diff)
+				t.Errorf("RemoveImage(%q, %q, %t) returned diff (-got, +want):\n%s", tc.inImage, tc.inTag, tc.inForce, diff)
 			}
 
 			if diff := cmp.Diff(err, tc.wantErr, cmpopts.EquateErrors()); diff != "" {
-				t.Errorf("Remove(%q, %q, %t) returned diff (-got, +want):\n%s", tc.inImage, tc.inTag, tc.inForce, diff)
+				t.Errorf("RemoveImage(%q, %q, %t) returned diff (-got, +want):\n%s", tc.inImage, tc.inTag, tc.inForce, diff)
 			}
 		})
 	}

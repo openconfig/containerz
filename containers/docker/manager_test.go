@@ -31,6 +31,10 @@ func (fakeDocker) ContainerCreate(ctx context.Context, config *container.Config,
 	return container.CreateResponse{}, fmt.Errorf("not implemented")
 }
 
+func (fakeDocker) ContainerInspect(ctx context.Context, container string) (types.ContainerJSON, error) {
+	return types.ContainerJSON{}, fmt.Errorf("not implemented")
+}
+
 func (fakeDocker) ContainerLogs(ctx context.Context, container string, options types.ContainerLogsOptions) (io.ReadCloser, error) {
 	return nil, fmt.Errorf("not implemented")
 }
@@ -102,7 +106,12 @@ func TestNew(t *testing.T) {
 
 	got := New(&fakeDocker{})
 
-	if diff := cmp.Diff(want, got, cmp.AllowUnexported(Manager{}), cmpopts.IgnoreFields(Manager{}, "janitor")); diff != "" {
+	opts := []cmp.Option{
+		cmp.AllowUnexported(Manager{}),
+		cmpopts.IgnoreFields(Manager{}, "janitor", "mu"),
+		cmpopts.EquateEmpty(),
+	}
+	if diff := cmp.Diff(want, got, opts...); diff != "" {
 		t.Errorf("New() returned diff (-want +got):\n%s", diff)
 	}
 }

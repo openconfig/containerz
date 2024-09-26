@@ -28,12 +28,25 @@ type fakeStartingDocker struct {
 	Env         []string
 	Volumes     []mount.Mount
 	ContainerID string
+	User        string
+	Policy      container.RestartPolicy
+	CapAdd      []string
+	CapDel      []string
+	Network     string
 }
 
 func (f *fakeStartingDocker) ContainerCreate(ctx context.Context, config *container.Config, hostConfig *container.HostConfig, networkingConfig *network.NetworkingConfig, platform *ocispec.Platform, containerName string) (container.CreateResponse, error) {
 	f.Ports = config.ExposedPorts
 	f.Env = config.Env
 	f.Volumes = hostConfig.Mounts
+	f.User = config.User
+	f.Policy = hostConfig.RestartPolicy
+	f.CapAdd = hostConfig.CapAdd
+	f.CapDel = hostConfig.CapDrop
+	// If this is not out default, remember it.
+	if !hostConfig.NetworkMode.IsHost() {
+		f.Network = string(hostConfig.NetworkMode)
+	}
 
 	return container.CreateResponse{
 		ID: containerName,
@@ -90,6 +103,26 @@ func TestContainerStart(t *testing.T) {
 			wantErr: status.Errorf(codes.AlreadyExists, "instance name my-container already in use"),
 		},
 		{
+			name:    "container-with-empty-user",
+			inImage: "my-image",
+			inTag:   "my-tag",
+			inCmd:   "my-cmd",
+			inSummaries: []types.ImageSummary{
+				types.ImageSummary{
+					RepoTags: []string{"my-image:my-tag"},
+				},
+			},
+			inCnts: []types.Container{
+				types.Container{
+					Names: []string{"/my-container"},
+				},
+			},
+			inOpts: []options.Option{
+				options.WithRunAs(&cpb.StartContainerRequest_RunAs{}),
+			},
+			wantErr: status.Errorf(codes.FailedPrecondition, "user can not be empty in RunAs option"),
+		},
+		{
 			name:    "bad-container-trying-to-reuse-port",
 			inImage: "my-image",
 			inTag:   "my-tag",
@@ -126,6 +159,131 @@ func TestContainerStart(t *testing.T) {
 				Ports:       nat.PortSet{"1/tcp": struct{}{}},
 				ContainerID: "my-container",
 				Volumes:     []mount.Mount{},
+			},
+		},
+		{
+			name:    "container-with-user-but-no-group",
+			inImage: "my-image",
+			inTag:   "my-tag",
+			inCmd:   "my-cmd",
+			inSummaries: []types.ImageSummary{
+				types.ImageSummary{
+					RepoTags: []string{"my-image:my-tag"},
+				},
+			},
+			inCnts: []types.Container{
+				types.Container{
+					Names: []string{"/my-container"},
+				},
+			},
+			inOpts: []options.Option{
+				options.WithRunAs(&cpb.StartContainerRequest_RunAs{
+					User: "my-user",
+				}),
+			},
+			wantState: &fakeStartingDocker{
+				User: "my-user",
+			},
+		},
+		{
+			name:    "container-with-user-and-group",
+			inImage: "my-image",
+			inTag:   "my-tag",
+			inCmd:   "my-cmd",
+			inSummaries: []types.ImageSummary{
+				types.ImageSummary{
+					RepoTags: []string{"my-image:my-tag"},
+				},
+			},
+			inCnts: []types.Container{
+				types.Container{
+					Names: []string{"/my-container"},
+				},
+			},
+			inOpts: []options.Option{
+				options.WithRunAs(&cpb.StartContainerRequest_RunAs{
+					User:  "my-user",
+					Group: "my-group",
+				}),
+			},
+			wantState: &fakeStartingDocker{
+				User: "my-user:my-group",
+			},
+		},
+		{
+			name:    "container-with-retry-policy-and-attempts",
+			inImage: "my-image",
+			inTag:   "my-tag",
+			inCmd:   "my-cmd",
+			inSummaries: []types.ImageSummary{
+				types.ImageSummary{
+					RepoTags: []string{"my-image:my-tag"},
+				},
+			},
+			inCnts: []types.Container{
+				types.Container{
+					Names: []string{"/my-container"},
+				},
+			},
+			inOpts: []options.Option{
+				options.WithRestartPolicy(&cpb.StartContainerRequest_Restart{
+					Policy:   cpb.StartContainerRequest_Restart_ON_FAILURE,
+					Attempts: 3,
+				}),
+			},
+			wantState: &fakeStartingDocker{
+				Policy: container.RestartPolicy{
+					Name:              "on-failure",
+					MaximumRetryCount: 3,
+				},
+			},
+		},
+		{
+			name:    "container-with-capabilities",
+			inImage: "my-image",
+			inTag:   "my-tag",
+			inCmd:   "my-cmd",
+			inSummaries: []types.ImageSummary{
+				types.ImageSummary{
+					RepoTags: []string{"my-image:my-tag"},
+				},
+			},
+			inCnts: []types.Container{
+				types.Container{
+					Names: []string{"/my-container"},
+				},
+			},
+			inOpts: []options.Option{
+				options.WithCapabilities(&cpb.StartContainerRequest_Capabilities{
+					Add:    []string{"my-add-capability"},
+					Remove: []string{"my-remove-capability"},
+				}),
+			},
+			wantState: &fakeStartingDocker{
+				CapAdd: []string{"my-add-capability"},
+				CapDel: []string{"my-remove-capability"},
+			},
+		},
+		{
+			name:    "container-with-network",
+			inImage: "my-image",
+			inTag:   "my-tag",
+			inCmd:   "my-cmd",
+			inSummaries: []types.ImageSummary{
+				types.ImageSummary{
+					RepoTags: []string{"my-image:my-tag"},
+				},
+			},
+			inCnts: []types.Container{
+				types.Container{
+					Names: []string{"/my-container"},
+				},
+			},
+			inOpts: []options.Option{
+				options.WithNetwork("my-network"),
+			},
+			wantState: &fakeStartingDocker{
+				Network: "my-network",
 			},
 		},
 		{
@@ -201,7 +359,7 @@ func TestContainerStart(t *testing.T) {
 			}
 
 			if tc.wantState != nil {
-				if diff := cmp.Diff(tc.wantState, fsd, cmpopts.IgnoreUnexported(fakeStartingDocker{})); diff != "" {
+				if diff := cmp.Diff(tc.wantState, fsd, cmpopts.IgnoreUnexported(fakeStartingDocker{}), cmpopts.EquateEmpty()); diff != "" {
 					t.Errorf("ContainerStart(%q, %q, %q, %+v) returned diff(-want, +got):\n%s", tc.inImage, tc.inTag, tc.inCmd, tc.inOpts, diff)
 				}
 			}

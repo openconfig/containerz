@@ -16,26 +16,16 @@
 package server
 
 import (
-	"bytes"
 	"context"
-	"crypto/ecdsa"
-	"crypto/elliptic"
-	"crypto/rand"
-	"crypto/tls"
-	"crypto/x509"
-	"crypto/x509/pkix"
-	"encoding/pem"
-	"fmt"
-	"math/big"
 	"net"
 	"os"
-	"time"
 
-	options "github.com/openconfig/containerz/containers"
-	cpb "github.com/openconfig/gnoi/containerz"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
 	"k8s.io/klog/v2"
+	"github.com/openconfig/containerz/containers"
+
+	cpb "github.com/openconfig/gnoi/containerz"
+
 )
 
 type containerManager interface {
@@ -77,6 +67,8 @@ type containerManager interface {
 	// - tag (string): the tage to remove
 	//
 	// It returns an error indicating if the remove operation succeeded.
+	//
+	// Deprecated -- Use ImageRemove instead.
 	ContainerRemove(context.Context, string, string, ...options.Option) error
 
 	// ContainerStart starts a container based on the supplied image and tag.
@@ -100,6 +92,19 @@ type containerManager interface {
 	// It returns an error indicating whether the result was successful
 	ContainerStop(context.Context, string, ...options.Option) error
 
+	// ContainerUpdates updates an existing container.
+	//
+	// It takes:
+	// - instance (string): the instance name of the running container.
+	// - image (string): the image to use.
+	// - tag (string): the tag to use.
+	// - cmd (string): a command to run.
+	// - async (bool): whether to run immediately and perform the update asynchronously.
+	//
+	// It returns an error indicating if the start operation succeeded along with the ID of the
+	// started container.
+	ContainerUpdate(ctx context.Context, instance, image, tag, cmd string, async bool, opts ...options.Option) (string, error)
+
 	// ContainerLogs fetches the logs from a container. It can optionally follow the logs
 	// and send them back to the client.
 	//
@@ -109,6 +114,24 @@ type containerManager interface {
 	//
 	// It returns an error indicating whether the operation was successful or not.
 	ContainerLogs(context.Context, string, options.LogStreamer, ...options.Option) error
+
+	// ImageList lists the images on the target.
+	//
+	// It takes:
+	// all (bool): return all containers regardless of state
+	// limit (int32): return limit number of results.
+	//
+	// It returns an error indicating the result of the operation.
+	ImageList(context.Context, bool, int32, options.ListImageStreamer, ...options.Option) error
+
+	// ImageRemove removes an image provided it is not linked to any running containers.
+	//
+	// It takes:
+	// - image (string): the image name to remove.
+	// - tag (string): the tage to remove
+	//
+	// It returns an error indicating if the remove operation succeeded.
+	ImageRemove(context.Context, string, string, ...options.Option) error
 
 	// VolumeList lists volumes on the target.
 	//
@@ -152,12 +175,8 @@ type Server struct {
 
 // New constructs a new containerz server
 func New(mgr containerManager, opts ...Option) *Server {
-	cred, err := selfSignedCert()
-	if err != nil {
-		klog.Fatalf("unable to self sign a cert: %v", err)
-	}
 	s := &Server{
-		grpcServer:  grpc.NewServer(grpc.Creds(cred)),
+		grpcServer:  grpc.NewServer(),
 		tmpLocation: "/tmp",
 		chunkSize:   5e6, // 5mb chunks
 		mgr:         mgr,
@@ -167,7 +186,8 @@ func New(mgr containerManager, opts ...Option) *Server {
 	for _, opt := range opts {
 		opt(s)
 	}
-	
+
+	var err error
 	s.lis, err = net.Listen("tcp", s.addr)
 	if err != nil {
 		klog.Fatalf("server start: %e", err)
@@ -193,69 +213,4 @@ func (s *Server) Halt(ctx context.Context) {
 		s.grpcServer.GracefulStop()
 	}
 	klog.Info("server stopped")
-}
-
-func selfSignedCert() (credentials.TransportCredentials, error) {
-	cert, err := newCert()
-	if err != nil {
-		return nil, err
-	}
-	return credentials.NewTLS(&tls.Config{
-		Certificates: []tls.Certificate{cert},
-		ServerName:   "containerz.openconfig.net",
-	}), nil
-}
-
-func newCert() (tls.Certificate, error) {
-	notBefore := time.Now()
-	notAfter := notBefore.AddDate(0, 0, 7)
-
-	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
-	serialNumber, err := rand.Int(rand.Reader, serialNumberLimit)
-	if err != nil {
-		return tls.Certificate{}, err
-	}
-	template := x509.Certificate{
-		SerialNumber: serialNumber,
-		Subject: pkix.Name{
-			Organization: []string{"OpenConfig"},
-		},
-		DNSNames:  []string{"containerz.openconfig.net"},
-		NotBefore: notBefore,
-		NotAfter:  notAfter,
-
-		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
-		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
-		BasicConstraintsValid: true,
-	}
-
-	priv, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
-	if err != nil {
-		return tls.Certificate{}, err
-	}
-	derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, &priv.PublicKey, priv)
-	if err != nil {
-		return tls.Certificate{}, err
-	}
-
-	certBuf := &bytes.Buffer{}
-	pem.Encode(certBuf, &pem.Block{Type: "CERTIFICATE", Bytes: derBytes})
-	keyBuf := &bytes.Buffer{}
-	pem.Encode(keyBuf, &pem.Block{Type: "EC PRIVATE KEY", Bytes: pemBlockForKey(priv)})
-
-	return tls.X509KeyPair(certBuf.Bytes(), keyBuf.Bytes())
-}
-
-func pemBlockForKey(priv any) []byte {
-	switch k := priv.(type) {
-	case *ecdsa.PrivateKey:
-		b, err := x509.MarshalECPrivateKey(k)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Unable to marshal ECDSA private key: %v", err)
-			os.Exit(2)
-		}
-		return b
-	default:
-		return nil
-	}
 }

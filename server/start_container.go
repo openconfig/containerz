@@ -27,18 +27,7 @@ import (
 // should provide one. If the instance name already exists, the target should
 // return an error.
 func (s *Server) StartContainer(ctx context.Context, request *cpb.StartContainerRequest) (*cpb.StartContainerResponse, error) {
-	opts := []options.Option{}
-
-	if request.GetPorts() != nil {
-		ports := make(map[uint32]uint32, len(request.GetPorts()))
-		for _, port := range request.GetPorts() {
-			ports[port.GetInternal()] = port.GetExternal()
-		}
-		opts = append(opts, options.WithPorts(ports))
-	}
-
-	opts = append(opts, options.WithEnv(request.GetEnvironment()), options.WithInstanceName(request.GetInstanceName()), options.WithVolumes(request.GetVolumes()))
-
+	opts := optionsFromStartContainerRequest(request)
 	resp, err := s.mgr.ContainerStart(ctx, request.GetImageName(), request.GetTag(), request.GetCmd(), opts...)
 	if err != nil {
 		return nil, err
@@ -51,4 +40,30 @@ func (s *Server) StartContainer(ctx context.Context, request *cpb.StartContainer
 			},
 		},
 	}, nil
+}
+
+func optionsFromStartContainerRequest(request *cpb.StartContainerRequest) []options.Option {
+	var opts []options.Option
+	if len(request.GetPorts()) != 0 {
+		ports := make(map[uint32]uint32, len(request.GetPorts()))
+		for _, port := range request.GetPorts() {
+			ports[port.GetInternal()] = port.GetExternal()
+		}
+		opts = append(opts, options.WithPorts(ports))
+	}
+	if request.GetNetwork() != "" {
+		opts = append(opts, options.WithNetwork(request.GetNetwork()))
+	}
+	if request.GetRestart() != nil {
+		opts = append(opts, options.WithRestartPolicy(request.GetRestart()))
+	}
+	if request.GetRunAs() != nil {
+		opts = append(opts, options.WithRunAs(request.GetRunAs()))
+	}
+	if request.GetCap() != nil {
+		opts = append(opts, options.WithCapabilities(request.GetCap()))
+	}
+
+	opts = append(opts, options.WithEnv(request.GetEnvironment()), options.WithInstanceName(request.GetInstanceName()), options.WithVolumes(request.GetVolumes()))
+	return opts
 }

@@ -40,6 +40,15 @@ type ContainerInfo struct {
 	Error error
 }
 
+// ImageInfo contains information about an image on the target system.
+type ImageInfo struct {
+	ID        string
+	ImageName string
+	ImageTag  string
+
+	Error error
+}
+
 // VolumeInfo contains information about a volume on the target system.
 type VolumeInfo struct {
 	Name         string
@@ -59,13 +68,18 @@ type LogMessage struct {
 }
 
 type startOptions struct {
-	envs    []string
-	ports   []string
-	volumes []string
+	envs      []string
+	ports     []string
+	volumes   []string
+	network   string
+	capAdd    []string
+	capRemove []string
+	policy    string
+	runAs     string
 }
 
 type nonBlockTypes interface {
-	*Progress | *ContainerInfo | *LogMessage | *VolumeInfo
+	*Progress | *ContainerInfo | *LogMessage | *VolumeInfo | *ImageInfo
 }
 
 // StartOption is an option passed to a start container call.
@@ -89,6 +103,35 @@ func WithPorts(ports []string) StartOption {
 func WithVolumes(volumes []string) StartOption {
 	return func(opt *startOptions) {
 		opt.volumes = volumes
+	}
+}
+
+// WithNetwork sets the network to be passed to the start operation.
+func WithNetwork(network string) StartOption {
+	return func(opt *startOptions) {
+		opt.network = network
+	}
+}
+
+// WithCapabilities sets the capablities to be passed to the start operation.
+func WithCapabilities(add, remove []string) StartOption {
+	return func(opt *startOptions) {
+		opt.capAdd = add
+		opt.capRemove = remove
+	}
+}
+
+// WithRestartPolicy sets the restart policy to be passed to the start operation.
+func WithRestartPolicy(policy string) StartOption {
+	return func(opt *startOptions) {
+		opt.policy = policy
+	}
+}
+
+// WithRunAs sets the run user and group to be passed to the start operation.
+func WithRunAs(runAs string) StartOption {
+	return func(opt *startOptions) {
+		opt.runAs = runAs
 	}
 }
 

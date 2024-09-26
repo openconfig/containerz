@@ -26,6 +26,11 @@ var (
 	ports                []string
 	envs                 []string
 	volumes              []string
+	network              string
+	runAs                string
+	restartPolicy        string
+	addCaps              []string
+	delCaps              []string
 )
 
 var cntStartCmd = &cobra.Command{
@@ -36,7 +41,30 @@ var cntStartCmd = &cobra.Command{
 			return fmt.Errorf("--image must be specified")
 		}
 
-		id, err := containerzClient.StartContainer(command.Context(), image, tag, cntCommand, instance, client.WithEnv(envs), client.WithPorts(ports), client.WithVolumes(volumes))
+		opts := []client.StartOption{}
+		if len(ports) > 0 {
+			opts = append(opts, client.WithPorts(ports))
+		}
+		if len(envs) > 0 {
+			opts = append(opts, client.WithEnv(envs))
+		}
+		if len(volumes) > 0 {
+			opts = append(opts, client.WithVolumes(volumes))
+		}
+		if network != "" {
+			opts = append(opts, client.WithNetwork(network))
+		}
+		if runAs != "" {
+			opts = append(opts, client.WithRunAs(runAs))
+		}
+		if restartPolicy != "" {
+			opts = append(opts, client.WithRestartPolicy(restartPolicy))
+		}
+		if len(addCaps) > 0 || len(delCaps) > 0 {
+			opts = append(opts, client.WithCapabilities(addCaps, delCaps))
+		}
+
+		id, err := containerzClient.StartContainer(command.Context(), image, tag, cntCommand, instance, opts...)
 		if err != nil {
 			return err
 		}
@@ -51,7 +79,15 @@ func init() {
 
 	cntStartCmd.PersistentFlags().StringVar(&cntCommand, "command", "/bin/bash", "command to run.")
 	cntStartCmd.PersistentFlags().StringVar(&instance, "instance", "", "Name to give to the container.")
+	cntStartCmd.PersistentFlags().StringVar(&network, "network", "", "Network to attach container to.")
+	cntStartCmd.PersistentFlags().StringVar(&runAs, "runas", "", "User to use (format: <user>[:<group>]")
+	cntStartCmd.PersistentFlags().StringVar(&runAs, "restart_policy", "", "Restart policy to use. "+
+		"Valid policies are \"always\", \"on-failure\", \"unless-stopped\", and \"none\". "+
+		"Some policies (e.g., \"on-failure\") optionally accept a maximum number of restart attempts. "+
+		"(format: <policy>[:<max_attempts>])")
 	cntStartCmd.PersistentFlags().StringArrayVar(&ports, "port", []string{}, "Ports to expose (format: <internal_port>:<external_port>")
 	cntStartCmd.PersistentFlags().StringArrayVar(&envs, "env", []string{}, "Environment vars to set (format: <VAR_NAMEt>=<VAR_VALUE>")
 	cntStartCmd.PersistentFlags().StringArrayVarP(&volumes, "volume", "v", []string{}, "Volumes to attach to the container (format: <volume-name>:<mountpoint>[:ro])")
+	cntStartCmd.PersistentFlags().StringArrayVar(&addCaps, "add_caps", []string{}, "Capabilities to add.")
+	cntStartCmd.PersistentFlags().StringArrayVar(&delCaps, "del_caps", []string{}, "Capabilities to remove.")
 }

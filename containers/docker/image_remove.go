@@ -11,9 +11,9 @@ import (
 	"github.com/openconfig/containerz/containers"
 )
 
-// ContainerRemove removes an image provided it is not related to a running container. Otherwise,
+// ImageRemove removes an image provided it is not related to a running container. Otherwise,
 // it returns an error.
-func (m *Manager) ContainerRemove(ctx context.Context, image, tag string, opts ...options.Option) error {
+func (m *Manager) ImageRemove(ctx context.Context, image, tag string, opts ...options.Option) error {
 	option := options.ApplyOptions(opts...)
 
 	images, err := m.client.ImageList(ctx, types.ImageListOptions{

@@ -38,6 +38,11 @@ type ListContainerStreamer interface {
 	Send(msg *cpb.ListContainerResponse) error
 }
 
+// ListImageStreamer is an entity capable of streaming container information.
+type ListImageStreamer interface {
+	Send(msg *cpb.ListImageResponse) error
+}
+
 // ListVolumeStreamer is an entity capable of streaming volume information.
 type ListVolumeStreamer interface {
 	Send(msg *cpb.ListVolumeResponse) error
@@ -118,6 +123,20 @@ type options struct {
 
 	// VolumeLabels are optional labels that should be applied to the volume.
 	VolumeLabels map[string]string
+
+	// Network is an option parameter that should be applied to a container upon startup. It
+	// it represents the network to attach this container to. This could be 'host', 'bridged', or any
+	// other network available in the runtime.
+	Network string
+
+	// Capabilities to be added/removed. Capabilities are first removed then added.
+	Capabilities proto.Message
+
+	// RestartPolicy to be assigned to the container.
+	RestartPolicy proto.Message
+
+	// RunAs provides a user (and potentially group) to run the container as.
+	RunAs proto.Message
 }
 
 // WithTarget sets the target image name and tag option for this pull operation.
@@ -230,6 +249,38 @@ func WithVolumeDriverOpts(opts proto.Message) Option {
 func WithVolumeLabels(labels map[string]string) Option {
 	return func(p *options) {
 		p.VolumeLabels = labels
+	}
+}
+
+// WithNetwork provides the network to attach this container to.
+// Supported by: ContainerStart, ContainerUpdate
+func WithNetwork(network string) Option {
+	return func(p *options) {
+		p.Network = network
+	}
+}
+
+// WithCapabilities provides optional lists of added/removed container capabilities.
+// Supported by: ContainerStart, ContainerUpdate
+func WithCapabilities(opts proto.Message) Option {
+	return func(p *options) {
+		p.Capabilities = opts
+	}
+}
+
+// WithRestartPolicy provides an optional restart policy for the container.
+// Supported by: ContainerStart, ContainerUpdate
+func WithRestartPolicy(opts proto.Message) Option {
+	return func(p *options) {
+		p.RestartPolicy = opts
+	}
+}
+
+// WithRunAs provides an optional user (and potentially group) to run the container as.
+// Supported by: ContainerStart, ContainerUpdate
+func WithRunAs(opts proto.Message) Option {
+	return func(p *options) {
+		p.RunAs = opts
 	}
 }
 

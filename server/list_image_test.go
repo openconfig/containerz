@@ -25,39 +25,37 @@ import (
 	cpb "github.com/openconfig/gnoi/containerz"
 )
 
-func TestListContainer(t *testing.T) {
+func TestListImage(t *testing.T) {
 	tests := []struct {
 		name      string
 		inErr     error
-		inCnts    []*cpb.ListContainerResponse
-		inReq     *cpb.ListContainerRequest
+		inCnts    []*cpb.ListImageResponse
+		inReq     *cpb.ListImageRequest
 		inOpts    []Option
-		wantResp  []*cpb.ListContainerResponse
+		wantResp  []*cpb.ListImageResponse
 		wantState *fakeContainerManager
 	}{
 		{
 			name: "no-containers",
-			inReq: &cpb.ListContainerRequest{
-				All:   true,
+			inReq: &cpb.ListImageRequest{
 				Limit: 10,
 			},
 			wantState: &fakeContainerManager{
 				All:   true,
 				Limit: 10,
 			},
-			wantResp: []*cpb.ListContainerResponse{},
+			wantResp: []*cpb.ListImageResponse{},
 		},
 		{
 			name: "containers",
-			inReq: &cpb.ListContainerRequest{
-				All:   true,
+			inReq: &cpb.ListImageRequest{
 				Limit: 10,
 			},
-			inCnts: []*cpb.ListContainerResponse{
-				&cpb.ListContainerResponse{
+			inCnts: []*cpb.ListImageResponse{
+				&cpb.ListImageResponse{
 					Id: "some-id",
 				},
-				&cpb.ListContainerResponse{
+				&cpb.ListImageResponse{
 					Id: "other-id",
 				},
 			},
@@ -65,11 +63,11 @@ func TestListContainer(t *testing.T) {
 				All:   true,
 				Limit: 10,
 			},
-			wantResp: []*cpb.ListContainerResponse{
-				&cpb.ListContainerResponse{
+			wantResp: []*cpb.ListImageResponse{
+				&cpb.ListImageResponse{
 					Id: "some-id",
 				},
-				&cpb.ListContainerResponse{
+				&cpb.ListImageResponse{
 					Id: "other-id",
 				},
 			},
@@ -80,17 +78,17 @@ func TestListContainer(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx := context.Background()
 			fake := &fakeContainerManager{
-				listCntMsgs: tc.inCnts,
+				listImgMsgs: tc.inCnts,
 			}
 			cli, s := startServerAndReturnClient(ctx, t, fake, tc.inOpts)
 			defer s.Halt(ctx)
 
-			lCli, err := cli.ListContainer(ctx, tc.inReq)
+			lCli, err := cli.ListImage(ctx, tc.inReq)
 			if err != nil {
 				t.Errorf("List(%+v) returned error: %v", tc.inReq, err)
 			}
 
-			gotResp := []*cpb.ListContainerResponse{}
+			gotResp := []*cpb.ListImageResponse{}
 			for {
 				msg, err := lCli.Recv()
 				if err != nil {

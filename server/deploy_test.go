@@ -34,24 +34,30 @@ import (
 )
 
 type fakeContainerManager struct {
-	Image        string
-	Tag          string
-	Contents     string
-	Cmd          string
-	Instance     string
-	Ports        map[uint32]uint32
-	Envs         map[string]string
-	Force        bool
-	Follow       bool
-	All          bool
-	Limit        int32
-	Volumes      []*cpb.Volume
-	VolumeDriver cpb.Driver
-	VolumeOpts   proto.Message
-	VolumeLabel  map[string]string
+	Image         string
+	Tag           string
+	Contents      string
+	Cmd           string
+	Instance      string
+	Ports         map[uint32]uint32
+	Envs          map[string]string
+	Force         bool
+	Follow        bool
+	All           bool
+	Async         bool
+	Limit         int32
+	Volumes       []*cpb.Volume
+	VolumeDriver  cpb.Driver
+	VolumeOpts    proto.Message
+	VolumeLabel   map[string]string
+	Network       string
+	Capabilities  proto.Message
+	RunAs         proto.Message
+	RestartPolicy proto.Message
 
 	listVols         []*cpb.ListVolumeResponse
-	listMsgs         []*cpb.ListContainerResponse
+	listCntMsgs      []*cpb.ListContainerResponse
+	listImgMsgs      []*cpb.ListImageResponse
 	createVolumeName string
 	msgs             []string
 	removeError      error
@@ -85,6 +91,10 @@ func (f *fakeContainerManager) ContainerStart(_ context.Context, image string, t
 	f.Envs = optionz.EnvMapping
 	f.Instance = optionz.InstanceName
 	f.Volumes = optionz.Volumes
+	f.Network = optionz.Network
+	f.Capabilities = optionz.Capabilities
+	f.RunAs = optionz.RunAs
+	f.RestartPolicy = optionz.RestartPolicy
 	return "", nil
 }
 
@@ -99,12 +109,29 @@ func (f *fakeContainerManager) ContainerList(ctx context.Context, all bool, limi
 	f.All = all
 	f.Limit = limit
 
-	for _, msg := range f.listMsgs {
+	for _, msg := range f.listCntMsgs {
 		if err := srv.Send(msg); err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func (f *fakeContainerManager) ContainerUpdate(_ context.Context, instance, image, tag, cmd string, async bool, opts ...options.Option) (string, error) {
+	optionz := options.ApplyOptions(opts...)
+	f.Instance = instance
+	f.Image = image
+	f.Tag = tag
+	f.Cmd = cmd
+	f.Async = async
+	f.Ports = optionz.PortMapping
+	f.Envs = optionz.EnvMapping
+	f.Volumes = optionz.Volumes
+	f.Network = optionz.Network
+	f.Capabilities = optionz.Capabilities
+	f.RunAs = optionz.RunAs
+	f.RestartPolicy = optionz.RestartPolicy
+	return instance, nil
 }
 
 func (f *fakeContainerManager) ContainerLogs(_ context.Context, instance string, srv options.LogStreamer, opts ...options.Option) error {
@@ -120,6 +147,22 @@ func (f *fakeContainerManager) ContainerLogs(_ context.Context, instance string,
 	}
 
 	return nil
+}
+
+func (f *fakeContainerManager) ImageList(ctx context.Context, all bool, limit int32, srv options.ListImageStreamer, opts ...options.Option) error {
+	f.All = all
+	f.Limit = limit
+
+	for _, msg := range f.listImgMsgs {
+		if err := srv.Send(msg); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (f fakeContainerManager) ImageRemove(context.Context, string, string, ...options.Option) error {
+	return f.removeError
 }
 
 func (f *fakeContainerManager) VolumeList(ctx context.Context, srv options.ListVolumeStreamer, opts ...options.Option) error {
