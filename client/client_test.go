@@ -20,7 +20,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc"
 
 	cpb "github.com/openconfig/gnoi/containerz"
@@ -50,12 +49,9 @@ func TLSCreds() (string, string) {
 
 func newServer(t *testing.T, srv cpb.ContainerzServer) (string, func()) {
 	t.Helper()
-	creds, err := credentials.NewServerTLSFromFile(TLSCreds())
-	if err != nil {
-		t.Fatalf("cannot load TLS credentials, got err: %v", err)
-	}
+	Dial = grpc.DialContext
 
-	s := grpc.NewServer(grpc.Creds(creds))
+	s := grpc.NewServer()
 	l, err := net.Listen("tcp", "localhost:0")
 	if err != nil {
 		t.Fatalf("cannot listen on localhost:0, %v", err)
