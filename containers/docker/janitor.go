@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/docker/docker/api/types/filters"
+	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/filters/filters"
 	"k8s.io/klog/v2"
 )
 

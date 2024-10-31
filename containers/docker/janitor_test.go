@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/docker/docker/api/types/filters"
-	"github.com/docker/docker/api/types"
+	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/filters/filters"
+	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/types"
 )
 
 type fakeVacuumingDocker struct {

@@ -20,7 +20,7 @@ import (
 	"os/signal"
 
 	"github.com/spf13/cobra"
-	"github.com/docker/docker/client"
+	"google3/third_party/golang/github_com/moby/moby/v/v24/client/client"
 	"github.com/openconfig/containerz/containers/docker"
 	"github.com/openconfig/containerz/server"
 )

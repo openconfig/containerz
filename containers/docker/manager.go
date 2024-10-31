@@ -6,12 +6,12 @@ import (
 	"io"
 	"sync"
 
-	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/api/types/filters"
-	"github.com/docker/docker/api/types/network"
-	"github.com/docker/docker/api/types/registry"
-	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/volume"
+	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/container/container"
+	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/filters/filters"
+	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/network/network"
+	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/registry/registry"
+	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/types"
+	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/volume/volume"
 
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 )
