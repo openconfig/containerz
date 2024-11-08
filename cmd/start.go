@@ -28,6 +28,7 @@ import (
 var (
 	dockerHost string
 	chunkSize  int
+	useALTS    bool
 )
 
 var startCmd = &cobra.Command{
@@ -47,6 +48,11 @@ var startCmd = &cobra.Command{
 			server.WithAddr(addr),
 			server.WithChunkSize(chunkSize),
 		}
+
+		if useALTS {
+			opts = append(opts, server.UseALTS())
+		}
+
 		mgr := docker.New(cli)
 		s := server.New(docker.New(cli), opts...)
 		mgr.Start(ctx)
@@ -69,4 +75,5 @@ func init() {
 	RootCmd.AddCommand(startCmd)
 	startCmd.PersistentFlags().StringVar(&dockerHost, "docker_host", "unix:///var/run/docker.sock", "Docker host to connect to.")
 	startCmd.PersistentFlags().IntVar(&chunkSize, "chunk_size", 3000000, "the size of the chunks supported by this server")
+	startCmd.PersistentFlags().BoolVar(&useALTS, "use_alts", false, "Use ALTS authentication.")
 }

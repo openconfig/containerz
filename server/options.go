@@ -14,6 +14,11 @@
 
 package server
 
+import (
+	"google.golang.org/grpc/credentials/alts"
+	"google.golang.org/grpc"
+)
+
 // Option represents an server option.
 type Option func(*Server)
 
@@ -35,5 +40,14 @@ func WithTempLocation(tmp string) Option {
 func WithChunkSize(chunkSize int) Option {
 	return func(s *Server) {
 		s.chunkSize = chunkSize
+	}
+}
+
+// UseALTS sets up the grpc server to use ALTS authentication.
+// See https://cloud.google.com/docs/security/encryption-in-transit/application-layer-transport-security
+// for more information.
+func UseALTS() Option {
+	return func(s *Server) {
+		s.grpcServer = grpc.NewServer(grpc.Creds(alts.NewServerCreds(alts.DefaultServerOptions())))
 	}
 }
