@@ -45,3 +45,10 @@ func NewClient(ctx context.Context, addr string) (*Client, error) {
 		cli: cpb.NewContainerzClient(conn),
 	}, nil
 }
+
+// NewClientWithConn creates a client given a ClientConn.
+func NewClientWithConn(conn *grpc.ClientConn) *Client {
+	return &Client{
+		cli: cpb.NewContainerzClient(conn),
+	}
+}
