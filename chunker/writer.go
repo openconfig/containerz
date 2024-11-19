@@ -37,7 +37,7 @@ func NewWriter(location string, chunkSize int) (*Writer, error) {
 }
 
 func (w *Writer) Write(p []byte) (int, error) {
-	written, err := w.tmp.WriteAt(p, int64(w.chunkIndex*w.chunkSize))
+	written, err := w.tmp.WriteAt(p, int64(w.bytesWritten))
 	if err != nil {
 		return 0, err
 	}
