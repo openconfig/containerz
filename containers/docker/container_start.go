@@ -59,7 +59,6 @@ func (m *Manager) ContainerStart(ctx context.Context, image, tag, cmd string, op
 	hostConfig := &container.HostConfig{
 		Mounts:      mounts,
 		NetworkMode: "host",
-		AutoRemove:  true,
 	}
 	config := &container.Config{
 		Cmd:          strings.Split(cmd, " "),
