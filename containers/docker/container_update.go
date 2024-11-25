@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"strings"
 
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/container/container"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/network/network"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/types"
+	"github.com/docker/docker/api/types/container"
+	imagetypes "github.com/docker/docker/api/types/image"
+	"github.com/docker/docker/api/types/network"
+	"github.com/docker/docker/api/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"k8s.io/klog/v2"
@@ -74,7 +75,7 @@ func (m *Manager) performContainerUpdate(ctx context.Context, instance, image, t
 		return "", status.Errorf(codes.Internal, "%s; restoration of previous state failed when creating container: %v", errPfx, err)
 	}
 
-	if err := m.client.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
+	if err := m.client.ContainerStart(ctx, resp.ID, container.StartOptions{}); err != nil {
 		return "", status.Errorf(codes.Internal, "%s; restoration of previous state failed when starting container: %v", errPfx, err)
 	}
 
@@ -85,11 +86,11 @@ func (m *Manager) performContainerUpdatePrechecks(ctx context.Context, instance,
 	optionz := options.ApplyOptions(opts...)
 
 	// Get available images and containers to perform checks on.
-	cnts, err := m.client.ContainerList(ctx, types.ContainerListOptions{All: true})
+	cnts, err := m.client.ContainerList(ctx, container.ListOptions{All: true})
 	if err != nil {
 		return nil, err
 	}
-	images, err := m.client.ImageList(ctx, types.ImageListOptions{All: true})
+	images, err := m.client.ImageList(ctx, imagetypes.ListOptions{All: true})
 	if err != nil {
 		return nil, err
 	}

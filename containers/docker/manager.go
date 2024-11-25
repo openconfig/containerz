@@ -6,12 +6,13 @@ import (
 	"io"
 	"sync"
 
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/container/container"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/filters/filters"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/network/network"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/registry/registry"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/types"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/volume/volume"
+	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/filters"
+	imagetypes "github.com/docker/docker/api/types/image"
+	"github.com/docker/docker/api/types/network"
+	"github.com/docker/docker/api/types/registry"
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/volume"
 
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 )
@@ -20,17 +21,17 @@ type docker interface {
 	Close() error
 	ContainerCreate(ctx context.Context, config *container.Config, hostConfig *container.HostConfig, networkingConfig *network.NetworkingConfig, platform *ocispec.Platform, containerName string) (container.CreateResponse, error)
 	ContainerInspect(ctx context.Context, container string) (types.ContainerJSON, error)
-	ContainerList(ctx context.Context, options types.ContainerListOptions) ([]types.Container, error)
-	ContainerLogs(ctx context.Context, container string, options types.ContainerLogsOptions) (io.ReadCloser, error)
-	ContainerRemove(ctx context.Context, container string, options types.ContainerRemoveOptions) error
-	ContainerStart(ctx context.Context, container string, options types.ContainerStartOptions) error
+	ContainerList(ctx context.Context, options container.ListOptions) ([]types.Container, error)
+	ContainerLogs(ctx context.Context, container string, options container.LogsOptions) (io.ReadCloser, error)
+	ContainerRemove(ctx context.Context, container string, options container.RemoveOptions) error
+	ContainerStart(ctx context.Context, container string, options container.StartOptions) error
 	ContainerStop(ctx context.Context, container string, options container.StopOptions) error
-	ImageList(ctx context.Context, options types.ImageListOptions) ([]types.ImageSummary, error)
+	ImageList(ctx context.Context, options imagetypes.ListOptions) ([]imagetypes.Summary, error)
 	ImageLoad(ctx context.Context, input io.Reader, quiet bool) (types.ImageLoadResponse, error)
-	ImagePull(ctx context.Context, ref string, options types.ImagePullOptions) (io.ReadCloser, error)
-	ImageRemove(ctx context.Context, image string, options types.ImageRemoveOptions) ([]types.ImageDeleteResponseItem, error)
+	ImagePull(ctx context.Context, ref string, options imagetypes.PullOptions) (io.ReadCloser, error)
+	ImageRemove(ctx context.Context, image string, options imagetypes.RemoveOptions) ([]imagetypes.DeleteResponse, error)
 	ImageTag(ctx context.Context, source, target string) error
-	RegistryLogin(ctx context.Context, auth types.AuthConfig) (registry.AuthenticateOKBody, error)
+	RegistryLogin(ctx context.Context, auth registry.AuthConfig) (registry.AuthenticateOKBody, error)
 	VolumeCreate(ctx context.Context, options volume.CreateOptions) (volume.Volume, error)
 	VolumeList(ctx context.Context, options volume.ListOptions) (volume.ListResponse, error)
 	VolumeRemove(ctx context.Context, volumeID string, force bool) error

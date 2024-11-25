@@ -5,8 +5,8 @@ import (
 	"io"
 	"strings"
 
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/filters/filters"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/types"
+	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/filters"
 	"github.com/openconfig/containerz/containers"
 	cpb "github.com/openconfig/gnoi/containerz"
 )
@@ -15,7 +15,7 @@ import (
 func (m *Manager) ContainerList(ctx context.Context, all bool, limit int32, srv options.ListContainerStreamer, opts ...options.Option) error {
 	optionz := options.ApplyOptions(opts...)
 
-	cntOpts := types.ContainerListOptions{All: all, Limit: int(limit)}
+	cntOpts := container.ListOptions{All: all, Limit: int(limit)}
 
 	kvPairs := []filters.KeyValuePair{}
 	for key, values := range optionz.Filter {

@@ -6,10 +6,11 @@ import (
 	"strings"
 
 	"github.com/docker/go-connections/nat"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/container/container"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/mount/mount"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/network/network"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/types"
+	"github.com/docker/docker/api/types/container"
+	imagetypes "github.com/docker/docker/api/types/image"
+	"github.com/docker/docker/api/types/mount"
+	"github.com/docker/docker/api/types/network"
+	"github.com/docker/docker/api/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"github.com/openconfig/containerz/containers"
@@ -22,7 +23,7 @@ import (
 func (m *Manager) ContainerStart(ctx context.Context, image, tag, cmd string, opts ...options.Option) (string, error) {
 	optionz := options.ApplyOptions(opts...)
 
-	images, err := m.client.ImageList(ctx, types.ImageListOptions{
+	images, err := m.client.ImageList(ctx, imagetypes.ListOptions{
 		// TODO(alshabib): consider filtering for the image we care about
 	})
 	if err != nil {
@@ -34,7 +35,7 @@ func (m *Manager) ContainerStart(ctx context.Context, image, tag, cmd string, op
 		return "", err
 	}
 
-	cnts, err := m.client.ContainerList(ctx, types.ContainerListOptions{
+	cnts, err := m.client.ContainerList(ctx, container.ListOptions{
 		// TODO(alshabib): consider filtering for the image we care about
 	})
 	if err != nil {
@@ -119,16 +120,16 @@ func (m *Manager) ContainerStart(ctx context.Context, image, tag, cmd string, op
 	if optionz.RestartPolicy != nil {
 		restartPolicy := optionz.RestartPolicy.(*cpb.StartContainerRequest_Restart)
 
-		var policy string
+		var policy container.RestartPolicyMode
 		switch restartPolicy.GetPolicy() {
 		case cpb.StartContainerRequest_Restart_ALWAYS:
-			policy = "always"
+			policy = container.RestartPolicyAlways
 		case cpb.StartContainerRequest_Restart_ON_FAILURE:
-			policy = "on-failure"
+			policy = container.RestartPolicyOnFailure
 		case cpb.StartContainerRequest_Restart_NONE:
-			policy = "no"
+			policy = container.RestartPolicyDisabled
 		case cpb.StartContainerRequest_Restart_UNLESS_STOPPED:
-			policy = "unless-stopped"
+			policy = container.RestartPolicyUnlessStopped
 		default:
 			return "", status.Errorf(codes.FailedPrecondition, "unkown restart policy '%v'", restartPolicy.GetPolicy())
 		}
@@ -157,7 +158,7 @@ func (m *Manager) ContainerStart(ctx context.Context, image, tag, cmd string, op
 		return "", status.Errorf(codes.Internal, "unable to create container: %v", err)
 	}
 
-	if err := m.client.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
+	if err := m.client.ContainerStart(ctx, resp.ID, container.StartOptions{}); err != nil {
 		return "", status.Errorf(codes.Internal, "unable to start container: %v", err)
 	}
 

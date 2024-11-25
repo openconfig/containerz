@@ -7,8 +7,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/container/container"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/types"
+	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"github.com/openconfig/containerz/containers"
@@ -32,11 +32,11 @@ func (f *fakeStoppingDocker) ContainerStop(ctx context.Context, container string
 	return nil
 }
 
-func (f fakeStoppingDocker) ContainerList(ctx context.Context, options types.ContainerListOptions) ([]types.Container, error) {
+func (f fakeStoppingDocker) ContainerList(ctx context.Context, options container.ListOptions) ([]types.Container, error) {
 	return f.cnts, nil
 }
 
-func (f *fakeStoppingDocker) ContainerRemove(ctx context.Context, container string, options types.ContainerRemoveOptions) error {
+func (f *fakeStoppingDocker) ContainerRemove(ctx context.Context, container string, options container.RemoveOptions) error {
 	f.RemoveInstance = container
 	return nil
 }

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/types"
+	"github.com/docker/docker/api/types/container"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"github.com/openconfig/containerz/containers"
@@ -17,7 +17,7 @@ import (
 func (m *Manager) ContainerLogs(ctx context.Context, instance string, srv options.LogStreamer, opts ...options.Option) error {
 	optionz := options.ApplyOptions(opts...)
 
-	cnts, err := m.client.ContainerList(ctx, types.ContainerListOptions{
+	cnts, err := m.client.ContainerList(ctx, container.ListOptions{
 		// TODO(alshabib): consider filtering for the image we care about
 	})
 	if err != nil {
@@ -28,7 +28,7 @@ func (m *Manager) ContainerLogs(ctx context.Context, instance string, srv option
 		return status.Errorf(codes.NotFound, "container %s not found", instance)
 	}
 
-	logOpts := types.ContainerLogsOptions{
+	logOpts := container.LogsOptions{
 		ShowStdout: true,
 		ShowStderr: true,
 	}

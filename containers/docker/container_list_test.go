@@ -6,8 +6,9 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/filters/filters"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/types"
+	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types"
 	"google.golang.org/protobuf/testing/protocmp"
 	"github.com/openconfig/containerz/containers"
 	cpb "github.com/openconfig/gnoi/containerz"
@@ -26,10 +27,10 @@ type fakeListingDocker struct {
 	fakeDocker
 	cnts []types.Container
 
-	Opts types.ContainerListOptions
+	Opts container.ListOptions
 }
 
-func (f *fakeListingDocker) ContainerList(ctx context.Context, options types.ContainerListOptions) ([]types.Container, error) {
+func (f *fakeListingDocker) ContainerList(ctx context.Context, options container.ListOptions) ([]types.Container, error) {
 	f.Opts = options
 
 	return f.cnts, nil
@@ -50,7 +51,7 @@ func TestContainerList(t *testing.T) {
 			inAll:   true,
 			inLimit: 10,
 			wantState: &fakeListingDocker{
-				Opts: types.ContainerListOptions{
+				Opts: container.ListOptions{
 					Limit: 10,
 					All:   true,
 				},
@@ -61,7 +62,7 @@ func TestContainerList(t *testing.T) {
 			inAll:   true,
 			inLimit: 10,
 			wantState: &fakeListingDocker{
-				Opts: types.ContainerListOptions{
+				Opts: container.ListOptions{
 					Limit: 10,
 					All:   true,
 				},
@@ -100,7 +101,7 @@ func TestContainerList(t *testing.T) {
 				options.State: []string{"RUNNING"},
 			})},
 			wantState: &fakeListingDocker{
-				Opts: types.ContainerListOptions{
+				Opts: container.ListOptions{
 					Limit:   10,
 					All:     true,
 					Filters: filters.NewArgs(filters.Arg("image", "some-image"), filters.Arg("state", "RUNNING")),

@@ -6,7 +6,9 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/types"
+	"github.com/docker/docker/api/types/container"
+	imagetypes "github.com/docker/docker/api/types/image"
+	"github.com/docker/docker/api/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"github.com/openconfig/containerz/containers"
@@ -14,21 +16,21 @@ import (
 
 type fakeRemovingDocker struct {
 	fakeDocker
-	summaries []types.ImageSummary
+	summaries []imagetypes.Summary
 	cnts      []types.Container
 
 	Name string
 }
 
-func (f fakeRemovingDocker) ContainerList(ctx context.Context, options types.ContainerListOptions) ([]types.Container, error) {
+func (f fakeRemovingDocker) ContainerList(ctx context.Context, options container.ListOptions) ([]types.Container, error) {
 	return f.cnts, nil
 }
 
-func (f fakeRemovingDocker) ImageList(ctx context.Context, options types.ImageListOptions) ([]types.ImageSummary, error) {
+func (f fakeRemovingDocker) ImageList(ctx context.Context, options imagetypes.ListOptions) ([]imagetypes.Summary, error) {
 	return f.summaries, nil
 }
 
-func (f *fakeRemovingDocker) ImageRemove(ctx context.Context, image string, options types.ImageRemoveOptions) ([]types.ImageDeleteResponseItem, error) {
+func (f *fakeRemovingDocker) ImageRemove(ctx context.Context, image string, options imagetypes.RemoveOptions) ([]imagetypes.DeleteResponse, error) {
 	f.Name = image
 	return nil, nil
 }
@@ -42,7 +44,7 @@ func objectRemoveTestInlet(t *testing.T, callFunc callMemberFunc) {
 		inOpts      []options.Option
 		inImage     string
 		inTag       string
-		inSummaries []types.ImageSummary
+		inSummaries []imagetypes.Summary
 		inCnts      []types.Container
 		wantState   *fakeRemovingDocker
 		wantErr     error
@@ -57,8 +59,8 @@ func objectRemoveTestInlet(t *testing.T, callFunc callMemberFunc) {
 			name:    "container-running",
 			inImage: "container-running",
 			inTag:   "running-tag",
-			inSummaries: []types.ImageSummary{
-				types.ImageSummary{
+			inSummaries: []imagetypes.Summary{
+				imagetypes.Summary{
 					RepoTags: []string{"container-running:running-tag"},
 				},
 			},
@@ -74,8 +76,8 @@ func objectRemoveTestInlet(t *testing.T, callFunc callMemberFunc) {
 			inImage: "container-running",
 			inTag:   "running-tag",
 			inOpts:  []options.Option{options.Force()},
-			inSummaries: []types.ImageSummary{
-				types.ImageSummary{
+			inSummaries: []imagetypes.Summary{
+				imagetypes.Summary{
 					RepoTags: []string{"container-running:running-tag"},
 				},
 			},
@@ -92,8 +94,8 @@ func objectRemoveTestInlet(t *testing.T, callFunc callMemberFunc) {
 			name:    "container-remove",
 			inImage: "container-remove",
 			inTag:   "remove-tag",
-			inSummaries: []types.ImageSummary{
-				types.ImageSummary{
+			inSummaries: []imagetypes.Summary{
+				imagetypes.Summary{
 					RepoTags: []string{"container-remove:remove-tag"},
 				},
 			},

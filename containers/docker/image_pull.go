@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"io"
 
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/registry/registry"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/types"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/pkg/jsonmessage/jsonmessage"
+	imagetypes "github.com/docker/docker/api/types/image"
+	"github.com/docker/docker/api/types/registry"
+	"github.com/moby/moby/pkg/jsonmessage"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"github.com/openconfig/containerz/containers"
@@ -34,7 +34,7 @@ func (m *Manager) ContainerPull(ctx context.Context, image, tag string, opts ...
 		return err
 	}
 
-	resp, err := m.client.ImagePull(ctx, fmt.Sprintf("%s:%s", image, tag), types.ImagePullOptions{
+	resp, err := m.client.ImagePull(ctx, fmt.Sprintf("%s:%s", image, tag), imagetypes.PullOptions{
 		RegistryAuth: auth.IdentityToken,
 	})
 	if err != nil {

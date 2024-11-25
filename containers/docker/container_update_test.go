@@ -9,10 +9,11 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/docker/go-connections/nat"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/container/container"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/mount/mount"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/network/network"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/types"
+	"github.com/docker/docker/api/types/container"
+	imagetypes "github.com/docker/docker/api/types/image"
+	"github.com/docker/docker/api/types/mount"
+	"github.com/docker/docker/api/types/network"
+	"github.com/docker/docker/api/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"github.com/openconfig/containerz/containers"
@@ -22,7 +23,7 @@ import (
 
 type fakeUpdatingDocker struct {
 	fakeDocker
-	summaries []types.ImageSummary
+	summaries []imagetypes.Summary
 	cnts      []types.Container
 	cntJSON   *types.ContainerJSON
 
@@ -69,7 +70,7 @@ func (f *fakeUpdatingDocker) ContainerCreate(ctx context.Context, config *contai
 	}, nil
 }
 
-func (f *fakeUpdatingDocker) ContainerStart(ctx context.Context, container string, options types.ContainerStartOptions) error {
+func (f *fakeUpdatingDocker) ContainerStart(ctx context.Context, container string, options container.StartOptions) error {
 	f.InvocationContainerStart++
 
 	// This enables the asynchronous test to explicitly block the m.ContainerStart call.
@@ -81,7 +82,7 @@ func (f *fakeUpdatingDocker) ContainerStart(ctx context.Context, container strin
 	return nil
 }
 
-func (f *fakeUpdatingDocker) ContainerList(ctx context.Context, options types.ContainerListOptions) ([]types.Container, error) {
+func (f *fakeUpdatingDocker) ContainerList(ctx context.Context, options container.ListOptions) ([]types.Container, error) {
 	f.InvocationContainerList++
 	return f.cnts, nil
 }
@@ -109,12 +110,12 @@ cntloop:
 	return nil
 }
 
-func (f *fakeUpdatingDocker) ContainerRemove(ctx context.Context, container string, options types.ContainerRemoveOptions) error {
+func (f *fakeUpdatingDocker) ContainerRemove(ctx context.Context, container string, options container.RemoveOptions) error {
 	f.InvocationContainerRemove++
 	return nil
 }
 
-func (f *fakeUpdatingDocker) ImageList(ctx context.Context, options types.ImageListOptions) ([]types.ImageSummary, error) {
+func (f *fakeUpdatingDocker) ImageList(ctx context.Context, options imagetypes.ListOptions) ([]imagetypes.Summary, error) {
 	f.InvocationImageList++
 	return f.summaries, nil
 }
@@ -136,7 +137,7 @@ func TestContainerUpdateSync(t *testing.T) {
 		inInProgress []string
 		inTag        string
 		inCmd        string
-		inSummaries  []types.ImageSummary
+		inSummaries  []imagetypes.Summary
 		inCnts       []types.Container
 		inCntJSON    *types.ContainerJSON
 		wantState    *fakeUpdatingDocker
@@ -152,8 +153,8 @@ func TestContainerUpdateSync(t *testing.T) {
 			name:    "failure-image-found-container-not-found",
 			inImage: "my-image",
 			inTag:   "my-tag",
-			inSummaries: []types.ImageSummary{
-				types.ImageSummary{
+			inSummaries: []imagetypes.Summary{
+				imagetypes.Summary{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
@@ -169,8 +170,8 @@ func TestContainerUpdateSync(t *testing.T) {
 			name:    "failure-image-found-container-found-port-unavailable",
 			inImage: "my-image",
 			inTag:   "my-tag",
-			inSummaries: []types.ImageSummary{
-				types.ImageSummary{
+			inSummaries: []imagetypes.Summary{
+				imagetypes.Summary{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
@@ -191,8 +192,8 @@ func TestContainerUpdateSync(t *testing.T) {
 			name:    "failure-image-found-container-found-port-reusable-instance-progressing",
 			inImage: "my-image",
 			inTag:   "my-tag",
-			inSummaries: []types.ImageSummary{
-				types.ImageSummary{
+			inSummaries: []imagetypes.Summary{
+				imagetypes.Summary{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
@@ -214,8 +215,8 @@ func TestContainerUpdateSync(t *testing.T) {
 			name:    "failure-image-found-container-found-port-reused-another-instance-progressing-json-missing",
 			inImage: "my-image",
 			inTag:   "my-tag",
-			inSummaries: []types.ImageSummary{
-				types.ImageSummary{
+			inSummaries: []imagetypes.Summary{
+				imagetypes.Summary{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
@@ -237,8 +238,8 @@ func TestContainerUpdateSync(t *testing.T) {
 			name:    "failure-image-found-container-found-port-reused-another-instance-progressing-inspect-failed",
 			inImage: "my-image",
 			inTag:   "my-tag",
-			inSummaries: []types.ImageSummary{
-				types.ImageSummary{
+			inSummaries: []imagetypes.Summary{
+				imagetypes.Summary{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
@@ -261,8 +262,8 @@ func TestContainerUpdateSync(t *testing.T) {
 			name:    "success-image-found-container-found-port-reused-another-instance-progressing-inspect-worked-not-running",
 			inImage: "my-image",
 			inTag:   "my-tag",
-			inSummaries: []types.ImageSummary{
-				types.ImageSummary{
+			inSummaries: []imagetypes.Summary{
+				imagetypes.Summary{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
@@ -308,8 +309,8 @@ func TestContainerUpdateSync(t *testing.T) {
 			name:    "restoration-success",
 			inImage: "my-image",
 			inTag:   "my-tag",
-			inSummaries: []types.ImageSummary{
-				types.ImageSummary{
+			inSummaries: []imagetypes.Summary{
+				imagetypes.Summary{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
@@ -381,17 +382,17 @@ func TestContainerUpdateAsync(t *testing.T) {
 	// 5) Attempt another update of container A -> should work
 
 	fd := &fakeUpdatingDocker{
-		summaries: []types.ImageSummary{
-			types.ImageSummary{
+		summaries: []imagetypes.Summary{
+			imagetypes.Summary{
 				RepoTags: []string{"image-A1:tag-A1"},
 			},
-			types.ImageSummary{
+			imagetypes.Summary{
 				RepoTags: []string{"image-A2:tag-A2"},
 			},
-			types.ImageSummary{
+			imagetypes.Summary{
 				RepoTags: []string{"image-B1:tag-B1"},
 			},
-			types.ImageSummary{
+			imagetypes.Summary{
 				RepoTags: []string{"image-B2:tag-B2"},
 			},
 		},

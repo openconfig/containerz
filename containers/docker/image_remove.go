@@ -5,7 +5,9 @@ import (
 
 	"fmt"
 
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/types"
+	"github.com/docker/docker/api/types/container"
+	imagetypes "github.com/docker/docker/api/types/image"
+	"github.com/docker/docker/api/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"github.com/openconfig/containerz/containers"
@@ -16,7 +18,7 @@ import (
 func (m *Manager) ImageRemove(ctx context.Context, image, tag string, opts ...options.Option) error {
 	option := options.ApplyOptions(opts...)
 
-	images, err := m.client.ImageList(ctx, types.ImageListOptions{
+	images, err := m.client.ImageList(ctx, imagetypes.ListOptions{
 		// TODO(alshabib): consider filtering for the image we care about
 	})
 	if err != nil {
@@ -28,7 +30,7 @@ func (m *Manager) ImageRemove(ctx context.Context, image, tag string, opts ...op
 		return err
 	}
 
-	cnts, err := m.client.ContainerList(ctx, types.ContainerListOptions{
+	cnts, err := m.client.ContainerList(ctx, container.ListOptions{
 		// TODO(alshabib): consider filtering for the image we care about
 	})
 	if err != nil {
@@ -38,7 +40,7 @@ func (m *Manager) ImageRemove(ctx context.Context, image, tag string, opts ...op
 	state := findImageFromContainer(ref, cnts)
 	if state != nil {
 		if option.Force {
-			_, err := m.client.ImageRemove(ctx, ref, types.ImageRemoveOptions{
+			_, err := m.client.ImageRemove(ctx, ref, imagetypes.RemoveOptions{
 				Force: option.Force,
 			})
 			return err
@@ -46,7 +48,7 @@ func (m *Manager) ImageRemove(ctx context.Context, image, tag string, opts ...op
 		return state.Err()
 	}
 
-	_, err = m.client.ImageRemove(ctx, ref, types.ImageRemoveOptions{})
+	_, err = m.client.ImageRemove(ctx, ref, imagetypes.RemoveOptions{})
 	return err
 }
 
@@ -59,7 +61,7 @@ func findImageFromContainer(ref string, cnt []types.Container) *status.Status {
 	return nil
 }
 
-func findImage(ref string, summaries []types.ImageSummary) error {
+func findImage(ref string, summaries []imagetypes.Summary) error {
 	for _, summary := range summaries {
 		for _, name := range summary.RepoTags {
 			if ref == name {

@@ -7,10 +7,11 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/docker/go-connections/nat"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/container/container"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/mount/mount"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/network/network"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/types"
+	"github.com/docker/docker/api/types/container"
+	imagetypes "github.com/docker/docker/api/types/image"
+	"github.com/docker/docker/api/types/mount"
+	"github.com/docker/docker/api/types/network"
+	"github.com/docker/docker/api/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"github.com/openconfig/containerz/containers"
@@ -21,7 +22,7 @@ import (
 
 type fakeStartingDocker struct {
 	fakeDocker
-	summaries []types.ImageSummary
+	summaries []imagetypes.Summary
 	cnts      []types.Container
 
 	Ports       nat.PortSet
@@ -53,16 +54,16 @@ func (f *fakeStartingDocker) ContainerCreate(ctx context.Context, config *contai
 	}, nil
 }
 
-func (f *fakeStartingDocker) ContainerStart(ctx context.Context, container string, options types.ContainerStartOptions) error {
+func (f *fakeStartingDocker) ContainerStart(ctx context.Context, container string, options container.StartOptions) error {
 	f.ContainerID = container
 	return nil
 }
 
-func (f fakeStartingDocker) ImageList(ctx context.Context, options types.ImageListOptions) ([]types.ImageSummary, error) {
+func (f fakeStartingDocker) ImageList(ctx context.Context, options imagetypes.ListOptions) ([]imagetypes.Summary, error) {
 	return f.summaries, nil
 }
 
-func (f fakeStartingDocker) ContainerList(ctx context.Context, options types.ContainerListOptions) ([]types.Container, error) {
+func (f fakeStartingDocker) ContainerList(ctx context.Context, options container.ListOptions) ([]types.Container, error) {
 	return f.cnts, nil
 }
 
@@ -73,7 +74,7 @@ func TestContainerStart(t *testing.T) {
 		inImage     string
 		inTag       string
 		inCmd       string
-		inSummaries []types.ImageSummary
+		inSummaries []imagetypes.Summary
 		inCnts      []types.Container
 		wantState   *fakeStartingDocker
 		wantErr     error
@@ -89,8 +90,8 @@ func TestContainerStart(t *testing.T) {
 			inImage: "my-image",
 			inTag:   "my-tag",
 			inCmd:   "my-cmd",
-			inSummaries: []types.ImageSummary{
-				types.ImageSummary{
+			inSummaries: []imagetypes.Summary{
+				imagetypes.Summary{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
@@ -107,8 +108,8 @@ func TestContainerStart(t *testing.T) {
 			inImage: "my-image",
 			inTag:   "my-tag",
 			inCmd:   "my-cmd",
-			inSummaries: []types.ImageSummary{
-				types.ImageSummary{
+			inSummaries: []imagetypes.Summary{
+				imagetypes.Summary{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
@@ -127,8 +128,8 @@ func TestContainerStart(t *testing.T) {
 			inImage: "my-image",
 			inTag:   "my-tag",
 			inCmd:   "my-cmd",
-			inSummaries: []types.ImageSummary{
-				types.ImageSummary{
+			inSummaries: []imagetypes.Summary{
+				imagetypes.Summary{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
@@ -149,8 +150,8 @@ func TestContainerStart(t *testing.T) {
 			inImage: "my-image",
 			inTag:   "my-tag",
 			inCmd:   "my-cmd",
-			inSummaries: []types.ImageSummary{
-				types.ImageSummary{
+			inSummaries: []imagetypes.Summary{
+				imagetypes.Summary{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
@@ -166,8 +167,8 @@ func TestContainerStart(t *testing.T) {
 			inImage: "my-image",
 			inTag:   "my-tag",
 			inCmd:   "my-cmd",
-			inSummaries: []types.ImageSummary{
-				types.ImageSummary{
+			inSummaries: []imagetypes.Summary{
+				imagetypes.Summary{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
@@ -190,8 +191,8 @@ func TestContainerStart(t *testing.T) {
 			inImage: "my-image",
 			inTag:   "my-tag",
 			inCmd:   "my-cmd",
-			inSummaries: []types.ImageSummary{
-				types.ImageSummary{
+			inSummaries: []imagetypes.Summary{
+				imagetypes.Summary{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
@@ -215,8 +216,8 @@ func TestContainerStart(t *testing.T) {
 			inImage: "my-image",
 			inTag:   "my-tag",
 			inCmd:   "my-cmd",
-			inSummaries: []types.ImageSummary{
-				types.ImageSummary{
+			inSummaries: []imagetypes.Summary{
+				imagetypes.Summary{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
@@ -243,8 +244,8 @@ func TestContainerStart(t *testing.T) {
 			inImage: "my-image",
 			inTag:   "my-tag",
 			inCmd:   "my-cmd",
-			inSummaries: []types.ImageSummary{
-				types.ImageSummary{
+			inSummaries: []imagetypes.Summary{
+				imagetypes.Summary{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
@@ -269,8 +270,8 @@ func TestContainerStart(t *testing.T) {
 			inImage: "my-image",
 			inTag:   "my-tag",
 			inCmd:   "my-cmd",
-			inSummaries: []types.ImageSummary{
-				types.ImageSummary{
+			inSummaries: []imagetypes.Summary{
+				imagetypes.Summary{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
@@ -291,8 +292,8 @@ func TestContainerStart(t *testing.T) {
 			inImage: "my-image",
 			inTag:   "my-tag",
 			inCmd:   "my-cmd",
-			inSummaries: []types.ImageSummary{
-				types.ImageSummary{
+			inSummaries: []imagetypes.Summary{
+				imagetypes.Summary{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
@@ -309,8 +310,8 @@ func TestContainerStart(t *testing.T) {
 			inImage: "my-image",
 			inTag:   "my-tag",
 			inCmd:   "my-cmd",
-			inSummaries: []types.ImageSummary{
-				types.ImageSummary{
+			inSummaries: []imagetypes.Summary{
+				imagetypes.Summary{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},

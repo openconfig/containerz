@@ -8,12 +8,13 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/container/container"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/filters/filters"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/network/network"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/registry/registry"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/types"
-	"google3/third_party/golang/github_com/moby/moby/v/v24/api/types/volume/volume"
+	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/filters"
+	imagetypes "github.com/docker/docker/api/types/image"
+	"github.com/docker/docker/api/types/network"
+	"github.com/docker/docker/api/types/registry"
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/volume"
 
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 )
@@ -35,19 +36,19 @@ func (fakeDocker) ContainerInspect(ctx context.Context, container string) (types
 	return types.ContainerJSON{}, fmt.Errorf("not implemented")
 }
 
-func (fakeDocker) ContainerLogs(ctx context.Context, container string, options types.ContainerLogsOptions) (io.ReadCloser, error) {
+func (fakeDocker) ContainerLogs(ctx context.Context, container string, options container.LogsOptions) (io.ReadCloser, error) {
 	return nil, fmt.Errorf("not implemented")
 }
 
-func (fakeDocker) ContainerList(ctx context.Context, options types.ContainerListOptions) ([]types.Container, error) {
+func (fakeDocker) ContainerList(ctx context.Context, options container.ListOptions) ([]types.Container, error) {
 	return nil, fmt.Errorf("not implemented")
 }
 
-func (fakeDocker) ContainerRemove(ctx context.Context, container string, options types.ContainerRemoveOptions) error {
+func (fakeDocker) ContainerRemove(ctx context.Context, container string, options container.RemoveOptions) error {
 	return fmt.Errorf("not implemented")
 }
 
-func (fakeDocker) ContainerStart(ctx context.Context, container string, options types.ContainerStartOptions) error {
+func (fakeDocker) ContainerStart(ctx context.Context, container string, options container.StartOptions) error {
 	return fmt.Errorf("not implemented")
 }
 
@@ -55,7 +56,7 @@ func (fakeDocker) ContainerStop(ctx context.Context, container string, _ contain
 	return fmt.Errorf("not implemented")
 }
 
-func (fakeDocker) ImageList(ctx context.Context, options types.ImageListOptions) ([]types.ImageSummary, error) {
+func (fakeDocker) ImageList(ctx context.Context, options imagetypes.ListOptions) ([]imagetypes.Summary, error) {
 	return nil, fmt.Errorf("not implemented")
 }
 
@@ -63,11 +64,11 @@ func (fakeDocker) ImageLoad(ctx context.Context, input io.Reader, quiet bool) (t
 	return types.ImageLoadResponse{}, fmt.Errorf("not implemented")
 }
 
-func (fakeDocker) ImagePull(ctx context.Context, ref string, options types.ImagePullOptions) (io.ReadCloser, error) {
+func (fakeDocker) ImagePull(ctx context.Context, ref string, options imagetypes.PullOptions) (io.ReadCloser, error) {
 	return nil, fmt.Errorf("not implemented")
 }
 
-func (fakeDocker) ImageRemove(ctx context.Context, image string, options types.ImageRemoveOptions) ([]types.ImageDeleteResponseItem, error) {
+func (fakeDocker) ImageRemove(ctx context.Context, image string, options imagetypes.RemoveOptions) ([]imagetypes.DeleteResponse, error) {
 	return nil, fmt.Errorf("not implemented")
 }
 
@@ -75,7 +76,7 @@ func (fakeDocker) ImageTag(ctx context.Context, source, target string) error {
 	return fmt.Errorf("not implemented")
 }
 
-func (fakeDocker) RegistryLogin(ctx context.Context, auth types.AuthConfig) (registry.AuthenticateOKBody, error) {
+func (fakeDocker) RegistryLogin(ctx context.Context, auth registry.AuthConfig) (registry.AuthenticateOKBody, error) {
 	return registry.AuthenticateOKBody{}, fmt.Errorf("not implemented")
 }
 
