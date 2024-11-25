@@ -60,7 +60,7 @@ var pushCmd = &cobra.Command{
 			}
 
 			if prog.Finished {
-				s.FinalMSG = fmt.Sprintf("Pushed %s/%s\n", prog.Image, prog.Tag)
+				s.FinalMSG = fmt.Sprintf("Pushed %s/%s/%d\n", prog.Image, prog.Tag,prog.BytesReceived)
 			} else {
 				s.Suffix = fmt.Sprintf(" %d", prog.BytesReceived)
 			}

@@ -32,7 +32,7 @@ func (c *Client) Logs(ctx context.Context, instance string, follow bool) (<-chan
 		return nil, err
 	}
 
-	ch := make(chan *LogMessage, 100)
+	ch := make(chan *LogMessage, 10000)
 	go func() {
 		defer lcli.CloseSend()
 		defer close(ch)

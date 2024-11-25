@@ -46,7 +46,7 @@ var cntLogCmd = &cobra.Command{
 			if msg.Error != nil {
 				return msg.Error
 			}
-			fmt.Print(msg.Msg)
+			fmt.Println(msg.Msg)
 		}
 		return nil
 	},

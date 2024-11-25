@@ -25,7 +25,7 @@ import (
 )
 
 // PullImage implements the client logic for the target to pull an image from a remote location.
-func (c *Client) PullImage(ctx context.Context, image string, tag string, creds *tpb.Credentials) (<-chan *Progress, error) {
+func (c *Client) PullImage(ctx context.Context, image string, tag string, path string, vrf string, proto string, creds *tpb.Credentials) (<-chan *Progress, error) {
 	dcli, err := c.cli.Deploy(ctx)
 	if err != nil {
 		return nil, err
@@ -38,8 +38,9 @@ func (c *Client) PullImage(ctx context.Context, image string, tag string, creds 
 				Tag:            tag,
 				RemoteDownload: &commonpb.RemoteDownload{
                                 Protocol:      commonpb.RemoteDownload_HTTP,
-                                Path:          "192.168.122.1:8080/vrf-relay.tar.gz",
- 				SourceAddress: "10.0.0.0",},
+                                Path:          path,
+                                SourceAddress: "10.0.0.0",
+                                SourceVrf:  vrf},
 			},
 		},
 	}); err != nil {
@@ -72,9 +73,21 @@ func (c *Client) PullImage(ctx context.Context, image string, tag string, creds 
 				default:
 					klog.Warningf("unable to send progress message; dropping")
 				}
-			}
+                        case *cpb.DeployResponse_ImageTransferSuccess:
+                                select {
+                                case <-ctx.Done():
+                                        klog.Warningf("operation has been cancelled by client.")
+                                        return
+                                case ch <- &Progress{
+                                        BytesReceived: resp.ImageTransferSuccess.GetImageSize(),
+                                }:
+                                       return
+                                default:
+                                        klog.Warningf("unable to send progress message; dropping")
+                                }
+                        }
 		}
 	}()
 
-	return ch, nil
+	return ch, err
 }
