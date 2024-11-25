@@ -153,6 +153,7 @@ func (c *Client) PushImage(ctx context.Context, image string, tag string, file s
 					Finished: true,
 					Image:    msg.ImageTransferSuccess.GetName(),
 					Tag:      msg.ImageTransferSuccess.GetTag(),
+					BytesReceived:     msg.ImageTransferSuccess.GetImageSize(),
 				}) {
 					klog.Warningf("operation cancelled by client; returning")
 				}
