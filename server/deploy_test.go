@@ -54,6 +54,10 @@ type fakeContainerManager struct {
 	Capabilities  proto.Message
 	RunAs         proto.Message
 	RestartPolicy proto.Message
+	Labels        map[string]string
+	CPU           float64
+	HardMemory    int64
+	SoftMemory    int64
 
 	listVols         []*cpb.ListVolumeResponse
 	listCntMsgs      []*cpb.ListContainerResponse
@@ -78,7 +82,7 @@ func (f *fakeContainerManager) ContainerPush(ctx context.Context, file *os.File,
 	return "", "", nil
 }
 
-func (f fakeContainerManager) ContainerRemove(context.Context, string, string, ...options.Option) error {
+func (f fakeContainerManager) ContainerRemove(context.Context, string, ...options.Option) error {
 	return f.removeError
 }
 
@@ -95,6 +99,10 @@ func (f *fakeContainerManager) ContainerStart(_ context.Context, image string, t
 	f.Capabilities = optionz.Capabilities
 	f.RunAs = optionz.RunAs
 	f.RestartPolicy = optionz.RestartPolicy
+	f.Labels = optionz.Labels
+	f.CPU = optionz.CPU
+	f.HardMemory = optionz.HardMemory
+	f.SoftMemory = optionz.SoftMemory
 	return "", nil
 }
 

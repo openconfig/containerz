@@ -29,7 +29,6 @@ import (
 func (s *Server) RemoveContainer(ctx context.Context, request *cpb.RemoveContainerRequest) (*cpb.RemoveContainerResponse, error) {
 	req := &cpb.RemoveImageRequest{
 		Name:  request.GetName(),
-		Tag:   request.GetTag(),
 		Force: request.GetForce(),
 	}
 

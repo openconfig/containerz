@@ -34,6 +34,11 @@ type fakeStartingDocker struct {
 	CapAdd      []string
 	CapDel      []string
 	Network     string
+	Labels      map[string]string
+
+	CPU        int64
+	HardMemory int64
+	SoftMemory int64
 }
 
 func (f *fakeStartingDocker) ContainerCreate(ctx context.Context, config *container.Config, hostConfig *container.HostConfig, networkingConfig *network.NetworkingConfig, platform *ocispec.Platform, containerName string) (container.CreateResponse, error) {
@@ -44,6 +49,10 @@ func (f *fakeStartingDocker) ContainerCreate(ctx context.Context, config *contai
 	f.Policy = hostConfig.RestartPolicy
 	f.CapAdd = hostConfig.CapAdd
 	f.CapDel = hostConfig.CapDrop
+	f.Labels = config.Labels
+	f.CPU = hostConfig.Resources.NanoCPUs
+	f.HardMemory = hostConfig.Resources.Memory
+	f.SoftMemory = hostConfig.Resources.MemoryReservation
 	// If this is not out default, remember it.
 	if !hostConfig.NetworkMode.IsHost() {
 		f.Network = string(hostConfig.NetworkMode)
@@ -288,6 +297,28 @@ func TestContainerStart(t *testing.T) {
 			},
 		},
 		{
+			name:    "container-with-labels",
+			inImage: "my-image",
+			inTag:   "my-tag",
+			inCmd:   "my-cmd",
+			inSummaries: []imagetypes.Summary{
+				imagetypes.Summary{
+					RepoTags: []string{"my-image:my-tag"},
+				},
+			},
+			inCnts: []types.Container{
+				types.Container{
+					Names: []string{"/my-container"},
+				},
+			},
+			inOpts: []options.Option{
+				options.WithLabels(map[string]string{"label": "value"}),
+			},
+			wantState: &fakeStartingDocker{
+				Labels: map[string]string{"label": "value"},
+			},
+		},
+		{
 			name:    "container-with-env-and-port",
 			inImage: "my-image",
 			inTag:   "my-tag",
@@ -337,6 +368,29 @@ func TestContainerStart(t *testing.T) {
 						Target: "/tmp",
 					},
 				},
+			},
+		},
+		{
+			name:    "container-with-cpu-soft-and-hard-memory",
+			inImage: "my-image",
+			inTag:   "my-tag",
+			inCmd:   "my-cmd",
+			inSummaries: []imagetypes.Summary{
+				imagetypes.Summary{
+					RepoTags: []string{"my-image:my-tag"},
+				},
+			},
+			inOpts: []options.Option{
+				options.WithInstanceName("my-container"),
+				options.WithCPUs(1.0),
+				options.WithSoftLimit(1000),
+				options.WithHardLimit(2000),
+			},
+			wantState: &fakeStartingDocker{
+				ContainerID: "my-container",
+				CPU:         1000000000,
+				HardMemory:  2000,
+				SoftMemory:  1000,
 			},
 		},
 	}

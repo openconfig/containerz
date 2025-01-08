@@ -63,7 +63,18 @@ func optionsFromStartContainerRequest(request *cpb.StartContainerRequest) []opti
 	if request.GetCap() != nil {
 		opts = append(opts, options.WithCapabilities(request.GetCap()))
 	}
+	if request.GetLimits() != nil {
+		if request.GetLimits().GetMaxCpu() != 0 {
+			opts = append(opts, options.WithCPUs(request.GetLimits().GetMaxCpu()))
+		}
+		if request.GetLimits().GetSoftMemBytes() != 0 {
+			opts = append(opts, options.WithSoftLimit(request.GetLimits().GetSoftMemBytes()))
+		}
+		if request.GetLimits().GetHardMemBytes() != 0 {
+			opts = append(opts, options.WithHardLimit(request.GetLimits().GetHardMemBytes()))
+		}
+	}
 
-	opts = append(opts, options.WithEnv(request.GetEnvironment()), options.WithInstanceName(request.GetInstanceName()), options.WithVolumes(request.GetVolumes()))
+	opts = append(opts, options.WithLabels(request.GetLabels()), options.WithEnv(request.GetEnvironment()), options.WithInstanceName(request.GetInstanceName()), options.WithVolumes(request.GetVolumes()))
 	return opts
 }

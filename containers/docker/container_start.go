@@ -56,13 +56,26 @@ func (m *Manager) ContainerStart(ctx context.Context, image, tag, cmd string, op
 		})
 	}
 
-	// TODO(alshabib): add resource support (i.e. CPU and memory quotas.)
+	cpu, err := options.ParseCPUs(optionz.CPU)
+	if err != nil {
+		return "", fmt.Errorf("unable to parse cpu limit %f: %v", optionz.CPU, err)
+	}
+
 	hostConfig := &container.HostConfig{
 		Mounts:      mounts,
 		NetworkMode: "host",
+		AutoRemove:  true,
+
+		Resources: container.Resources{
+			NanoCPUs:          cpu,
+			Memory:            optionz.HardMemory, // hard
+			MemoryReservation: optionz.SoftMemory, // soft
+		},
 	}
+
 	config := &container.Config{
 		Cmd:          strings.Split(cmd, " "),
+		Labels:       optionz.Labels,
 		Image:        ref,
 		AttachStdin:  false,
 		AttachStdout: false,

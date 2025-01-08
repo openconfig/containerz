@@ -135,6 +135,96 @@ func TestWithUntil(t *testing.T) {
 	}
 }
 
+func TestWithSinceUntil(t *testing.T) {
+	p := &options{}
+
+	WithSince(time.Second)(p)
+
+	if p.Since != time.Second {
+		t.Errorf("WithSince(time.Second) did not set the since field")
+	}
+}
+
+func TestWithFilter(t *testing.T) {
+	p := &options{}
+
+	WithFilter(map[FilterKey][]string{})(p)
+
+	if p.Filter == nil {
+		t.Errorf("WithFilter(map[FilterKey][]string{}) did not set the filter field")
+	}
+}
+
+func TestWithVolumes(t *testing.T) {
+	p := &options{}
+
+	WithVolumes([]*cpb.Volume{&cpb.Volume{}})(p)
+
+	if len(p.Volumes) != 1 {
+		t.Errorf("WithVolumes([]*cpb.Volume{&cpb.Volume{}}) did not set the volumes field")
+	}
+}
+
+func TestWithVolumeLabels(t *testing.T) {
+	p := &options{}
+
+	WithVolumeLabels(map[string]string{})(p)
+
+	if p.VolumeLabels == nil {
+		t.Errorf("WithVolumeLabels(map[string]string{}) did not set the volume labels field")
+	}
+}
+
+func TestWithNetwork(t *testing.T) {
+	p := &options{}
+
+	WithNetwork("host")(p)
+
+	if p.Network != "host" {
+		t.Errorf("WithNetwork(host) did not set the network field")
+	}
+}
+
+func TestWithLabels(t *testing.T) {
+	p := &options{}
+
+	WithLabels(map[string]string{})(p)
+
+	if p.Labels == nil {
+		t.Errorf("WithLabels(map[string]string{}) did not set the labels field")
+	}
+}
+
+func TestWithCPUs(t *testing.T) {
+	p := &options{}
+
+	WithCPUs(1.0)(p)
+
+	if p.CPU != 1.0 {
+		t.Errorf("WithCPUs(1.0) did not set the cpu field")
+	}
+}
+
+func TestWithSoftLimit(t *testing.T) {
+	p := &options{}
+
+	WithSoftLimit(100)(p)
+
+	if p.SoftMemory != 100 {
+		t.Errorf("WithSoftLimit(100) did not set the soft memory field")
+	}
+}
+
+func TestWithHardLimit(t *testing.T) {
+	p := &options{}
+
+	WithHardLimit(100)(p)
+
+	if p.HardMemory != 100 {
+		t.Errorf("WithHardLimit(100) did not set the hard memory field")
+	}
+}
+
 func TestApplyOptions(t *testing.T) {
 	tests := []struct {
 		inOpts []Option

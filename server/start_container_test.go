@@ -271,6 +271,52 @@ func TestContainerStart(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "labels",
+			inReq: &cpb.StartContainerRequest{
+				ImageName: "some-image",
+				Tag:       "some-tag",
+				Cmd:       "some-cmd",
+				Labels:    map[string]string{"key1": "value1"},
+			},
+			wantResp: &cpb.StartContainerResponse{
+				Response: &cpb.StartContainerResponse_StartOk{
+					StartOk: &cpb.StartOK{},
+				},
+			},
+			wantState: &fakeContainerManager{
+				Image:  "some-image",
+				Tag:    "some-tag",
+				Cmd:    "some-cmd",
+				Labels: map[string]string{"key1": "value1"},
+			},
+		},
+		{
+			name: "limits",
+			inReq: &cpb.StartContainerRequest{
+				ImageName: "some-image",
+				Tag:       "some-tag",
+				Cmd:       "some-cmd",
+				Limits: &cpb.StartContainerRequest_Limits{
+					MaxCpu:       1.0,
+					SoftMemBytes: 1000,
+					HardMemBytes: 2000,
+				},
+			},
+			wantResp: &cpb.StartContainerResponse{
+				Response: &cpb.StartContainerResponse_StartOk{
+					StartOk: &cpb.StartOK{},
+				},
+			},
+			wantState: &fakeContainerManager{
+				Image:      "some-image",
+				Tag:        "some-tag",
+				Cmd:        "some-cmd",
+				CPU:        1.0,
+				SoftMemory: 1000,
+				HardMemory: 2000,
+			},
+		},
 	}
 
 	for _, tc := range tests {

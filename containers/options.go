@@ -16,6 +16,8 @@
 package options
 
 import (
+	"fmt"
+	"math/big"
 	"time"
 
 	"google.golang.org/protobuf/proto"
@@ -137,6 +139,22 @@ type options struct {
 
 	// RunAs provides a user (and potentially group) to run the container as.
 	RunAs proto.Message
+
+	// Labels is the set of labels or metadata to attach to the container.
+	Labels map[string]string
+
+	// IsPlugin indicates that this is only a plugin and therefore the tar file
+	// should be saved only and not loaded into the container runtime.
+	IsPlugin bool
+
+	// CPU is the CPU limit for the container.
+	CPU float64
+
+	// SoftMemory is the soft memory limit for the container.
+	SoftMemory int64
+
+	// HardMemory is the hard memory limit for the container.
+	HardMemory int64
 }
 
 // WithTarget sets the target image name and tag option for this pull operation.
@@ -282,6 +300,49 @@ func WithRunAs(opts proto.Message) Option {
 	return func(p *options) {
 		p.RunAs = opts
 	}
+}
+
+// WithLabels provides an optional set of labels to attach to the container.
+// Supported by: ContainerStart, ContainerUpdate
+func WithLabels(labels map[string]string) Option {
+	return func(p *options) {
+		p.Labels = labels
+	}
+}
+
+// WithCPUs provides the CPU limit for the container.
+// Supported by: ContainerStart, ContainerUpdate
+func WithCPUs(cpus float64) Option {
+	return func(p *options) {
+		p.CPU = cpus
+	}
+}
+
+// WithSoftLimit provides the soft memory limit (in bytes) for the container.
+// Supported by: ContainerStart, ContainerUpdate
+func WithSoftLimit(mem int64) Option {
+	return func(p *options) {
+		p.SoftMemory = mem
+	}
+}
+
+// WithHardLimit provides the hard memory limit (in bytes) for the container.
+// Supported by: ContainerStart, ContainerUpdate
+func WithHardLimit(mem int64) Option {
+	return func(p *options) {
+		p.HardMemory = mem
+	}
+}
+
+// ParseCPUs takes a float returns an integer value of nano cpus
+func ParseCPUs(value float64) (int64, error) {
+	cpu := new(big.Rat).SetFloat64(value)
+
+	nano := cpu.Mul(cpu, big.NewRat(1e9, 1))
+	if !nano.IsInt() {
+		return 0, fmt.Errorf("value is too precise")
+	}
+	return nano.Num().Int64(), nil
 }
 
 // ApplyOptions sets the passed options.

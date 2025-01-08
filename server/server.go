@@ -60,16 +60,13 @@ type containerManager interface {
 	// - tag (string): the container image tag of the container that was pushed
 	ContainerPush(context.Context, *os.File, ...options.Option) (string, string, error)
 
-	// ContainerRemove removes an image provided it is not linked to any running containers.
+	// ContainerRemove removes an container provided that it is not running.
 	//
 	// It takes:
-	// - image (string): the image name to remove.
-	// - tag (string): the tage to remove
+	// - container (string): the container name to remove.
 	//
 	// It returns an error indicating if the remove operation succeeded.
-	//
-	// Deprecated -- Use ImageRemove instead.
-	ContainerRemove(context.Context, string, string, ...options.Option) error
+	ContainerRemove(context.Context, string, ...options.Option) error
 
 	// ContainerStart starts a container based on the supplied image and tag.
 	//

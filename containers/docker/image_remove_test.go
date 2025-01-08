@@ -35,10 +35,7 @@ func (f *fakeRemovingDocker) ImageRemove(ctx context.Context, image string, opti
 	return nil, nil
 }
 
-// callMemberFunc makes the testing body reusable between ContainerRemove and ImageRemove.
-type callMemberFunc func(*Manager, context.Context, string, string, ...options.Option) error
-
-func objectRemoveTestInlet(t *testing.T, callFunc callMemberFunc) {
+func TestImageRemove(t *testing.T) {
 	tests := []struct {
 		name        string
 		inOpts      []options.Option
@@ -113,7 +110,7 @@ func objectRemoveTestInlet(t *testing.T, callFunc callMemberFunc) {
 			}
 			mgr := New(fpd)
 
-			if err := callFunc(mgr, context.Background(), tc.inImage, tc.inTag, tc.inOpts...); err != nil {
+			if err := mgr.ImageRemove(context.Background(), tc.inImage, tc.inTag, tc.inOpts...); err != nil {
 				if tc.wantErr != nil {
 					if diff := cmp.Diff(tc.wantErr, err, cmpopts.EquateErrors()); diff != "" {
 						t.Errorf("ContainerRemove(%q, %q, %+v) returned unexpected error(-want, got):\n %s", tc.inImage, tc.inTag, tc.inOpts, diff)
@@ -130,11 +127,4 @@ func objectRemoveTestInlet(t *testing.T, callFunc callMemberFunc) {
 			}
 		})
 	}
-}
-
-func TestImageRemove(t *testing.T) {
-	caller := func(m *Manager, ctx context.Context, image, tag string, opts ...options.Option) error {
-		return m.ImageRemove(ctx, image, tag, opts...)
-	}
-	objectRemoveTestInlet(t, caller)
 }
