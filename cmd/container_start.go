@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/openconfig/containerz/client"
@@ -31,6 +32,9 @@ var (
 	restartPolicy        string
 	addCaps              []string
 	delCaps              []string
+	cpus                 float64
+	softMem              int64
+	hardMem              int64
 )
 
 var cntStartCmd = &cobra.Command{
@@ -63,6 +67,23 @@ var cntStartCmd = &cobra.Command{
 		if len(addCaps) > 0 || len(delCaps) > 0 {
 			opts = append(opts, client.WithCapabilities(addCaps, delCaps))
 		}
+		if len(labels) > 0 {
+			label := map[string]string{}
+			for _, l := range labels {
+				parts := strings.SplitN(l, "=", 2)
+				label[parts[0]] = parts[1]
+			}
+			opts = append(opts, client.WithLabels(label))
+		}
+		if cpus > 0 {
+			opts = append(opts, client.WithCPUs(cpus))
+		}
+		if softMem > 0 {
+			opts = append(opts, client.WithSoftLimit(softMem))
+		}
+		if hardMem > 0 {
+			opts = append(opts, client.WithHardLimit(hardMem))
+		}
 
 		id, err := containerzClient.StartContainer(command.Context(), image, tag, cntCommand, instance, opts...)
 		if err != nil {
@@ -90,4 +111,8 @@ func init() {
 	cntStartCmd.PersistentFlags().StringArrayVarP(&volumes, "volume", "v", []string{}, "Volumes to attach to the container (format: <volume-name>:<mountpoint>[:ro])")
 	cntStartCmd.PersistentFlags().StringArrayVar(&addCaps, "add_caps", []string{}, "Capabilities to add.")
 	cntStartCmd.PersistentFlags().StringArrayVar(&delCaps, "del_caps", []string{}, "Capabilities to remove.")
+	cntStartCmd.PersistentFlags().StringArrayVar(&labels, "labels", []string{}, "Labels to add to the container (format: <key>=<value>).")
+	cntStartCmd.PersistentFlags().Float64Var(&cpus, "cpus", 0.0, "CPU limit to set.")
+	cntStartCmd.PersistentFlags().Int64Var(&softMem, "soft_mem", 0, "Soft memory limit to set.")
+	cntStartCmd.PersistentFlags().Int64Var(&hardMem, "hard_mem", 0, "Hard memory limit to set.")
 }

@@ -97,6 +97,12 @@ func startContainerRequestWithOptions(ctx context.Context, image string, tag str
 		Cap:          capabilities,
 		RunAs:        runAs,
 		Restart:      restartPolicy,
+		Labels:       optionz.labels,
+		Limits: &cpb.StartContainerRequest_Limits{
+			MaxCpu:       optionz.cpus,
+			SoftMemBytes: optionz.softMem,
+			HardMemBytes: optionz.hardMem,
+		},
 	}, nil
 }
 

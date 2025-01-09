@@ -53,6 +53,10 @@ func TestStart(t *testing.T) {
 		inRunAs         string
 		inCapAdd        []string
 		inCapRemove     []string
+		inLabels        map[string]string
+		inCPUs          float64
+		inSoftMem       int64
+		inHardMem       int64
 		wantMsg         *cpb.StartContainerRequest
 		wantID          string
 		wantErr         error
@@ -339,6 +343,37 @@ func TestStart(t *testing.T) {
 				Restart: &cpb.StartContainerRequest_Restart{
 					Policy:   cpb.StartContainerRequest_Restart_ALWAYS,
 					Attempts: 3,
+				},
+			},
+		},
+		{
+			name:       "simple-with-labels-and-limits",
+			inImage:    "some-image",
+			inTag:      "some-tag",
+			inInstance: "some-instance",
+			inCmd:      "some-cmd",
+			inLabels:   map[string]string{"key1": "value1"},
+			inCPUs:     1.0,
+			inSoftMem:  1000,
+			inHardMem:  2000,
+			inMsg: &cpb.StartContainerResponse{
+				Response: &cpb.StartContainerResponse_StartOk{
+					StartOk: &cpb.StartOK{
+						InstanceName: "some-instance",
+					},
+				},
+			},
+			wantID: "some-instance",
+			wantMsg: &cpb.StartContainerRequest{
+				ImageName:    "some-image",
+				Tag:          "some-tag",
+				Cmd:          "some-cmd",
+				InstanceName: "some-instance",
+				Labels:       map[string]string{"key1": "value1"},
+				Limits: &cpb.StartContainerRequest_Limits{
+					MaxCpu:       1.0,
+					SoftMemBytes: 1000,
+					HardMemBytes: 2000,
 				},
 			},
 		},
