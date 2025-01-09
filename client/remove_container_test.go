@@ -25,68 +25,70 @@ import (
 	cpb "github.com/openconfig/gnoi/containerz"
 )
 
+type fakeImageRemoveContainerContainerzServer struct {
+	fakeContainerzServer
+
+	receivedMsg *cpb.RemoveContainerRequest
+	sendMsg     *cpb.RemoveContainerResponse
+}
+
+func (f *fakeImageRemoveContainerContainerzServer) RemoveContainer(_ context.Context, req *cpb.RemoveContainerRequest) (*cpb.RemoveContainerResponse, error) {
+	f.receivedMsg = req
+	return f.sendMsg, nil
+}
+
 func TestRemove(t *testing.T) {
 	tests := []struct {
 		name    string
 		inImage string
-		inTag   string
+		inMsg   *cpb.RemoveContainerResponse
 		inForce bool
-		inMsg   *cpb.RemoveImageResponse
-
-		wantMsg *cpb.RemoveImageRequest
+		wantMsg *cpb.RemoveContainerRequest
 		wantErr error
 	}{
 		{
 			name: "success",
-			inMsg: &cpb.RemoveImageResponse{
-				Code: cpb.RemoveImageResponse_SUCCESS,
+			inMsg: &cpb.RemoveContainerResponse{
+				Code: cpb.RemoveContainerResponse_SUCCESS,
 			},
 			inImage: "some-image",
-			inTag:   "some-tag",
-			wantMsg: &cpb.RemoveImageRequest{
+			wantMsg: &cpb.RemoveContainerRequest{
 				Name:  "some-image",
-				Tag:   "some-tag",
 				Force: false,
 			},
 		},
 		{
 			name: "success-with-force",
-			inMsg: &cpb.RemoveImageResponse{
-				Code: cpb.RemoveImageResponse_SUCCESS,
+			inMsg: &cpb.RemoveContainerResponse{
+				Code: cpb.RemoveContainerResponse_SUCCESS,
 			},
 			inImage: "some-image",
-			inTag:   "some-tag",
 			inForce: true,
-			wantMsg: &cpb.RemoveImageRequest{
+			wantMsg: &cpb.RemoveContainerRequest{
 				Name:  "some-image",
-				Tag:   "some-tag",
 				Force: true,
 			},
 		},
 		{
 			name: "not-found",
-			inMsg: &cpb.RemoveImageResponse{
-				Code: cpb.RemoveImageResponse_NOT_FOUND,
+			inMsg: &cpb.RemoveContainerResponse{
+				Code: cpb.RemoveContainerResponse_NOT_FOUND,
 			},
 			inImage: "some-image",
-			inTag:   "some-tag",
-			wantMsg: &cpb.RemoveImageRequest{
+			wantMsg: &cpb.RemoveContainerRequest{
 				Name:  "some-image",
-				Tag:   "some-tag",
 				Force: false,
 			},
 			wantErr: ErrNotFound,
 		},
 		{
 			name: "running",
-			inMsg: &cpb.RemoveImageResponse{
-				Code: cpb.RemoveImageResponse_RUNNING,
+			inMsg: &cpb.RemoveContainerResponse{
+				Code: cpb.RemoveContainerResponse_RUNNING,
 			},
 			inImage: "some-image",
-			inTag:   "some-tag",
-			wantMsg: &cpb.RemoveImageRequest{
+			wantMsg: &cpb.RemoveContainerRequest{
 				Name:  "some-image",
-				Tag:   "some-tag",
 				Force: false,
 			},
 			wantErr: ErrRunning,
@@ -96,7 +98,7 @@ func TestRemove(t *testing.T) {
 	ctx := context.Background()
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			fcm := &fakeImageRemovingContainerzServer{
+			fcm := &fakeImageRemoveContainerContainerzServer{
 				sendMsg: tc.inMsg,
 			}
 			addr, stop := newServer(t, fcm)
@@ -106,19 +108,19 @@ func TestRemove(t *testing.T) {
 				t.Fatalf("NewClient(%v) returned an unexpected error: %v", addr, err)
 			}
 
-			err = cli.RemoveContainer(ctx, tc.inImage, tc.inTag, tc.inForce)
+			err = cli.RemoveContainer(ctx, tc.inImage, tc.inForce)
 			if err != nil {
 				if tc.wantErr == nil {
-					t.Fatalf("Remove(%q, %q, %t) returned an unexpected error: %v", tc.inImage, tc.inTag, tc.inForce, err)
+					t.Fatalf("Remove(%q, %t) returned an unexpected error: %v", tc.inImage, tc.inForce, err)
 				}
 			}
 
 			if diff := cmp.Diff(tc.wantMsg, fcm.receivedMsg, protocmp.Transform()); diff != "" {
-				t.Errorf("Remove(%q, %q, %t) returned diff (-got, +want):\n%s", tc.inImage, tc.inTag, tc.inForce, diff)
+				t.Errorf("Remove(%q, %t) returned diff (-got, +want):\n%s", tc.inImage, tc.inForce, diff)
 			}
 
 			if diff := cmp.Diff(err, tc.wantErr, cmpopts.EquateErrors()); diff != "" {
-				t.Errorf("Remove(%q, %q, %t) returned diff (-got, +want):\n%s", tc.inImage, tc.inTag, tc.inForce, diff)
+				t.Errorf("Remove(%q, %t) returned diff (-got, +want):\n%s", tc.inImage, tc.inForce, diff)
 			}
 		})
 	}

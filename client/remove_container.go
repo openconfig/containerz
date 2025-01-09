@@ -19,6 +19,7 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	cpb "github.com/openconfig/gnoi/containerz"
 )
 
 var (
@@ -35,10 +36,28 @@ var (
 // container.
 //
 // Deprecated -- Use ImageRemove instead.
-func (c *Client) RemoveContainer(ctx context.Context, image string, tag string, forceopt ...bool) error {
+func (c *Client) RemoveContainer(ctx context.Context, cnt string, forceopt ...bool) error {
 	force := false
 	if len(forceopt) > 0 {
 		force = forceopt[0]
 	}
-	return c.RemoveImage(ctx, image, tag, force)
+
+	resp, err := c.cli.RemoveContainer(ctx, &cpb.RemoveContainerRequest{
+		Name:  cnt,
+		Force: force,
+	})
+	if err != nil {
+		return status.Errorf(codes.Internal, "unable to remove container: %v", err)
+	}
+
+	switch resp.GetCode() {
+	case cpb.RemoveContainerResponse_SUCCESS:
+		return nil
+	case cpb.RemoveContainerResponse_NOT_FOUND:
+		return ErrNotFound
+	case cpb.RemoveContainerResponse_RUNNING:
+		return ErrRunning
+	default:
+		return status.Errorf(codes.Unknown, "unknown error: %v", resp.GetCode())
+	}
 }
