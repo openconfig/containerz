@@ -61,11 +61,12 @@ func (f *fakePushingContainerzServer) Deploy(srv cpb.Containerz_DeployServer) er
 
 func TestPushImage(t *testing.T) {
 	tests := []struct {
-		name    string
-		inImage string
-		inTag   string
-		inFile  string
-		inMsgs  []*cpb.DeployResponse
+		name     string
+		inImage  string
+		inTag    string
+		inFile   string
+		inPlugin bool
+		inMsgs   []*cpb.DeployResponse
 
 		wantProgress []*Progress
 		wantMsgs     []*cpb.DeployRequest
@@ -161,6 +162,70 @@ func TestPushImage(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:     "valid-plugin-transfer",
+			inImage:  "some-image",
+			inTag:    "some-tag",
+			inFile:   "testdata/reader-data.txt",
+			inPlugin: true,
+			inMsgs: []*cpb.DeployResponse{
+				&cpb.DeployResponse{
+					Response: &cpb.DeployResponse_ImageTransferReady{
+						ImageTransferReady: &cpb.ImageTransferReady{
+							ChunkSize: 28,
+						},
+					},
+				},
+				&cpb.DeployResponse{
+					Response: &cpb.DeployResponse_ImageTransferProgress{
+						ImageTransferProgress: &cpb.ImageTransferProgress{
+							BytesReceived: 26,
+						},
+					},
+				},
+				&cpb.DeployResponse{
+					Response: &cpb.DeployResponse_ImageTransferSuccess{
+						ImageTransferSuccess: &cpb.ImageTransferSuccess{
+							Name: "some-image",
+							Tag:  "some-tag",
+						},
+					},
+				},
+			},
+
+			wantMsgs: []*cpb.DeployRequest{
+				&cpb.DeployRequest{
+					Request: &cpb.DeployRequest_ImageTransfer{
+						ImageTransfer: &cpb.ImageTransfer{
+							Name:      "some-image",
+							Tag:       "some-tag",
+							ImageSize: 26,
+							IsPlugin:  true,
+						},
+					},
+				},
+				&cpb.DeployRequest{
+					Request: &cpb.DeployRequest_Content{
+						Content: []byte("some really important data"),
+					},
+				},
+				&cpb.DeployRequest{
+					Request: &cpb.DeployRequest_ImageTransferEnd{
+						ImageTransferEnd: &cpb.ImageTransferEnd{},
+					},
+				},
+			},
+			wantProgress: []*Progress{
+				&Progress{
+					BytesReceived: 26,
+				},
+				&Progress{
+					Finished: true,
+					Image:    "some-image",
+					Tag:      "some-tag",
+				},
+			},
+		},
 	}
 
 	ctx := context.Background()
@@ -180,9 +245,9 @@ func TestPushImage(t *testing.T) {
 			doneCh := make(chan struct{})
 			got := []*Progress{}
 
-			ch, err := cli.PushImage(ctx, tc.inImage, tc.inTag, tc.inFile)
+			ch, err := cli.PushImage(ctx, tc.inImage, tc.inTag, tc.inFile, tc.inPlugin)
 			if err != nil {
-				t.Fatalf("PushImage(%q, %q, %q) returned an unexpected error: %v", tc.inImage, tc.inTag, tc.inFile, err)
+				t.Fatalf("PushImage(%q, %q, %q, %t) returned an unexpected error: %v", tc.inImage, tc.inTag, tc.inFile, tc.inPlugin, err)
 			}
 
 			go func() {

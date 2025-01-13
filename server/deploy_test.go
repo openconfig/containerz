@@ -301,6 +301,35 @@ func TestDeploy(t *testing.T) {
 				Contents: "exactly 16 bytes",
 			},
 		},
+		{
+			name:   "successful-plugin-transfer",
+			inOpts: []Option{WithAddr("localhost:0"), WithChunkSize(8)},
+			inReqs: buildRequests(t, &cpb.ImageTransfer{
+				Name:      "some-image",
+				Tag:       "some-tag",
+				ImageSize: 16,
+				IsPlugin:  true,
+			}, &cpb.DeployRequest{
+				Request: &cpb.DeployRequest_Content{
+					Content: []byte("exactly "),
+				},
+			}, &cpb.DeployRequest{
+				Request: &cpb.DeployRequest_Content{
+					Content: []byte("16 bytes"),
+				},
+			}, &cpb.ImageTransferEnd{}),
+			wantResponses: buildResponses(t, &cpb.ImageTransferReady{
+				ChunkSize: 8,
+			}, &cpb.ImageTransferProgress{
+				BytesReceived: 8,
+			}, &cpb.ImageTransferProgress{
+				BytesReceived: 16,
+			}, &cpb.ImageTransferSuccess{
+				Name:      "some-image",
+				ImageSize: 16,
+			}),
+			wantState: &fakeContainerManager{},
+		},
 	}
 
 	for _, tc := range tests {

@@ -22,7 +22,10 @@ import (
 	"github.com/briandowns/spinner"
 )
 
-var file string
+var (
+	file     string
+	isPlugin bool
+)
 
 var pushCmd = &cobra.Command{
 	Use:   "push",
@@ -38,7 +41,7 @@ var pushCmd = &cobra.Command{
 			output = "image"
 		}
 
-		ch, err := containerzClient.PushImage(command.Context(), image, tag, file)
+		ch, err := containerzClient.PushImage(command.Context(), image, tag, file, isPlugin)
 		if err != nil {
 			return err
 		}
@@ -68,4 +71,5 @@ var pushCmd = &cobra.Command{
 func init() {
 	imageCmd.AddCommand(pushCmd)
 	pushCmd.PersistentFlags().StringVar(&file, "file", "", "Image tar to upload.")
+	pushCmd.PersistentFlags().BoolVar(&isPlugin, "is_plugin", false, "If set to true, a plugin will be uploaded rather than loading the image into the container runtime")
 }

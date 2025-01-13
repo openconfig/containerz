@@ -16,7 +16,10 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"io"
+	"os"
+	"path/filepath"
 
 	"golang.org/x/sys/unix"
 	"google.golang.org/grpc/codes"
@@ -121,6 +124,27 @@ func (s *Server) handleImageTransfer(ctx context.Context, srv cpb.Containerz_Dep
 			}
 
 		case *cpb.DeployRequest_ImageTransferEnd:
+			if transfer.IsPlugin {
+				if err := os.MkdirAll(filepath.Join(s.tmpLocation, "plugins"), 0755); err != nil {
+					return status.Errorf(codes.Internal, "unable to create plugin dir: %v", err)
+				}
+				if err := os.Rename(chunkWriter.File().Name(), filepath.Join(s.tmpLocation, "plugins", fmt.Sprintf("%s.tar", transfer.GetName()))); err != nil {
+					return status.Errorf(codes.Internal, "unable to rename plugin: %v", err)
+				}
+
+				if err := srv.Send(&cpb.DeployResponse{
+					Response: &cpb.DeployResponse_ImageTransferSuccess{
+						ImageTransferSuccess: &cpb.ImageTransferSuccess{
+							Name:      transfer.GetName(),
+							ImageSize: chunkWriter.Size(),
+						},
+					},
+				}); err != nil {
+					return status.Errorf(codes.Unavailable, "client is not ready: %v", err)
+				}
+				return nil
+			}
+
 			image, tag, err := s.mgr.ContainerPush(ctx, chunkWriter.File(), options.WithTarget(transfer.GetName(), transfer.GetTag()))
 			if err != nil {
 				return err

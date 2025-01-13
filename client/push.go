@@ -52,7 +52,7 @@ const (
 )
 
 // PushImage implements the client logic to push an image to the target containerz server.
-func (c *Client) PushImage(ctx context.Context, image string, tag string, file string) (<-chan *Progress, error) {
+func (c *Client) PushImage(ctx context.Context, image string, tag string, file string, isPlugin bool) (<-chan *Progress, error) {
 	dcli, err := c.cli.Deploy(ctx)
 	if err != nil {
 		return nil, err
@@ -79,6 +79,7 @@ func (c *Client) PushImage(ctx context.Context, image string, tag string, file s
 							Name:      image,
 							Tag:       tag,
 							ImageSize: reader.Size(),
+							IsPlugin:  isPlugin,
 						},
 					},
 				}); err != nil {
