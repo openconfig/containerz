@@ -128,8 +128,8 @@ func (s *Server) handleImageTransfer(ctx context.Context, srv cpb.Containerz_Dep
 
 		case *cpb.DeployRequest_ImageTransferEnd:
 			if transfer.IsPlugin {
-				if err := os.Rename(chunkWriter.File().Name(), filepath.Join(pluginLocation, fmt.Sprintf("%s.tar", transfer.GetName()))); err != nil {
-					return status.Errorf(codes.Internal, "unable to rename plugin: %v", err)
+				if err := moveFile(chunkWriter.File().Name(), filepath.Join(pluginLocation, fmt.Sprintf("%s.tar", transfer.GetName()))); err != nil {
+					return status.Errorf(codes.Internal, "unable to move plugin: %v", err)
 				}
 
 				if err := srv.Send(&cpb.DeployResponse{
@@ -190,4 +190,31 @@ func diskSpace(loc string) (uint64, error) {
 
 	// Available blocks * size per block = available space in bytes
 	return uint64(stat.Bavail) * uint64(stat.Bsize), nil
+}
+
+// moveFile moves a file by copying it and deleting the source. This is needed because os.Rename
+// only works within one device (i.e. mountpoint). The replication server's temp location and
+// actual location may be on different devices.
+func moveFile(sourcePath, destPath string) error {
+	inputFile, err := os.Open(sourcePath)
+	if err != nil {
+		return fmt.Errorf("unable to open source file: %s", err)
+	}
+	outputFile, err := os.Create(destPath)
+	if err != nil {
+		inputFile.Close()
+		return fmt.Errorf("unable to open dest file: %s", err)
+	}
+	defer outputFile.Close()
+	_, err = io.Copy(outputFile, inputFile)
+	inputFile.Close()
+	if err != nil {
+		return fmt.Errorf("writing to output file failed: %s", err)
+	}
+	// Success, now delete the original file.
+	err = os.Remove(sourcePath)
+	if err != nil {
+		return fmt.Errorf("failed removing original file: %s", err)
+	}
+	return nil
 }
