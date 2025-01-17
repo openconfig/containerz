@@ -50,11 +50,6 @@ type ListVolumeStreamer interface {
 	Send(msg *cpb.ListVolumeResponse) error
 }
 
-// ListPluginStreamer is an entity capable of streaming plugin information.
-type ListPluginStreamer interface {
-	Send(msg *cpb.ListPluginsResponse) error
-}
-
 // FilterKey represents a key for a filter.
 type FilterKey string
 

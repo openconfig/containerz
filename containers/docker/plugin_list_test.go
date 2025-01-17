@@ -45,15 +45,6 @@ const (
 }`
 )
 
-type fakeListPluginStreamer struct {
-	msgs []*cpb.ListPluginsResponse
-}
-
-func (f *fakeListPluginStreamer) Send(msg *cpb.ListPluginsResponse) error {
-	f.msgs = append(f.msgs, msg)
-	return nil
-}
-
 type fakePluginListingDocker struct {
 	fakeDocker
 	plugins []*types.Plugin
@@ -78,10 +69,11 @@ func TestPluginList(t *testing.T) {
 		name        string
 		inPlugin    []*types.Plugin
 		inInstance  string
-		wantPlugins []*cpb.ListPluginsResponse
+		wantPlugins *cpb.ListPluginsResponse
 	}{
 		{
-			name: "no-plugins",
+			name:        "no-plugins",
+			wantPlugins: &cpb.ListPluginsResponse{},
 		},
 		{
 			name: "one-plugin",
@@ -94,14 +86,12 @@ func TestPluginList(t *testing.T) {
 					},
 				},
 			},
-			wantPlugins: []*cpb.ListPluginsResponse{
-				&cpb.ListPluginsResponse{
-					Plugins: []*cpb.Plugin{
-						&cpb.Plugin{
-							Id:           "plugin1",
-							InstanceName: "plugin1",
-							Config:       fmt.Sprintf(jsonConfig, "plugin1 config"),
-						},
+			wantPlugins: &cpb.ListPluginsResponse{
+				Plugins: []*cpb.Plugin{
+					&cpb.Plugin{
+						Id:           "plugin1",
+						InstanceName: "plugin1",
+						Config:       fmt.Sprintf(jsonConfig, "plugin1 config"),
 					},
 				},
 			},
@@ -124,23 +114,17 @@ func TestPluginList(t *testing.T) {
 					},
 				},
 			},
-			wantPlugins: []*cpb.ListPluginsResponse{
-				&cpb.ListPluginsResponse{
-					Plugins: []*cpb.Plugin{
-						&cpb.Plugin{
-							Id:           "plugin1",
-							InstanceName: "plugin1",
-							Config:       fmt.Sprintf(jsonConfig, "plugin1 config"),
-						},
+			wantPlugins: &cpb.ListPluginsResponse{
+				Plugins: []*cpb.Plugin{
+					&cpb.Plugin{
+						Id:           "plugin1",
+						InstanceName: "plugin1",
+						Config:       fmt.Sprintf(jsonConfig, "plugin1 config"),
 					},
-				},
-				&cpb.ListPluginsResponse{
-					Plugins: []*cpb.Plugin{
-						&cpb.Plugin{
-							Id:           "plugin2",
-							InstanceName: "plugin2",
-							Config:       fmt.Sprintf(jsonConfig, "plugin2 config"),
-						},
+					&cpb.Plugin{
+						Id:           "plugin2",
+						InstanceName: "plugin2",
+						Config:       fmt.Sprintf(jsonConfig, "plugin2 config"),
 					},
 				},
 			},
@@ -164,14 +148,12 @@ func TestPluginList(t *testing.T) {
 				},
 			},
 			inInstance: "plugin1",
-			wantPlugins: []*cpb.ListPluginsResponse{
-				&cpb.ListPluginsResponse{
-					Plugins: []*cpb.Plugin{
-						&cpb.Plugin{
-							Id:           "plugin1",
-							InstanceName: "plugin1",
-							Config:       fmt.Sprintf(jsonConfig, "plugin1 config"),
-						},
+			wantPlugins: &cpb.ListPluginsResponse{
+				Plugins: []*cpb.Plugin{
+					&cpb.Plugin{
+						Id:           "plugin1",
+						InstanceName: "plugin1",
+						Config:       fmt.Sprintf(jsonConfig, "plugin1 config"),
 					},
 				},
 			},
@@ -186,13 +168,12 @@ func TestPluginList(t *testing.T) {
 			}
 			mgr := New(fsd)
 
-			stream := &fakeListPluginStreamer{}
-			if err := mgr.PluginList(ctx, tc.inInstance, stream); err != nil {
+			resp, err := mgr.PluginList(ctx, tc.inInstance)
+			if err != nil {
 				t.Errorf("PluginList(%q) returned error: %v", tc.inInstance, err)
 			}
 
-			if diff := cmp.Diff(tc.wantPlugins, stream.msgs, protocmp.Transform()); diff != "" {
-				fmt.Println(stream.msgs)
+			if diff := cmp.Diff(tc.wantPlugins, resp, protocmp.Transform()); diff != "" {
 				t.Errorf("PluginList(%q) returned diff(-want, +got):\n%s", tc.inInstance, diff)
 			}
 		})

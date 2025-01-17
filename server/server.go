@@ -130,6 +130,41 @@ type containerManager interface {
 	// It returns an error indicating if the remove operation succeeded.
 	ImageRemove(context.Context, string, string, ...options.Option) error
 
+	// PluginList lists plugins on the target.
+	//
+	// It takes:
+	// - instance (string): the instance name of the plugin to list.
+	//
+	// It returns an error indicating whether the operation was successful or not and a list of
+	// plugins.
+	PluginList(context.Context, string) (*cpb.ListPluginsResponse, error)
+
+	// PluginRemove removes a plugin from the target.
+	//
+	// It takes:
+	// - instance (string): the instance name of the plugin to remove.
+	//
+	// It returns an error indicating whether the operation was successful or not.
+	PluginRemove(context.Context, string) error
+
+	// PluginStart starts a plugin on the target.
+	//
+	// It takes:
+	// - name (string): the name of the plugin to start.
+	// - instance (string): the instance name of the plugin to start.
+	// - config (string): the configuration to use for the plugin.
+	//
+	// It returns an error indicating whether the operation was successful or not.
+	PluginStart(context.Context, string, string, string) error
+
+	// PluginStop stops a plugin on the target.
+	//
+	// It takes:
+	// - instance (string): the instance name of the plugin to stop.
+	//
+	// It returns an error indicating whether the operation was successful or not.
+	PluginStop(context.Context, string) error
+
 	// VolumeList lists volumes on the target.
 	//
 	// It takes:

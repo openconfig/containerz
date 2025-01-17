@@ -16,6 +16,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"os"
 	"testing"
@@ -39,6 +40,8 @@ type fakeContainerManager struct {
 	Contents      string
 	Cmd           string
 	Instance      string
+	Name          string
+	Config        string
 	Ports         map[uint32]uint32
 	Envs          map[string]string
 	Force         bool
@@ -62,9 +65,11 @@ type fakeContainerManager struct {
 	listVols         []*cpb.ListVolumeResponse
 	listCntMsgs      []*cpb.ListContainerResponse
 	listImgMsgs      []*cpb.ListImageResponse
+	listPluginMsgs   *cpb.ListPluginsResponse
 	createVolumeName string
 	msgs             []string
-	removeError      error
+
+	removeError error
 }
 
 func (f *fakeContainerManager) ContainerPull(ctx context.Context, image string, tag string, opts ...options.Option) error {
@@ -82,8 +87,18 @@ func (f *fakeContainerManager) ContainerPush(ctx context.Context, file *os.File,
 	return "", "", nil
 }
 
-func (f fakeContainerManager) ContainerRemove(context.Context, string, ...options.Option) error {
-	return f.removeError
+func (f *fakeContainerManager) ContainerRemove(_ context.Context, instance string, opts ...options.Option) error {
+	optionz := options.ApplyOptions(opts...)
+	f.Instance = instance
+	f.Force = optionz.Force
+
+	for _, cnt := range f.listCntMsgs {
+		if cnt.GetName() == instance {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("not found")
 }
 
 func (f *fakeContainerManager) ContainerStart(_ context.Context, image string, tag string, cmd string, opts ...options.Option) (string, error) {
@@ -171,6 +186,38 @@ func (f *fakeContainerManager) ImageList(ctx context.Context, all bool, limit in
 
 func (f fakeContainerManager) ImageRemove(context.Context, string, string, ...options.Option) error {
 	return f.removeError
+}
+
+func (f *fakeContainerManager) PluginList(ctx context.Context, instance string) (*cpb.ListPluginsResponse, error) {
+	f.Instance = instance
+	return f.listPluginMsgs, nil
+}
+
+func (f *fakeContainerManager) PluginRemove(ctx context.Context, instance string) error {
+	f.Instance = instance
+	for _, plugin := range f.listPluginMsgs.GetPlugins() {
+		if plugin.GetInstanceName() == instance {
+			return nil
+		}
+	}
+	return status.Errorf(codes.NotFound, "plugin %s not found", instance)
+}
+
+func (f *fakeContainerManager) PluginStart(ctx context.Context, name, instance, config string) error {
+	f.Name = name
+	f.Instance = instance
+	f.Config = config
+	return nil
+}
+
+func (f *fakeContainerManager) PluginStop(ctx context.Context, instance string) error {
+	f.Instance = instance
+	for _, plugin := range f.listPluginMsgs.GetPlugins() {
+		if plugin.GetInstanceName() == instance {
+			return nil
+		}
+	}
+	return status.Errorf(codes.NotFound, "plugin %s not found", instance)
 }
 
 func (f *fakeContainerManager) VolumeList(ctx context.Context, srv options.ListVolumeStreamer, opts ...options.Option) error {

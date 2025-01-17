@@ -16,6 +16,9 @@ package server
 
 import (
 	"context"
+	"fmt"
+
+	"github.com/openconfig/containerz/containers"
 
 	cpb "github.com/openconfig/gnoi/containerz"
 )
@@ -27,30 +30,14 @@ import (
 //
 // Deprecated - use RemoveImage instead.
 func (s *Server) RemoveContainer(ctx context.Context, request *cpb.RemoveContainerRequest) (*cpb.RemoveContainerResponse, error) {
-	req := &cpb.RemoveImageRequest{
-		Name:  request.GetName(),
-		Force: request.GetForce(),
+	var opts []options.Option
+	if request.GetForce() {
+		opts = append(opts, options.Force())
 	}
 
-	imgResp, err := s.RemoveImage(ctx, req)
-	if err != nil {
-		return nil, err
+	if err := s.mgr.ContainerRemove(ctx, request.GetName(), opts...); err != nil {
+		return nil, fmt.Errorf("failed to remove container: %w", err)
 	}
 
-	var code cpb.RemoveContainerResponse_Code
-	switch imgResp.GetCode() {
-	case cpb.RemoveImageResponse_SUCCESS:
-		code = cpb.RemoveContainerResponse_SUCCESS
-	case cpb.RemoveImageResponse_NOT_FOUND:
-		code = cpb.RemoveContainerResponse_NOT_FOUND
-	case cpb.RemoveImageResponse_RUNNING:
-		code = cpb.RemoveContainerResponse_RUNNING
-	default:
-		code = cpb.RemoveContainerResponse_UNSPECIFIED
-	}
-
-	return &cpb.RemoveContainerResponse{
-		Code:   code,
-		Detail: imgResp.GetDetail(),
-	}, nil
+	return &cpb.RemoveContainerResponse{}, nil
 }
