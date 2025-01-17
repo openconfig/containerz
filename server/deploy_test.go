@@ -334,6 +334,7 @@ func TestDeploy(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			pluginLocation = t.TempDir()
 			fake := &fakeContainerManager{}
 			cli, s := startServerAndReturnClient(ctx, t, fake, tc.inOpts)
 			defer s.Halt(ctx)

@@ -100,6 +100,26 @@ func (fakeDocker) ImagesPrune(_ context.Context, _ filters.Args) (types.ImagesPr
 	return types.ImagesPruneReport{}, fmt.Errorf("not implemented")
 }
 
+func (fakeDocker) PluginCreate(ctx context.Context, createContext io.Reader, createOptions types.PluginCreateOptions) error {
+	return fmt.Errorf("not implemented")
+}
+
+func (fakeDocker) PluginEnable(ctx context.Context, name string, options types.PluginEnableOptions) error {
+	return fmt.Errorf("not implemented")
+}
+
+func (fakeDocker) PluginDisable(ctx context.Context, name string, options types.PluginDisableOptions) error {
+	return fmt.Errorf("not implemented")
+}
+
+func (fakeDocker) PluginRemove(ctx context.Context, name string, options types.PluginRemoveOptions) error {
+	return fmt.Errorf("not implemented")
+}
+
+func (fakeDocker) PluginList(ctx context.Context, filter filters.Args) (types.PluginsListResponse, error) {
+	return types.PluginsListResponse{}, fmt.Errorf("not implemented")
+}
+
 func TestNew(t *testing.T) {
 	want := &Manager{
 		client: &fakeDocker{},

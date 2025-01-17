@@ -31,6 +31,11 @@ type docker interface {
 	ImagePull(ctx context.Context, ref string, options imagetypes.PullOptions) (io.ReadCloser, error)
 	ImageRemove(ctx context.Context, image string, options imagetypes.RemoveOptions) ([]imagetypes.DeleteResponse, error)
 	ImageTag(ctx context.Context, source, target string) error
+	PluginCreate(ctx context.Context, createContext io.Reader, createOptions types.PluginCreateOptions) error
+	PluginEnable(ctx context.Context, name string, options types.PluginEnableOptions) error
+	PluginDisable(ctx context.Context, name string, options types.PluginDisableOptions) error
+	PluginRemove(ctx context.Context, name string, options types.PluginRemoveOptions) error
+	PluginList(ctx context.Context, filter filters.Args) (types.PluginsListResponse, error)
 	RegistryLogin(ctx context.Context, auth registry.AuthConfig) (registry.AuthenticateOKBody, error)
 	VolumeCreate(ctx context.Context, options volume.CreateOptions) (volume.Volume, error)
 	VolumeList(ctx context.Context, options volume.ListOptions) (volume.ListResponse, error)

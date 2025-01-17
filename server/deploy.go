@@ -31,6 +31,9 @@ import (
 	cpb "github.com/openconfig/gnoi/containerz"
 )
 
+// pluginLocation is the location where plugins are expected to be written to.
+var pluginLocation = "/plugins"
+
 // Deploy sets a container image on the target. The container is sent as
 // a sequential stream of messages containing up to 64KB of data. Upon
 // reception of a valid container, the target must load it into its registry.
@@ -125,10 +128,7 @@ func (s *Server) handleImageTransfer(ctx context.Context, srv cpb.Containerz_Dep
 
 		case *cpb.DeployRequest_ImageTransferEnd:
 			if transfer.IsPlugin {
-				if err := os.MkdirAll(filepath.Join(s.tmpLocation, "plugins"), 0755); err != nil {
-					return status.Errorf(codes.Internal, "unable to create plugin dir: %v", err)
-				}
-				if err := os.Rename(chunkWriter.File().Name(), filepath.Join(s.tmpLocation, "plugins", fmt.Sprintf("%s.tar", transfer.GetName()))); err != nil {
+				if err := os.Rename(chunkWriter.File().Name(), filepath.Join(pluginLocation, fmt.Sprintf("%s.tar", transfer.GetName()))); err != nil {
 					return status.Errorf(codes.Internal, "unable to rename plugin: %v", err)
 				}
 
