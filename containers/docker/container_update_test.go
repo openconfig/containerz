@@ -279,13 +279,15 @@ func TestContainerUpdateSync(t *testing.T) {
 				},
 			},
 			inCntJSON: &types.ContainerJSON{
-				&types.ContainerJSONBase{
+				ContainerJSONBase: &types.ContainerJSONBase{
 					HostConfig: &container.HostConfig{},
 					State: &types.ContainerState{
 						Paused: true,
 					},
 				},
-				nil, &container.Config{}, &types.NetworkSettings{},
+				Mounts:          nil,
+				Config:          &container.Config{},
+				NetworkSettings: &types.NetworkSettings{},
 			},
 			inInProgress: []string{"conflicting-container"},
 			inOpts:       []options.Option{options.WithInstanceName("container-I-want"), options.WithPorts(map[uint32]uint32{1: 1})},
@@ -326,13 +328,15 @@ func TestContainerUpdateSync(t *testing.T) {
 				},
 			},
 			inCntJSON: &types.ContainerJSON{
-				&types.ContainerJSONBase{
+				ContainerJSONBase: &types.ContainerJSONBase{
 					HostConfig: &container.HostConfig{},
 					State: &types.ContainerState{
 						Paused: true,
 					},
 				},
-				nil, &container.Config{}, &types.NetworkSettings{},
+				Mounts:          nil,
+				Config:          &container.Config{},
+				NetworkSettings: &types.NetworkSettings{},
 			},
 			inInProgress: []string{"conflicting-container"},
 			inOpts:       []options.Option{options.WithInstanceName("container-I-want"), options.WithPorts(map[uint32]uint32{1: 1})},
@@ -407,13 +411,15 @@ func TestContainerUpdateAsync(t *testing.T) {
 			},
 		},
 		cntJSON: &types.ContainerJSON{
-			&types.ContainerJSONBase{
+			ContainerJSONBase: &types.ContainerJSONBase{
 				HostConfig: &container.HostConfig{},
 				State: &types.ContainerState{
 					Running: true,
 				},
 			},
-			nil, &container.Config{}, &types.NetworkSettings{},
+			Mounts:          nil,
+			Config:          &container.Config{},
+			NetworkSettings: &types.NetworkSettings{},
 		},
 		c: make(chan struct{}),
 	}
