@@ -16,34 +16,37 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"text/tabwriter"
 
 	"github.com/spf13/cobra"
 )
 
-var (
-	force bool
-)
-
-var cntStopCmd = &cobra.Command{
-	Use:   "stop",
-	Short: "stop a container by instance name",
+var imageListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List images",
 	RunE: func(command *cobra.Command, args []string) error {
-		if instance == "" {
-			fmt.Println("--instance must be provided")
-		}
-
-		if err := containerzClient.StopContainer(command.Context(), instance, force); err != nil {
+		ch, err := containerzClient.ListImage(command.Context(), limit, nil)
+		if err != nil {
 			return err
 		}
 
-		fmt.Printf("Successfully stopped %s\n", instance)
+		writer := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', tabwriter.AlignRight)
+		fmt.Fprint(writer, "ID\tName\tTag\n")
+		defer writer.Flush()
+		for info := range ch {
+			if info.Error != nil {
+				return info.Error
+			}
+			fmt.Fprintf(writer, "%s\t%s\t%s\n", info.ID, info.ImageName, info.ImageTag)
+		}
+
 		return nil
 	},
 }
 
 func init() {
-	containerCmd.AddCommand(cntStopCmd)
-
-	cntStopCmd.PersistentFlags().StringVar(&instance, "instance", "", "Container instance to stop.")
-	cntStopCmd.PersistentFlags().BoolVar(&force, "force", false, "Forcefully stop the container.")
+	imageCmd.AddCommand(imageListCmd)
+	imageListCmd.PersistentFlags().BoolVar(&all, "all", false, "Return all images.")
+	imageListCmd.PersistentFlags().Int32Var(&limit, "limit", -1, "Number of images to return")
 }
