@@ -22,7 +22,7 @@ import (
 
 var cntRemoveCmd = &cobra.Command{
 	Use:   "remove",
-	Short: "remove a container by intance name",
+	Short: "remove a container by instance name",
 	RunE: func(command *cobra.Command, args []string) error {
 		if instance == "" {
 			fmt.Println("--instance must be provided")
@@ -38,7 +38,7 @@ var cntRemoveCmd = &cobra.Command{
 }
 
 func init() {
-	containerCmd.AddCommand(cntStopCmd)
+	containerCmd.AddCommand(cntRemoveCmd)
 
 	cntRemoveCmd.PersistentFlags().StringVar(&instance, "instance", "", "Container instance to remove.")
 	cntRemoveCmd.PersistentFlags().BoolVar(&force, "force", false, "Forcefully remove the container.")

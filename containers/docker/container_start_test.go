@@ -95,7 +95,7 @@ func TestContainerStart(t *testing.T) {
 			wantErr: status.Error(codes.NotFound, "image no-such-image:no-such-tag not found"),
 		},
 		{
-			name:    "container-with-intance-name-exists",
+			name:    "container-with-instance-name-exists",
 			inImage: "my-image",
 			inTag:   "my-tag",
 			inCmd:   "my-cmd",
