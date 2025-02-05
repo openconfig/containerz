@@ -59,7 +59,7 @@ func (s *Server) Deploy(srv cpb.Containerz_DeployServer) error {
 				options.WithStream(srv),
 				options.WithRegistryAuth(req.ImageTransfer.GetRemoteDownload().GetCredentials()),
 			}
-			if err := s.mgr.ContainerPull(srv.Context(), req.ImageTransfer.GetName(), req.ImageTransfer.GetTag(), opts...); err != nil {
+			if err := s.mgr.ImagePull(srv.Context(), req.ImageTransfer.GetName(), req.ImageTransfer.GetTag(), opts...); err != nil {
 				return err
 			}
 
@@ -145,7 +145,7 @@ func (s *Server) handleImageTransfer(ctx context.Context, srv cpb.Containerz_Dep
 				return nil
 			}
 
-			image, tag, err := s.mgr.ContainerPush(ctx, chunkWriter.File(), options.WithTarget(transfer.GetName(), transfer.GetTag()))
+			image, tag, err := s.mgr.ImagePush(ctx, chunkWriter.File(), options.WithTarget(transfer.GetName(), transfer.GetTag()))
 			if err != nil {
 				return err
 			}

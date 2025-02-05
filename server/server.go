@@ -38,7 +38,7 @@ type containerManager interface {
 	// It returns an error indicating the result of the operation.
 	ContainerList(context.Context, bool, int32, options.ListContainerStreamer, ...options.Option) error
 
-	// ContainerPull pulls a container from a registry to this instance of containerz.
+	// ImagePull pulls a container from a registry to this instance of containerz.
 	//
 	// It takes as input:
 	// - image (string): a container image name.
@@ -46,9 +46,9 @@ type containerManager interface {
 	// - opts (ImageOption slice): a set of options.
 	//
 	// It returns an error indicating the result of the operation.
-	ContainerPull(context.Context, string, string, ...options.Option) error
+	ImagePull(context.Context, string, string, ...options.Option) error
 
-	// ContainerPush pushes a container image to this instance of containerz.
+	// ImagePush pushes a container image to this instance of containerz.
 	//
 	// It takes as input:
 	// - file (os.File): a file containing the tarball of the container.
@@ -57,7 +57,7 @@ type containerManager interface {
 	// It returns:
 	// - image (string): the container image name of the container that was pushed.
 	// - tag (string): the container image tag of the container that was pushed
-	ContainerPush(context.Context, *os.File, ...options.Option) (string, string, error)
+	ImagePush(context.Context, *os.File, ...options.Option) (string, string, error)
 
 	// ContainerRemove removes an container provided that it is not running.
 	//

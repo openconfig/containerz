@@ -58,7 +58,7 @@ func (f *fakeStream) Send(resp *cpb.DeployResponse) error {
 	return nil
 }
 
-func TestContainerPull(t *testing.T) {
+func TestImagePull(t *testing.T) {
 	fakeStream := &fakeStream{}
 	tests := []struct {
 		name      string
@@ -147,22 +147,22 @@ func TestContainerPull(t *testing.T) {
 			fd := &fakePullingDocker{}
 			mgr := New(fd)
 
-			if err := mgr.ContainerPull(context.Background(), tc.inImage, tc.inTag, tc.inOpts...); err != nil {
+			if err := mgr.ImagePull(context.Background(), tc.inImage, tc.inTag, tc.inOpts...); err != nil {
 				if tc.wantErr != nil {
 					if diff := cmp.Diff(tc.wantErr, err, cmpopts.EquateErrors()); diff != "" {
-						t.Errorf("ContainerPull(%q, %q) returned unexpected error(-want, got):\n %s", tc.inImage, tc.inTag, diff)
+						t.Errorf("ImagePull(%q, %q) returned unexpected error(-want, got):\n %s", tc.inImage, tc.inTag, diff)
 					}
 					return
 				}
-				t.Errorf("ContainerPull(%q, %q) returned error: %v", tc.inImage, tc.inTag, err)
+				t.Errorf("ImagePull(%q, %q) returned error: %v", tc.inImage, tc.inTag, err)
 			}
 
 			if diff := cmp.Diff(tc.wantState, fd, cmpopts.IgnoreUnexported(fakePullingDocker{})); diff != "" {
-				t.Errorf("ContainerPull(%q, %q) returned diff(-want, +got):\n%s", tc.inImage, tc.inTag, diff)
+				t.Errorf("ImagePull(%q, %q) returned diff(-want, +got):\n%s", tc.inImage, tc.inTag, diff)
 			}
 
 			if diff := cmp.Diff(tc.wantResp, fakeStream.resps, cmpopts.EquateEmpty(), protocmp.Transform()); diff != "" {
-				t.Errorf("ContainerPull(%q, %q) returned diff(-want, +got):\n%s", tc.inImage, tc.inTag, diff)
+				t.Errorf("ImagePull(%q, %q) returned diff(-want, +got):\n%s", tc.inImage, tc.inTag, diff)
 			}
 		})
 	}
