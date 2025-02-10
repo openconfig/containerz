@@ -15,8 +15,8 @@
 package server
 
 import (
-	"google.golang.org/grpc/credentials/alts"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/alts"
 )
 
 // Option represents an server option.
@@ -47,7 +47,20 @@ func WithChunkSize(chunkSize int) Option {
 // See https://cloud.google.com/docs/security/encryption-in-transit/application-layer-transport-security
 // for more information.
 func UseALTS() Option {
+	return WithGrpcServer(
+		grpc.NewServer(grpc.Creds(alts.NewServerCreds(alts.DefaultServerOptions()))),
+	)
+}
+
+// WithGrpcServer sets the gRPC server that will host the containerz service
+// WithGrpcServer may be called multiple times during New as options are processed.
+// Each call to WithGrpcServer will stop the previously-running server. (it also ensures
+// channelz entries are removed even if the server was not running).
+func WithGrpcServer(g *grpc.Server) Option {
 	return func(s *Server) {
-		s.grpcServer = grpc.NewServer(grpc.Creds(alts.NewServerCreds(alts.DefaultServerOptions())))
+		if s.grpcServer != nil {
+			s.grpcServer.Stop()
+		}
+		s.grpcServer = g
 	}
 }
