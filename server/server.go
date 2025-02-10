@@ -22,12 +22,12 @@ import (
 	"os"
 
 	"github.com/openconfig/containerz/containers"
+	cpb "github.com/openconfig/gnoi/containerz"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"k8s.io/klog/v2"
-
-	cpb "github.com/openconfig/gnoi/containerz"
 )
 
 type containerManager interface {
