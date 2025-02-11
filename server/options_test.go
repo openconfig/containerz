@@ -16,6 +16,8 @@ package server
 
 import (
 	"testing"
+
+	"google.golang.org/grpc"
 )
 
 func TestWithAddr(t *testing.T) {
@@ -45,5 +47,22 @@ func TestWithChunkSize(t *testing.T) {
 
 	if s.chunkSize != 10 {
 		t.Errorf("WithChunkSize(10) returned %d", s.chunkSize)
+	}
+}
+
+func TestWithGrpcServer(t *testing.T) {
+	s := &Server{}
+
+	srv := grpc.NewServer()
+	WithGrpcServer(srv)(s)
+
+	if s.grpcServer != srv {
+		t.Fatal("WithGrpcServer did not set first server")
+	}
+
+	srv2 := grpc.NewServer()
+	WithGrpcServer(srv2)(s)
+	if s.grpcServer != srv2 {
+		t.Fatal("WithGrpcServer did not set second server")
 	}
 }
