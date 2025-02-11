@@ -158,7 +158,7 @@ type options struct {
 }
 
 // WithTarget sets the target image name and tag option for this pull operation.
-// Supported by: ContainerPush, ContainerPull
+// Supported by: ImagePush, ImagePull
 func WithTarget(image, tag string) Option {
 	return func(p *options) {
 		p.TargetName = image
@@ -170,7 +170,7 @@ func WithTarget(image, tag string) Option {
 }
 
 // WithRegistryAuth sets the credentials to use for this pull operation.
-// Supported by: ContainerPull
+// Supported by: ImagePull
 func WithRegistryAuth(creds *tpb.Credentials) Option {
 	return func(p *options) {
 		p.Credentials = creds
@@ -178,7 +178,7 @@ func WithRegistryAuth(creds *tpb.Credentials) Option {
 }
 
 // WithStream sets the stream to use to return results to the caller.
-// Supported by: ContainerPull
+// Supported by: ImagePull
 func WithStream(client Stream) Option {
 	return func(p *options) {
 		p.StreamClient = client

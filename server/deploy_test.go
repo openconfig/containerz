@@ -72,13 +72,13 @@ type fakeContainerManager struct {
 	removeError error
 }
 
-func (f *fakeContainerManager) ContainerPull(ctx context.Context, image string, tag string, opts ...options.Option) error {
+func (f *fakeContainerManager) ImagePull(ctx context.Context, image string, tag string, opts ...options.Option) error {
 	f.Image = image
 	f.Tag = tag
 	return nil
 }
 
-func (f *fakeContainerManager) ContainerPush(ctx context.Context, file *os.File, opts ...options.Option) (string, string, error) {
+func (f *fakeContainerManager) ImagePush(ctx context.Context, file *os.File, opts ...options.Option) (string, string, error) {
 	buf, err := io.ReadAll(file)
 	if err != nil {
 		return "", "", err

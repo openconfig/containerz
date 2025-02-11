@@ -16,10 +16,10 @@ import (
 	tpb "github.com/openconfig/gnoi/types"
 )
 
-// ContainerPull pull a container from a registry to this containerz server. Based on the options
+// ImagePull pull a container from a registry to this containerz server. Based on the options
 // specified  it can tag the container, stream responses to the client, and perform registry
 // authentication.
-func (m *Manager) ContainerPull(ctx context.Context, image, tag string, opts ...options.Option) error {
+func (m *Manager) ImagePull(ctx context.Context, image, tag string, opts ...options.Option) error {
 	switch {
 	case image == "":
 		return status.Error(codes.InvalidArgument, "an image name must be supplied.")
