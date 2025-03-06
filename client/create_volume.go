@@ -55,7 +55,7 @@ func requestForDriver(driver string, options map[string]string) (*cpb.CreateVolu
 			LocalMountOptions: localOpts,
 		}
 	default:
-		// This is a custom driver, so we need to pass the options and encode its name.
+		// This is a custom driver, so we need to pass the options through.
 		req.Driver = cpb.Driver_DS_CUSTOM
 		req.Options = &cpb.CreateVolumeRequest_CustomOptions{
 			CustomOptions: &cpb.CustomOptions{

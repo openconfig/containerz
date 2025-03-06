@@ -20,8 +20,9 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	cpb "github.com/openconfig/gnoi/containerz"
 	"google.golang.org/protobuf/testing/protocmp"
+
+	cpb "github.com/openconfig/gnoi/containerz"
 )
 
 type fakeCreateVolumeContainerzServer struct {
@@ -60,7 +61,6 @@ func TestCreateVolume(t *testing.T) {
 			},
 			wantName: "simple",
 		},
-
 		{
 			name:      "custom-driver",
 			inName:    "simple",
@@ -80,7 +80,6 @@ func TestCreateVolume(t *testing.T) {
 			},
 			wantName: "simple",
 		},
-
 		{
 			name:      "good-driver-wrong-option",
 			inName:    "simple",

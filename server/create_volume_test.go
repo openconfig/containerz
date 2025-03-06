@@ -6,8 +6,9 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	cpb "github.com/openconfig/gnoi/containerz"
 	"google.golang.org/protobuf/testing/protocmp"
+
+	cpb "github.com/openconfig/gnoi/containerz"
 )
 
 func TestCreateVolume(t *testing.T) {
@@ -61,7 +62,6 @@ func TestCreateVolume(t *testing.T) {
 				Name: "some-volume",
 			},
 		},
-
 		{
 			name: "with driver and options",
 			inReq: &cpb.CreateVolumeRequest{
