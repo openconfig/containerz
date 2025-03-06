@@ -5,9 +5,9 @@ import (
 	"strings"
 
 	"github.com/docker/docker/api/types/volume"
+	"github.com/openconfig/containerz/containers"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"github.com/openconfig/containerz/containers"
 
 	cpb "github.com/openconfig/gnoi/containerz"
 )
@@ -34,6 +34,15 @@ func (m *Manager) VolumeCreate(ctx context.Context, name string, driver cpb.Driv
 
 			volOpts["o"] = strings.Join(vopts.GetOptions(), ",")
 			volOpts["device"] = vopts.GetMountpoint()
+		}
+	case cpb.Driver_DS_CUSTOM:
+		kind = "custom"
+		if optionz.VolumeDriverOptions != nil {
+			vopts, ok := optionz.VolumeDriverOptions.(*cpb.CustomOptions)
+			if !ok {
+				return "", status.Error(codes.InvalidArgument, "driver is marked as custom but options are not CustomOptions")
+			}
+			volOpts = vopts.GetOptions()
 		}
 	}
 

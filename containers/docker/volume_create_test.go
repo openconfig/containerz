@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
+	"github.com/docker/docker/api/types/volume"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/docker/docker/api/types/volume"
 	"github.com/openconfig/containerz/containers"
 	cpb "github.com/openconfig/gnoi/containerz"
 )
@@ -84,6 +84,28 @@ func TestVolumeCreate(t *testing.T) {
 						"type":   "none",
 						"o":      "some-option",
 						"device": "some-mountpoint",
+					},
+					Labels: map[string]string{"some-label": "some-label"},
+				},
+			},
+		},
+		{
+			name:     "named-volume-with-opts-and-custom-driver",
+			inName:   "some-volume",
+			wantResp: "some-volume",
+			inDriver: cpb.Driver_DS_CUSTOM,
+			inOpts: []options.Option{
+				options.WithVolumeDriverOpts(&cpb.CustomOptions{
+					Options: map[string]string{"some-option": "some-value"},
+				}),
+				options.WithVolumeLabels(map[string]string{"some-label": "some-label"}),
+			},
+			wantState: &fakeVolumeCreatingDocker{
+				V: volume.Volume{
+					Name:   "some-volume",
+					Driver: "custom",
+					Options: map[string]string{
+						"some-option": "some-value",
 					},
 					Labels: map[string]string{"some-label": "some-label"},
 				},
