@@ -36,7 +36,7 @@ func (m *Manager) VolumeCreate(ctx context.Context, name string, driver cpb.Driv
 			volOpts["device"] = vopts.GetMountpoint()
 		}
 	case cpb.Driver_DS_CUSTOM:
-		kind = "custom"
+		kind = "custom:latest"
 		if optionz.VolumeDriverOptions != nil {
 			vopts, ok := optionz.VolumeDriverOptions.(*cpb.CustomOptions)
 			if !ok {

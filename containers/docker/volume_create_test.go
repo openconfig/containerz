@@ -103,7 +103,7 @@ func TestVolumeCreate(t *testing.T) {
 			wantState: &fakeVolumeCreatingDocker{
 				V: volume.Volume{
 					Name:   "some-volume",
-					Driver: "custom",
+					Driver: "custom:latest",
 					Options: map[string]string{
 						"some-option": "some-value",
 					},
