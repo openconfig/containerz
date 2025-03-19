@@ -155,6 +155,9 @@ type options struct {
 
 	// HardMemory is the hard memory limit for the container.
 	HardMemory int64
+
+	// Devices is the set of devices to attach to the container.
+	Devices []*cpb.Device
 }
 
 // WithTarget sets the target image name and tag option for this pull operation.
@@ -331,6 +334,14 @@ func WithSoftLimit(mem int64) Option {
 func WithHardLimit(mem int64) Option {
 	return func(p *options) {
 		p.HardMemory = mem
+	}
+}
+
+// WithDevices sets the devices to attach to a container.
+// Supported by: ContainerStart
+func WithDevices(devices []*cpb.Device) Option {
+	return func(p *options) {
+		p.Devices = devices
 	}
 }
 

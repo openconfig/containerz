@@ -75,6 +75,6 @@ func optionsFromStartContainerRequest(request *cpb.StartContainerRequest) []opti
 		}
 	}
 
-	opts = append(opts, options.WithLabels(request.GetLabels()), options.WithEnv(request.GetEnvironment()), options.WithInstanceName(request.GetInstanceName()), options.WithVolumes(request.GetVolumes()))
+	opts = append(opts, options.WithLabels(request.GetLabels()), options.WithEnv(request.GetEnvironment()), options.WithInstanceName(request.GetInstanceName()), options.WithVolumes(request.GetVolumes()), options.WithDevices(request.GetDevices()))
 	return opts
 }
