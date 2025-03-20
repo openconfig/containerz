@@ -56,6 +56,15 @@ func (m *Manager) ContainerStart(ctx context.Context, image, tag, cmd string, op
 		})
 	}
 
+	devices := make([]container.DeviceMapping, 0, len(optionz.Devices))
+	for _, dev := range optionz.Devices {
+		devices = append(devices, container.DeviceMapping{
+			PathOnHost:        dev.GetSrcPath(),
+			PathInContainer:   dev.GetDstPath(),
+			CgroupPermissions: cgroupPermissions(dev.GetPermissions()),
+		})
+	}
+
 	cpu, err := options.ParseCPUs(optionz.CPU)
 	if err != nil {
 		return "", fmt.Errorf("unable to parse cpu limit %f: %v", optionz.CPU, err)
@@ -70,6 +79,7 @@ func (m *Manager) ContainerStart(ctx context.Context, image, tag, cmd string, op
 			NanoCPUs:          cpu,
 			Memory:            optionz.HardMemory, // hard
 			MemoryReservation: optionz.SoftMemory, // soft
+			Devices:           devices,
 		},
 	}
 
@@ -204,4 +214,23 @@ func checkExistingInstanceAndPorts(instance string, ports map[uint32]uint32, cnt
 		}
 	}
 	return nil
+}
+
+// cgroupPermissions returns the cgroup permissions for the device in the order of rwm.
+func cgroupPermissions(perms []cpb.Device_Permission) string {
+	permMap := map[cpb.Device_Permission]bool{}
+	for _, perm := range perms {
+		permMap[perm] = true
+	}
+	cperms := ""
+	if permMap[cpb.Device_READ] {
+		cperms += "r"
+	}
+	if permMap[cpb.Device_WRITE] {
+		cperms += "w"
+	}
+	if permMap[cpb.Device_MKNOD] {
+		cperms += "m"
+	}
+	return cperms
 }

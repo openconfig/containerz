@@ -47,6 +47,7 @@ func TestStart(t *testing.T) {
 		inPorts         []string
 		inEnvs          []string
 		inVols          []string
+		inDevices       []string
 		inMsg           *cpb.StartContainerResponse
 		inNetwork       string
 		inRestartPolicy string
@@ -189,6 +190,47 @@ func TestStart(t *testing.T) {
 						Name:       "vol2",
 						MountPoint: "/bb",
 						ReadOnly:   true,
+					},
+				},
+			},
+		},
+		{
+			name:       "simple-with-devices",
+			inImage:    "some-image",
+			inTag:      "some-tag",
+			inInstance: "some-instance",
+			inCmd:      "some-cmd",
+			inEnvs:     []string{"env1=cool", "env2=cooler"},
+			inDevices:  []string{"dev1", "dev2:mydev2", "dev3:mydev3:rw"},
+			inMsg: &cpb.StartContainerResponse{
+				Response: &cpb.StartContainerResponse_StartOk{
+					StartOk: &cpb.StartOK{
+						InstanceName: "some-instance",
+					},
+				},
+			},
+			wantID: "some-instance",
+			wantMsg: &cpb.StartContainerRequest{
+				ImageName:    "some-image",
+				Tag:          "some-tag",
+				Cmd:          "some-cmd",
+				InstanceName: "some-instance",
+				Environment:  map[string]string{"env1": "cool", "env2": "cooler"},
+				Devices: []*cpb.Device{
+					&cpb.Device{
+						SrcPath:     "dev1",
+						DstPath:     "dev1",
+						Permissions: []cpb.Device_Permission{cpb.Device_READ, cpb.Device_WRITE, cpb.Device_MKNOD},
+					},
+					&cpb.Device{
+						SrcPath:     "dev2",
+						DstPath:     "mydev2",
+						Permissions: []cpb.Device_Permission{cpb.Device_READ, cpb.Device_WRITE, cpb.Device_MKNOD},
+					},
+					&cpb.Device{
+						SrcPath:     "dev3",
+						DstPath:     "mydev3",
+						Permissions: []cpb.Device_Permission{cpb.Device_READ, cpb.Device_WRITE},
 					},
 				},
 			},
@@ -412,6 +454,7 @@ func TestStart(t *testing.T) {
 				WithPorts(tc.inPorts),
 				WithEnv(tc.inEnvs),
 				WithVolumes(tc.inVols),
+				WithDevices(tc.inDevices),
 				WithNetwork(tc.inNetwork),
 				WithRestartPolicy(tc.inRestartPolicy),
 				WithRunAs(tc.inRunAs),

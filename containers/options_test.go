@@ -225,6 +225,16 @@ func TestWithHardLimit(t *testing.T) {
 	}
 }
 
+func TestWithDevices(t *testing.T) {
+	p := &options{}
+
+	WithDevices([]*cpb.Device{&cpb.Device{}})(p)
+
+	if len(p.Devices) != 1 {
+		t.Errorf("WithDevices([]*cpb.Device{&cpb.Device{}}) did not set the devices field")
+	}
+}
+
 func TestApplyOptions(t *testing.T) {
 	tests := []struct {
 		inOpts []Option

@@ -49,6 +49,7 @@ type fakeContainerManager struct {
 	All           bool
 	Async         bool
 	Limit         int32
+	Devices       []*cpb.Device
 	Volumes       []*cpb.Volume
 	VolumeDriver  cpb.Driver
 	VolumeOpts    proto.Message
@@ -110,6 +111,7 @@ func (f *fakeContainerManager) ContainerStart(_ context.Context, image string, t
 	f.Envs = optionz.EnvMapping
 	f.Instance = optionz.InstanceName
 	f.Volumes = optionz.Volumes
+	f.Devices = optionz.Devices
 	f.Network = optionz.Network
 	f.Capabilities = optionz.Capabilities
 	f.RunAs = optionz.RunAs
@@ -150,6 +152,7 @@ func (f *fakeContainerManager) ContainerUpdate(_ context.Context, instance, imag
 	f.Ports = optionz.PortMapping
 	f.Envs = optionz.EnvMapping
 	f.Volumes = optionz.Volumes
+	f.Devices = optionz.Devices
 	f.Network = optionz.Network
 	f.Capabilities = optionz.Capabilities
 	f.RunAs = optionz.RunAs

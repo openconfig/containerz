@@ -317,6 +317,58 @@ func TestContainerStart(t *testing.T) {
 				HardMemory: 2000,
 			},
 		},
+		{
+			name: "devices",
+			inReq: &cpb.StartContainerRequest{
+				ImageName: "some-image",
+				Tag:       "some-tag",
+				Cmd:       "some-cmd",
+				Devices: []*cpb.Device{
+					&cpb.Device{
+						SrcPath:      "dev1",
+						DstPath: "dev1",
+						Permissions:     []cpb.Device_Permission{cpb.Device_READ, cpb.Device_WRITE, cpb.Device_MKNOD},
+					},
+					&cpb.Device{
+						SrcPath:      "dev2",
+						DstPath: "mydev2",
+						Permissions:     []cpb.Device_Permission{cpb.Device_READ, cpb.Device_WRITE, cpb.Device_MKNOD},
+					},
+					&cpb.Device{
+						SrcPath:      "dev3",
+						DstPath: "mydev3",
+						Permissions:     []cpb.Device_Permission{cpb.Device_READ, cpb.Device_WRITE},
+					},
+				},
+			},
+			wantResp: &cpb.StartContainerResponse{
+				Response: &cpb.StartContainerResponse_StartOk{
+					StartOk: &cpb.StartOK{},
+				},
+			},
+			wantState: &fakeContainerManager{
+				Image: "some-image",
+				Tag:   "some-tag",
+				Cmd:   "some-cmd",
+				Devices: []*cpb.Device{
+					{
+						SrcPath:      "dev1",
+						DstPath: "dev1",
+						Permissions:     []cpb.Device_Permission{cpb.Device_READ, cpb.Device_WRITE, cpb.Device_MKNOD},
+					},
+					{
+						SrcPath:      "dev2",
+						DstPath: "mydev2",
+						Permissions:     []cpb.Device_Permission{cpb.Device_READ, cpb.Device_WRITE, cpb.Device_MKNOD},
+					},
+					{
+						SrcPath:      "dev3",
+						DstPath: "mydev3",
+						Permissions:     []cpb.Device_Permission{cpb.Device_READ, cpb.Device_WRITE},
+					},
+				},
+			},
+		},
 	}
 
 	for _, tc := range tests {
