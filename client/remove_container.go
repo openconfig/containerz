@@ -17,9 +17,9 @@ package client
 import (
 	"context"
 
+	cpb "github.com/openconfig/gnoi/containerz"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	cpb "github.com/openconfig/gnoi/containerz"
 )
 
 var (
@@ -42,22 +42,23 @@ func (c *Client) RemoveContainer(ctx context.Context, cnt string, forceopt ...bo
 		force = forceopt[0]
 	}
 
-	resp, err := c.cli.RemoveContainer(ctx, &cpb.RemoveContainerRequest{
+	if _, err := c.cli.RemoveContainer(ctx, &cpb.RemoveContainerRequest{
 		Name:  cnt,
 		Force: force,
-	})
-	if err != nil {
-		return status.Errorf(codes.Internal, "unable to remove container: %v", err)
+	}); err != nil {
+		st, ok := status.FromError(err)
+		if !ok {
+			return err
+		}
+		switch st.Code() {
+		case codes.FailedPrecondition:
+			return ErrRunning
+		case codes.NotFound:
+			return ErrNotFound
+		default:
+			return status.Errorf(codes.Unknown, "unknown error: %v", st.Message())
+		}
 	}
 
-	switch resp.GetCode() {
-	case cpb.RemoveContainerResponse_SUCCESS:
-		return nil
-	case cpb.RemoveContainerResponse_NOT_FOUND:
-		return ErrNotFound
-	case cpb.RemoveContainerResponse_RUNNING:
-		return ErrRunning
-	default:
-		return status.Errorf(codes.Unknown, "unknown error: %v", resp.GetCode())
-	}
+	return nil
 }

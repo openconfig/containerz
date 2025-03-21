@@ -32,7 +32,7 @@ var cntRemoveCmd = &cobra.Command{
 			return err
 		}
 
-		fmt.Printf("Successfully stopped %s\n", instance)
+		fmt.Printf("Successfully removed %s\n", instance)
 		return nil
 	},
 }

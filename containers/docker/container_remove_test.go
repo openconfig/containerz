@@ -4,14 +4,13 @@ import (
 	"context"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	imagetypes "github.com/docker/docker/api/types/image"
-	"github.com/docker/docker/api/types"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"github.com/openconfig/containerz/containers"
 )
 
 func (f *fakeRemovingDocker) ContainerRemove(ctx context.Context, cnt string, options container.RemoveOptions) error {
@@ -44,10 +43,12 @@ func TestContainerRemove(t *testing.T) {
 			},
 			inCnts: []types.Container{
 				types.Container{
-					Image: "container-running",
+					Image:  "container-running",
+					Names:  []string{"container-running"},
+					Status: "Up",
 				},
 			},
-			wantErr: status.Error(codes.Unavailable, "container container-running is running; use force to override"),
+			wantErr: status.Errorf(codes.FailedPrecondition, "container container-running is running"),
 		},
 		{
 			name:   "container-running-with-force",
@@ -60,7 +61,9 @@ func TestContainerRemove(t *testing.T) {
 			},
 			inCnts: []types.Container{
 				types.Container{
-					Image: "container-running",
+					Image:  "container-running",
+					Names:  []string{"container-running"},
+					Status: "Up",
 				},
 			},
 			wantState: &fakeRemovingDocker{
@@ -78,6 +81,13 @@ func TestContainerRemove(t *testing.T) {
 			wantState: &fakeRemovingDocker{
 				Name: "container-remove",
 			},
+			inCnts: []types.Container{
+				types.Container{
+					Image:  "container-remove",
+					Names:  []string{"container-remove"},
+					Status: "Exited",
+				},
+			},
 		},
 	}
 
@@ -92,7 +102,7 @@ func TestContainerRemove(t *testing.T) {
 			if err := mgr.ContainerRemove(context.Background(), tc.inCnt, tc.inOpts...); err != nil {
 				if tc.wantErr != nil {
 					if diff := cmp.Diff(tc.wantErr, err, cmpopts.EquateErrors()); diff != "" {
-						t.Errorf("ContainerRemove(%q, %+v) returned unexpected error(-want, got):\n %s", tc.inCnt, tc.inOpts, diff)
+						t.Errorf("ContainerRemove(%q, %+v) returned unexpected error(-want, +got):\n %s", tc.inCnt, tc.inOpts, diff)
 					}
 					return
 				}

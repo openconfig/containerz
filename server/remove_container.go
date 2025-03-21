@@ -16,10 +16,6 @@ package server
 
 import (
 	"context"
-	"fmt"
-
-	"github.com/openconfig/containerz/containers"
-
 	cpb "github.com/openconfig/gnoi/containerz"
 )
 
@@ -36,7 +32,7 @@ func (s *Server) RemoveContainer(ctx context.Context, request *cpb.RemoveContain
 	}
 
 	if err := s.mgr.ContainerRemove(ctx, request.GetName(), opts...); err != nil {
-		return nil, fmt.Errorf("failed to remove container: %w", err)
+		return nil, err
 	}
 
 	return &cpb.RemoveContainerResponse{}, nil

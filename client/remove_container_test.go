@@ -29,28 +29,25 @@ type fakeImageRemoveContainerContainerzServer struct {
 	fakeContainerzServer
 
 	receivedMsg *cpb.RemoveContainerRequest
-	sendMsg     *cpb.RemoveContainerResponse
+	sendErr     error
 }
 
 func (f *fakeImageRemoveContainerContainerzServer) RemoveContainer(_ context.Context, req *cpb.RemoveContainerRequest) (*cpb.RemoveContainerResponse, error) {
 	f.receivedMsg = req
-	return f.sendMsg, nil
+	return nil, f.sendErr
 }
 
 func TestRemove(t *testing.T) {
 	tests := []struct {
 		name    string
 		inImage string
-		inMsg   *cpb.RemoveContainerResponse
+		inErr   error
 		inForce bool
 		wantMsg *cpb.RemoveContainerRequest
 		wantErr error
 	}{
 		{
-			name: "success",
-			inMsg: &cpb.RemoveContainerResponse{
-				Code: cpb.RemoveContainerResponse_SUCCESS,
-			},
+			name:    "success",
 			inImage: "some-image",
 			wantMsg: &cpb.RemoveContainerRequest{
 				Name:  "some-image",
@@ -58,10 +55,7 @@ func TestRemove(t *testing.T) {
 			},
 		},
 		{
-			name: "success-with-force",
-			inMsg: &cpb.RemoveContainerResponse{
-				Code: cpb.RemoveContainerResponse_SUCCESS,
-			},
+			name:    "success-with-force",
 			inImage: "some-image",
 			inForce: true,
 			wantMsg: &cpb.RemoveContainerRequest{
@@ -70,10 +64,8 @@ func TestRemove(t *testing.T) {
 			},
 		},
 		{
-			name: "not-found",
-			inMsg: &cpb.RemoveContainerResponse{
-				Code: cpb.RemoveContainerResponse_NOT_FOUND,
-			},
+			name:    "not-found",
+			inErr:   status.Errorf(codes.NotFound, "resource was not found"),
 			inImage: "some-image",
 			wantMsg: &cpb.RemoveContainerRequest{
 				Name:  "some-image",
@@ -82,10 +74,8 @@ func TestRemove(t *testing.T) {
 			wantErr: ErrNotFound,
 		},
 		{
-			name: "running",
-			inMsg: &cpb.RemoveContainerResponse{
-				Code: cpb.RemoveContainerResponse_RUNNING,
-			},
+			name:    "running",
+			inErr:   status.Errorf(codes.FailedPrecondition, "resource is running"),
 			inImage: "some-image",
 			wantMsg: &cpb.RemoveContainerRequest{
 				Name:  "some-image",
@@ -99,7 +89,7 @@ func TestRemove(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			fcm := &fakeImageRemoveContainerContainerzServer{
-				sendMsg: tc.inMsg,
+				sendErr: tc.inErr,
 			}
 			addr, stop := newServer(t, fcm)
 			defer stop()
