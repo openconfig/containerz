@@ -7,6 +7,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"google.golang.org/protobuf/testing/protocmp"
+
 	cpb "github.com/openconfig/gnoi/containerz"
 )
 
@@ -52,6 +53,39 @@ func TestCreateVolume(t *testing.T) {
 				VolumeDriver: cpb.Driver_DS_LOCAL,
 				VolumeOpts: &cpb.LocalDriverOptions{
 					Mountpoint: "some-mountpoint",
+				},
+				VolumeLabel: map[string]string{
+					"some-label": "some-value",
+				},
+			},
+			wantResp: &cpb.CreateVolumeResponse{
+				Name: "some-volume",
+			},
+		},
+		{
+			name: "with driver and options",
+			inReq: &cpb.CreateVolumeRequest{
+				Name:   "some-volume",
+				Driver: cpb.Driver_DS_CUSTOM,
+				Options: &cpb.CreateVolumeRequest_CustomOptions{
+					CustomOptions: &cpb.CustomOptions{
+						Options: map[string]string{
+							"some-option": "some-value",
+						},
+					},
+				},
+				Labels: map[string]string{
+					"some-label": "some-value",
+				},
+			},
+			inOpts:   []Option{},
+			wantName: "",
+			wantState: &fakeContainerManager{
+				VolumeDriver: cpb.Driver_DS_CUSTOM,
+				VolumeOpts: &cpb.CustomOptions{
+					Options: map[string]string{
+						"some-option": "some-value",
+					},
 				},
 				VolumeLabel: map[string]string{
 					"some-label": "some-value",

@@ -21,6 +21,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"google.golang.org/protobuf/testing/protocmp"
+
 	cpb "github.com/openconfig/gnoi/containerz"
 )
 
@@ -61,11 +62,23 @@ func TestCreateVolume(t *testing.T) {
 			wantName: "simple",
 		},
 		{
-			name:     "invalid-driver",
-			inName:   "simple",
-			inDriver: "garbage",
-			inMsg:    &cpb.CreateVolumeResponse{Name: "simple"},
-			wantErr:  fmt.Errorf("unknown driver: %q", "garbage"),
+			name:      "custom-driver",
+			inName:    "simple",
+			inDriver:  "custom-driver",
+			inOptions: map[string]string{"foo": "bar"},
+			inLabels:  map[string]string{"label1": "value1", "label2": "value2"},
+			inMsg:     &cpb.CreateVolumeResponse{Name: "simple"},
+			wantRequest: &cpb.CreateVolumeRequest{
+				Name:   "simple",
+				Driver: cpb.Driver_DS_CUSTOM,
+				Labels: map[string]string{"label1": "value1", "label2": "value2"},
+				Options: &cpb.CreateVolumeRequest_CustomOptions{
+					CustomOptions: &cpb.CustomOptions{
+						Options: map[string]string{"foo": "bar"},
+					},
+				},
+			},
+			wantName: "simple",
 		},
 		{
 			name:      "good-driver-wrong-option",
