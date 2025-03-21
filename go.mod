@@ -1,8 +1,7 @@
 module github.com/openconfig/containerz
 
 go 1.22.0
-
-toolchain go1.23.0
+toolchain go1.24.1
 
 require (
 	github.com/briandowns/spinner v1.23.1
@@ -13,7 +12,7 @@ require (
 	github.com/openconfig/gnoi v0.6.1-0.20250206212518-26d177339690
 	github.com/opencontainers/image-spec v1.1.0
 	github.com/spf13/cobra v1.8.1
-	golang.org/x/sys v0.29.0
+	golang.org/x/sys v0.30.0
 	google.golang.org/grpc v1.70.0
 	google.golang.org/protobuf v1.36.3
 	k8s.io/klog/v2 v2.130.1
@@ -53,10 +52,10 @@ require (
 	go.opentelemetry.io/otel/metric v1.34.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.34.0 // indirect
 	go.opentelemetry.io/otel/trace v1.34.0 // indirect
-	golang.org/x/net v0.34.0 // indirect
-	golang.org/x/sync v0.10.0 // indirect
-	golang.org/x/term v0.28.0 // indirect
-	golang.org/x/text v0.21.0 // indirect
+	golang.org/x/net v0.36.0 // indirect
+	golang.org/x/sync v0.11.0 // indirect
+	golang.org/x/term v0.29.0 // indirect
+	golang.org/x/text v0.22.0 // indirect
 	golang.org/x/time v0.9.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250115164207-1a7da9e5054f // indirect
 	gotest.tools/v3 v3.5.1 // indirect
