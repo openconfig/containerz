@@ -2,8 +2,6 @@ package server
 
 import (
 	"context"
-	"fmt"
-
 	cpb "github.com/openconfig/gnoi/containerz"
 )
 
@@ -11,7 +9,7 @@ import (
 func (s *Server) ListPlugins(ctx context.Context, request *cpb.ListPluginsRequest) (*cpb.ListPluginsResponse, error) {
 	resp, err := s.mgr.PluginList(ctx, request.GetInstanceName())
 	if err != nil {
-		return nil, fmt.Errorf("unable to list plugins: %w", err)
+		return nil, err
 	}
 
 	return resp, nil
