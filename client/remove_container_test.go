@@ -16,6 +16,8 @@ package client
 
 import (
 	"context"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"

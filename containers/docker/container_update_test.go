@@ -3,20 +3,21 @@ package docker
 import (
 	"context"
 	"fmt"
+	"sync"
 	"testing"
 	"time"
 
-	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/docker/go-connections/nat"
+	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	imagetypes "github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/network"
-	"github.com/docker/docker/api/types"
+	"github.com/docker/go-connections/nat"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
+	options "github.com/openconfig/containerz/containers"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"github.com/openconfig/containerz/containers"
 
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 )
@@ -26,6 +27,7 @@ type fakeUpdatingDocker struct {
 	summaries []imagetypes.Summary
 	cnts      []types.Container
 	cntJSON   *types.ContainerJSON
+	mu        sync.Mutex
 
 	c chan struct{}
 
@@ -48,6 +50,8 @@ type fakeUpdatingDocker struct {
 }
 
 func (f *fakeUpdatingDocker) ContainerCreate(ctx context.Context, config *container.Config, hostConfig *container.HostConfig, networkingConfig *network.NetworkingConfig, platform *ocispec.Platform, containerName string) (container.CreateResponse, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
 	f.InvocationContainerCreate++
 
 	// This enables the synchronous test to explicitly fail the m.ContainerStart call.
@@ -71,7 +75,9 @@ func (f *fakeUpdatingDocker) ContainerCreate(ctx context.Context, config *contai
 }
 
 func (f *fakeUpdatingDocker) ContainerStart(ctx context.Context, container string, options container.StartOptions) error {
+	f.mu.Lock()
 	f.InvocationContainerStart++
+	f.mu.Unlock()
 
 	// This enables the asynchronous test to explicitly block the m.ContainerStart call.
 	if container == "block-till-released" {
@@ -83,11 +89,16 @@ func (f *fakeUpdatingDocker) ContainerStart(ctx context.Context, container strin
 }
 
 func (f *fakeUpdatingDocker) ContainerList(ctx context.Context, options container.ListOptions) ([]types.Container, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+
 	f.InvocationContainerList++
 	return f.cnts, nil
 }
 
 func (f *fakeUpdatingDocker) ContainerStop(ctx context.Context, container string, options container.StopOptions) error {
+	f.mu.Lock()
+	defer f.mu.Unlock()
 	f.InvocationContainerStop++
 	f.Instance = container
 
@@ -111,16 +122,24 @@ cntloop:
 }
 
 func (f *fakeUpdatingDocker) ContainerRemove(ctx context.Context, container string, options container.RemoveOptions) error {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+
 	f.InvocationContainerRemove++
 	return nil
 }
 
 func (f *fakeUpdatingDocker) ImageList(ctx context.Context, options imagetypes.ListOptions) ([]imagetypes.Summary, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
 	f.InvocationImageList++
 	return f.summaries, nil
 }
 
 func (f *fakeUpdatingDocker) ContainerInspect(ctx context.Context, container string) (types.ContainerJSON, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+
 	f.InvocationContainerInspect++
 	if f.cntJSON == nil {
 		return types.ContainerJSON{}, fmt.Errorf("bonito-flakes")
@@ -279,13 +298,15 @@ func TestContainerUpdateSync(t *testing.T) {
 				},
 			},
 			inCntJSON: &types.ContainerJSON{
-				&types.ContainerJSONBase{
+				ContainerJSONBase: &types.ContainerJSONBase{
 					HostConfig: &container.HostConfig{},
 					State: &types.ContainerState{
 						Paused: true,
 					},
 				},
-				nil, &container.Config{}, &types.NetworkSettings{},
+				Mounts:          nil,
+				Config:          &container.Config{},
+				NetworkSettings: &types.NetworkSettings{},
 			},
 			inInProgress: []string{"conflicting-container"},
 			inOpts:       []options.Option{options.WithInstanceName("container-I-want"), options.WithPorts(map[uint32]uint32{1: 1})},
@@ -326,13 +347,15 @@ func TestContainerUpdateSync(t *testing.T) {
 				},
 			},
 			inCntJSON: &types.ContainerJSON{
-				&types.ContainerJSONBase{
+				ContainerJSONBase: &types.ContainerJSONBase{
 					HostConfig: &container.HostConfig{},
 					State: &types.ContainerState{
 						Paused: true,
 					},
 				},
-				nil, &container.Config{}, &types.NetworkSettings{},
+				Mounts:          nil,
+				Config:          &container.Config{},
+				NetworkSettings: &types.NetworkSettings{},
 			},
 			inInProgress: []string{"conflicting-container"},
 			inOpts:       []options.Option{options.WithInstanceName("container-I-want"), options.WithPorts(map[uint32]uint32{1: 1})},
@@ -407,13 +430,15 @@ func TestContainerUpdateAsync(t *testing.T) {
 			},
 		},
 		cntJSON: &types.ContainerJSON{
-			&types.ContainerJSONBase{
+			ContainerJSONBase: &types.ContainerJSONBase{
 				HostConfig: &container.HostConfig{},
 				State: &types.ContainerState{
 					Running: true,
 				},
 			},
-			nil, &container.Config{}, &types.NetworkSettings{},
+			Mounts:          nil,
+			Config:          &container.Config{},
+			NetworkSettings: &types.NetworkSettings{},
 		},
 		c: make(chan struct{}),
 	}

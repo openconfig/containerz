@@ -17,14 +17,17 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"os"
 
-	"google.golang.org/grpc"
-	"k8s.io/klog/v2"
 	"github.com/openconfig/containerz/containers"
-
 	cpb "github.com/openconfig/gnoi/containerz"
+
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"k8s.io/klog/v2"
 )
 
 type containerManager interface {
@@ -38,7 +41,7 @@ type containerManager interface {
 	// It returns an error indicating the result of the operation.
 	ContainerList(context.Context, bool, int32, options.ListContainerStreamer, ...options.Option) error
 
-	// ContainerPull pulls a container from a registry to this instance of containerz.
+	// ImagePull pulls a container from a registry to this instance of containerz.
 	//
 	// It takes as input:
 	// - image (string): a container image name.
@@ -46,9 +49,9 @@ type containerManager interface {
 	// - opts (ImageOption slice): a set of options.
 	//
 	// It returns an error indicating the result of the operation.
-	ContainerPull(context.Context, string, string, ...options.Option) error
+	ImagePull(context.Context, string, string, ...options.Option) error
 
-	// ContainerPush pushes a container image to this instance of containerz.
+	// ImagePush pushes a container image to this instance of containerz.
 	//
 	// It takes as input:
 	// - file (os.File): a file containing the tarball of the container.
@@ -57,7 +60,7 @@ type containerManager interface {
 	// It returns:
 	// - image (string): the container image name of the container that was pushed.
 	// - tag (string): the container image tag of the container that was pushed
-	ContainerPush(context.Context, *os.File, ...options.Option) (string, string, error)
+	ImagePush(context.Context, *os.File, ...options.Option) (string, string, error)
 
 	// ContainerRemove removes an container provided that it is not running.
 	//
@@ -206,29 +209,44 @@ type Server struct {
 
 // New constructs a new containerz server
 func New(mgr containerManager, opts ...Option) *Server {
+
 	s := &Server{
-		grpcServer:  grpc.NewServer(),
-		tmpLocation: "/tmp",
-		chunkSize:   5e6, // 5mb chunks
-		mgr:         mgr,
-		addr:        ":9999",
+		mgr: mgr,
+	}
+	defaultOptions := []Option{
+		WithGrpcServer(grpc.NewServer()),
+		WithTempLocation("/tmp"),
+		WithChunkSize(5e6), // 5mb chunks,
+		WithAddr(":9999"),
 	}
 
-	for _, opt := range opts {
+	for _, opt := range append(defaultOptions, opts...) {
 		opt(s)
 	}
 
-	var err error
-	s.lis, err = net.Listen("tcp", s.addr)
-	if err != nil {
-		klog.Fatalf("server start: %e", err)
+	// only start the listener if the Server has been set up with an address
+	if s.addr != "" {
+		var err error
+		s.lis, err = net.Listen("tcp", s.addr)
+		if err != nil {
+			klog.Fatalf("server start: %e", err)
+		}
 	}
 
 	return s
 }
 
 // Serve starts this instance of the containerz server.
-func (s *Server) Serve(ctx context.Context) error {
+func (s *Server) Serve(_ context.Context) error {
+	if s.grpcServer == nil || s.addr == "" || s.lis == nil {
+		msg := fmt.Sprintf(
+			"cannot serve Containerz service without grpc server, listener, and address."+
+				" grpc server=%p, listener=%p, address=%q",
+			s.grpcServer, s.lis, s.addr)
+		klog.Info(msg)
+		return status.Error(codes.FailedPrecondition, msg)
+	}
+
 	klog.Info("server-start")
 	cpb.RegisterContainerzServer(s.grpcServer, s)
 
@@ -238,7 +256,11 @@ func (s *Server) Serve(ctx context.Context) error {
 }
 
 // Halt stops the containerz server gracefully.
-func (s *Server) Halt(ctx context.Context) {
+func (s *Server) Halt(_ context.Context) {
+	if s.grpcServer == nil {
+		klog.Info("halted a server which was not running (this was a no-op)")
+		return
+	}
 	klog.Info("server-stopping")
 	if s.grpcServer != nil {
 		s.grpcServer.GracefulStop()

@@ -16,6 +16,7 @@ package server
 
 import (
 	"context"
+	options "github.com/openconfig/containerz/containers"
 	cpb "github.com/openconfig/gnoi/containerz"
 )
 

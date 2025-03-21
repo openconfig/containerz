@@ -48,7 +48,7 @@ func (f *fakePushingDocker) ImageTag(ctx context.Context, source, target string)
 	return nil
 }
 
-func TestContainerPush(t *testing.T) {
+func TestImagePush(t *testing.T) {
 	tests := []struct {
 		name               string
 		inOpts             []options.Option
@@ -97,24 +97,24 @@ func TestContainerPush(t *testing.T) {
 			}
 			mgr := New(fd)
 
-			gotImage, gotTag, err := mgr.ContainerPush(context.Background(), tc.inFile, tc.inOpts...)
+			gotImage, gotTag, err := mgr.ImagePush(context.Background(), tc.inFile, tc.inOpts...)
 			if err != nil {
 				if tc.wantErr != nil {
 					if diff := cmp.Diff(tc.wantErr, err, cmpopts.EquateErrors()); diff != "" {
-						t.Errorf("ContainerPush(file) returned unexpected error(-want, got):\n %s", diff)
+						t.Errorf("ImagePush(file) returned unexpected error(-want, got):\n %s", diff)
 					}
 					return
 				}
-				t.Errorf("ContainerPush(file) returned error: %v", err)
+				t.Errorf("ImagePush(file) returned error: %v", err)
 			}
 
 			if gotImage != tc.wantImage || gotTag != tc.wantTag {
-				t.Errorf("ContainerPush(file) returned wrong info; want %s/%s, got %s/%s", tc.wantImage, tc.wantTag, gotImage, gotTag)
+				t.Errorf("ImagePush(file) returned wrong info; want %s/%s, got %s/%s", tc.wantImage, tc.wantTag, gotImage, gotTag)
 			}
 
 			if tc.wantState != nil {
 				if diff := cmp.Diff(tc.wantState, fd, cmpopts.IgnoreUnexported(fakePushingDocker{})); diff != "" {
-					t.Errorf("ContainerPush(file) returned diff(-want, +got):\n%s", diff)
+					t.Errorf("ImagePush(file) returned diff(-want, +got):\n%s", diff)
 				}
 			}
 		})

@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 
+	options "github.com/openconfig/containerz/containers"
+
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	imagetypes "github.com/docker/docker/api/types/image"
@@ -78,15 +80,15 @@ func TestContainerRemove(t *testing.T) {
 					RepoTags: []string{"container-remove"},
 				},
 			},
-			wantState: &fakeRemovingDocker{
-				Name: "container-remove",
-			},
 			inCnts: []types.Container{
 				types.Container{
 					Image:  "container-remove",
 					Names:  []string{"container-remove"},
 					Status: "Exited",
 				},
+			},
+			wantState: &fakeRemovingDocker{
+				Name: "container-remove",
 			},
 		},
 	}

@@ -26,7 +26,7 @@ var (
 
 var cntStopCmd = &cobra.Command{
 	Use:   "stop",
-	Short: "stop a container by intance name",
+	Short: "stop a container by instance name",
 	RunE: func(command *cobra.Command, args []string) error {
 		if instance == "" {
 			fmt.Println("--instance must be provided")
