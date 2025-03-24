@@ -27,7 +27,7 @@ func (c *Client) CreateVolume(ctx context.Context, name, driver string, labels, 
 }
 
 // requestForDriver returns a CreateVolumeRequest given the string representation of the driver name
-// and an arbitrary list of key-value entries representing options of the driver. 
+// and an arbitrary list of key-value entries representing options of the driver.
 func requestForDriver(driver string, options map[string]string) (*cpb.CreateVolumeRequest, error) {
 	req := &cpb.CreateVolumeRequest{}
 	switch strings.ToLower(driver) {
@@ -55,7 +55,13 @@ func requestForDriver(driver string, options map[string]string) (*cpb.CreateVolu
 			LocalMountOptions: localOpts,
 		}
 	default:
-		return nil, fmt.Errorf("unknown driver: %q", driver)
+		// This is a custom driver, so we need to pass the options through.
+		req.Driver = cpb.Driver_DS_CUSTOM
+		req.Options = &cpb.CreateVolumeRequest_CustomOptions{
+			CustomOptions: &cpb.CustomOptions{
+				Options: options,
+			},
+		}
 	}
 	return req, nil
 }

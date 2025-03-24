@@ -73,7 +73,6 @@ func (m *Manager) ContainerStart(ctx context.Context, image, tag, cmd string, op
 	hostConfig := &container.HostConfig{
 		Mounts:      mounts,
 		NetworkMode: "host",
-		AutoRemove:  true,
 
 		Resources: container.Resources{
 			NanoCPUs:          cpu,

@@ -15,15 +15,14 @@
 package cmd
 
 import (
-	"github.com/spf13/cobra"
 	"github.com/openconfig/containerz/client"
+	"github.com/spf13/cobra"
 )
 
 var volumesCmd = &cobra.Command{
 	Use:   "volume",
 	Short: "General volume operations",
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		RootCmd.PersistentPreRun(cmd, args)
 		var err error
 		containerzClient, err = client.NewClient(cmd.Context(), addr)
 		return err
