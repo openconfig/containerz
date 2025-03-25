@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/docker/docker/api/types/container"
 	imagetypes "github.com/docker/docker/api/types/image"
@@ -169,13 +170,16 @@ func (m *Manager) ContainerUpdate(ctx context.Context, instance, image, tag, cmd
 		deadline, ok := ctx.Deadline()
 		// Override the cancellation from the parent context.
 		// This allows the RPC to exit while the async update completes.
+		// As the parent ctx can no longer be cancelled, the deadline/timeout will serve as the
+		// only way to timeout the aysnc update.
 		ctx = context.WithoutCancel(ctx)
-		var cancel context.CancelFunc = func() {}
+		var cancel context.CancelFunc
 		if ok {
 			// If the parent context had a deadline, then this deadline should be maintained.
-			// As the parent ctx can no longer be cancelled, this serves as the only way to
-			// timeout the aysnc update.
 			ctx, cancel = context.WithDeadline(ctx, deadline)
+		} else {
+			// If the parent context had no deadline, then set a deadline of 5 minutes as default.
+			ctx, cancel = context.WithTimeout(ctx, 5*time.Minute)
 		}
 		go func() {
 			defer cancel()
