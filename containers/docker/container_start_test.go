@@ -35,6 +35,7 @@ type fakeStartingDocker struct {
 	CapDel      []string
 	Network     string
 	Labels      map[string]string
+	Devices     []container.DeviceMapping
 
 	CPU        int64
 	HardMemory int64
@@ -53,6 +54,7 @@ func (f *fakeStartingDocker) ContainerCreate(ctx context.Context, config *contai
 	f.CPU = hostConfig.Resources.NanoCPUs
 	f.HardMemory = hostConfig.Resources.Memory
 	f.SoftMemory = hostConfig.Resources.MemoryReservation
+	f.Devices = hostConfig.Resources.Devices
 	// If this is not out default, remember it.
 	if !hostConfig.NetworkMode.IsHost() {
 		f.Network = string(hostConfig.NetworkMode)
@@ -337,7 +339,7 @@ func TestContainerStart(t *testing.T) {
 			},
 		},
 		{
-			name:    "container-with-env-and-port-and-volumes",
+			name:    "container-with-env-and-port-and-volumes-and-devices",
 			inImage: "my-image",
 			inTag:   "my-tag",
 			inCmd:   "my-cmd",
@@ -356,6 +358,13 @@ func TestContainerStart(t *testing.T) {
 						MountPoint: "/tmp",
 					},
 				}),
+				options.WithDevices([]*cpb.Device{
+					&cpb.Device{
+						SrcPath:      "/dev/my-device",
+						DstPath:  "/dev/my-device",
+						Permissions:     []cpb.Device_Permission{cpb.Device_READ, cpb.Device_WRITE, cpb.Device_MKNOD},
+					},
+				}),
 			},
 			wantState: &fakeStartingDocker{
 				Ports:       nat.PortSet{"1/tcp": struct{}{}},
@@ -366,6 +375,13 @@ func TestContainerStart(t *testing.T) {
 						Type:   "volume",
 						Source: "my-volume",
 						Target: "/tmp",
+					},
+				},
+				Devices: []container.DeviceMapping{
+					{
+						PathOnHost:        "/dev/my-device",
+						PathInContainer:   "/dev/my-device",
+						CgroupPermissions: "rwm",
 					},
 				},
 			},

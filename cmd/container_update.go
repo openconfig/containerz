@@ -46,6 +46,9 @@ var cntUpdateCmd = &cobra.Command{
 		if len(volumes) > 0 {
 			opts = append(opts, client.WithVolumes(volumes))
 		}
+		if len(devices) > 0 {
+			opts = append(opts, client.WithDevices(devices))
+		}
 		if network != "" {
 			opts = append(opts, client.WithNetwork(network))
 		}
@@ -90,6 +93,7 @@ func init() {
 	cntUpdateCmd.PersistentFlags().StringArrayVar(&ports, "port", []string{}, "Ports to expose (format: <internal_port>:<external_port>")
 	cntUpdateCmd.PersistentFlags().StringArrayVar(&envs, "env", []string{}, "Environment vars to set (format: <VAR_NAMEt>=<VAR_VALUE>")
 	cntUpdateCmd.PersistentFlags().StringArrayVarP(&volumes, "volume", "v", []string{}, "Volumes to attach to the container (format: <volume-name>:<mountpoint>[:ro])")
+	cntUpdateCmd.PersistentFlags().StringArrayVarP(&devices, "device", "d", []string{}, "Devices to attach to the container (format: <src-path>[:<dst-path>[:<permissions>]])")
 	cntUpdateCmd.PersistentFlags().StringArrayVar(&addCaps, "add_caps", []string{}, "Capabilities to add.")
 	cntUpdateCmd.PersistentFlags().StringArrayVar(&delCaps, "del_caps", []string{}, "Capabilities to remove.")
 }
