@@ -166,8 +166,29 @@ func (m *Manager) ContainerUpdate(ctx context.Context, instance, image, tag, cmd
 	// All checks passed, proceed to the actual (synchronous or asynchronous) update.
 	if async {
 		klog.Infof("Starting asynchronous update of instance %s to image %s:%s with cmd %s and options %+v", instance, image, tag, cmd, opts)
-		// There can only be one go routine per instance name due to the mutex handling.
-		go m.performContainerUpdate(ctx, instance, image, tag, cmd, cnts, opts...)
+		deadline, ok := ctx.Deadline()
+		// Override the cancellation from the parent context.
+		// This allows the RPC to exit while the async update completes.
+		ctx = context.WithoutCancel(ctx)
+		var cancel context.CancelFunc
+		if ok {
+			// If the parent context had a deadline, then this deadline should be maintained.
+			// As the parent ctx can no longer be cancelled, this serves as the only way to
+			// timeout the aysnc update.
+			ctx, cancel = context.WithDeadline(ctx, deadline)
+		}
+		go func() {
+			defer cancel()
+			// There can only be one go routine per instance name due to the mutex handling.
+			updatedInstance, err := m.performContainerUpdate(
+				ctx, instance, image, tag, cmd, cnts, opts...)
+			if err != nil {
+				klog.Infof("Async container update failed. Error is %s", err)
+				return
+			}
+			klog.Infof("Async container update successful. Updated container is %q",
+				updatedInstance)
+		}()
 		return instance, nil
 	}
 	return m.performContainerUpdate(ctx, instance, image, tag, cmd, cnts, opts...)
