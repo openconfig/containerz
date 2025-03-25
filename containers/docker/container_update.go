@@ -170,7 +170,7 @@ func (m *Manager) ContainerUpdate(ctx context.Context, instance, image, tag, cmd
 		// Override the cancellation from the parent context.
 		// This allows the RPC to exit while the async update completes.
 		ctx = context.WithoutCancel(ctx)
-		var cancel context.CancelFunc
+		var cancel context.CancelFunc = func() {}
 		if ok {
 			// If the parent context had a deadline, then this deadline should be maintained.
 			// As the parent ctx can no longer be cancelled, this serves as the only way to
