@@ -37,7 +37,10 @@ func TestStop(t *testing.T) {
 			inReq: &cpb.StopContainerRequest{
 				InstanceName: "some-name",
 			},
-			wantResp: &cpb.StopContainerResponse{},
+			wantResp: &cpb.StopContainerResponse{
+				Code:    cpb.StopContainerResponse_SUCCESS,
+				Details: `stopped "some-name"`,
+			},
 			wantState: &fakeContainerManager{
 				Instance: "some-name",
 				Force:    false,
@@ -49,7 +52,10 @@ func TestStop(t *testing.T) {
 				InstanceName: "some-name",
 				Force:        true,
 			},
-			wantResp: &cpb.StopContainerResponse{},
+			wantResp: &cpb.StopContainerResponse{
+				Code:    cpb.StopContainerResponse_SUCCESS,
+				Details: `stopped "some-name"`,
+			},
 			wantState: &fakeContainerManager{
 				Instance: "some-name",
 				Force:    true,
