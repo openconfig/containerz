@@ -35,6 +35,7 @@ type fakeStartingDocker struct {
 	CapDel      []string
 	Network     string
 	Labels      map[string]string
+	Cmd         []string
 
 	CPU        int64
 	HardMemory int64
@@ -43,6 +44,7 @@ type fakeStartingDocker struct {
 
 func (f *fakeStartingDocker) ContainerCreate(ctx context.Context, config *container.Config, hostConfig *container.HostConfig, networkingConfig *network.NetworkingConfig, platform *ocispec.Platform, containerName string) (container.CreateResponse, error) {
 	f.Ports = config.ExposedPorts
+	f.Cmd = config.Cmd
 	f.Env = config.Env
 	f.Volumes = hostConfig.Mounts
 	f.User = config.User
@@ -166,6 +168,7 @@ func TestContainerStart(t *testing.T) {
 			},
 			inOpts: []options.Option{options.WithInstanceName("my-container"), options.WithPorts(map[uint32]uint32{1: 1})},
 			wantState: &fakeStartingDocker{
+				Cmd:         []string{"my-cmd"},
 				Ports:       nat.PortSet{"1/tcp": struct{}{}},
 				ContainerID: "my-container",
 				Volumes:     []mount.Mount{},
@@ -192,6 +195,7 @@ func TestContainerStart(t *testing.T) {
 				}),
 			},
 			wantState: &fakeStartingDocker{
+				Cmd:  []string{"my-cmd"},
 				User: "my-user",
 			},
 		},
@@ -217,6 +221,7 @@ func TestContainerStart(t *testing.T) {
 				}),
 			},
 			wantState: &fakeStartingDocker{
+				Cmd:  []string{"my-cmd"},
 				User: "my-user:my-group",
 			},
 		},
@@ -242,6 +247,7 @@ func TestContainerStart(t *testing.T) {
 				}),
 			},
 			wantState: &fakeStartingDocker{
+				Cmd: []string{"my-cmd"},
 				Policy: container.RestartPolicy{
 					Name:              "on-failure",
 					MaximumRetryCount: 3,
@@ -270,6 +276,7 @@ func TestContainerStart(t *testing.T) {
 				}),
 			},
 			wantState: &fakeStartingDocker{
+				Cmd:    []string{"my-cmd"},
 				CapAdd: []string{"my-add-capability"},
 				CapDel: []string{"my-remove-capability"},
 			},
@@ -293,6 +300,7 @@ func TestContainerStart(t *testing.T) {
 				options.WithNetwork("my-network"),
 			},
 			wantState: &fakeStartingDocker{
+				Cmd:     []string{"my-cmd"},
 				Network: "my-network",
 			},
 		},
@@ -315,6 +323,7 @@ func TestContainerStart(t *testing.T) {
 				options.WithLabels(map[string]string{"label": "value"}),
 			},
 			wantState: &fakeStartingDocker{
+				Cmd:    []string{"my-cmd"},
 				Labels: map[string]string{"label": "value"},
 			},
 		},
@@ -330,6 +339,7 @@ func TestContainerStart(t *testing.T) {
 			},
 			inOpts: []options.Option{options.WithInstanceName("my-container"), options.WithPorts(map[uint32]uint32{1: 1}), options.WithEnv(map[string]string{"AA": "BB"})},
 			wantState: &fakeStartingDocker{
+				Cmd:         []string{"my-cmd"},
 				Ports:       nat.PortSet{"1/tcp": struct{}{}},
 				Env:         []string{"AA=BB"},
 				ContainerID: "my-container",
@@ -358,6 +368,7 @@ func TestContainerStart(t *testing.T) {
 				}),
 			},
 			wantState: &fakeStartingDocker{
+				Cmd:         []string{"my-cmd"},
 				Ports:       nat.PortSet{"1/tcp": struct{}{}},
 				Env:         []string{"AA=BB"},
 				ContainerID: "my-container",
@@ -387,11 +398,123 @@ func TestContainerStart(t *testing.T) {
 				options.WithHardLimit(2000),
 			},
 			wantState: &fakeStartingDocker{
+				Cmd:         []string{"my-cmd"},
 				ContainerID: "my-container",
 				CPU:         1000000000,
 				HardMemory:  2000,
 				SoftMemory:  1000,
 			},
+		}, {
+			name:    "container-with-cmd",
+			inImage: "my-image",
+			inTag:   "my-tag",
+			inCmd:   `sleep 1000`,
+			inSummaries: []imagetypes.Summary{
+				imagetypes.Summary{
+					RepoTags: []string{"my-image:my-tag"},
+				},
+			},
+			wantState: &fakeStartingDocker{
+				Cmd: []string{"sleep", "1000"},
+			},
+		},
+		{
+			name:    "container-with-sh-cmd",
+			inImage: "my-image",
+			inTag:   "my-tag",
+			inCmd:   `sh -c "echo 2"`,
+			inSummaries: []imagetypes.Summary{
+				imagetypes.Summary{
+					RepoTags: []string{"my-image:my-tag"},
+				},
+			},
+			wantState: &fakeStartingDocker{
+				Cmd: []string{"sh", "-c", "echo 2"},
+			},
+		},
+		{
+			name:    "container-with-bash-cmd",
+			inImage: "my-image",
+			inTag:   "my-tag",
+			inCmd:   `bash -c "echo 2"`,
+			inSummaries: []imagetypes.Summary{
+				imagetypes.Summary{
+					RepoTags: []string{"my-image:my-tag"},
+				},
+			},
+			wantState: &fakeStartingDocker{
+				Cmd: []string{"bash", "-c", "echo 2"},
+			},
+		},
+		{
+			name:    "container-with-zsh-cmd",
+			inImage: "my-image",
+			inTag:   "my-tag",
+			inCmd:   `zsh -c "echo 2"`,
+			inSummaries: []imagetypes.Summary{
+				imagetypes.Summary{
+					RepoTags: []string{"my-image:my-tag"},
+				},
+			},
+			wantState: &fakeStartingDocker{
+				Cmd: []string{"zsh", "-c", "echo 2"},
+			},
+		},
+		{
+			name:    "container-with-ksh-cmd",
+			inImage: "my-image",
+			inTag:   "my-tag",
+			inCmd:   `ksh -c "echo 2"`,
+			inSummaries: []imagetypes.Summary{
+				imagetypes.Summary{
+					RepoTags: []string{"my-image:my-tag"},
+				},
+			},
+			wantState: &fakeStartingDocker{
+				Cmd: []string{"ksh", "-c", "echo 2"},
+			},
+		},
+		{
+			name:    "container-with-fish-cmd",
+			inImage: "my-image",
+			inTag:   "my-tag",
+			inCmd:   `fish -c "echo 2"`,
+			inSummaries: []imagetypes.Summary{
+				imagetypes.Summary{
+					RepoTags: []string{"my-image:my-tag"},
+				},
+			},
+			wantState: &fakeStartingDocker{
+				Cmd: []string{"fish", "-c", "echo 2"},
+			},
+		},
+		{
+			name:    "container-with-tcsh-cmd",
+			inImage: "my-image",
+			inTag:   "my-tag",
+			inCmd:   `tcsh -c "echo 2"`,
+			inSummaries: []imagetypes.Summary{
+				imagetypes.Summary{
+					RepoTags: []string{"my-image:my-tag"},
+				},
+			},
+			wantState: &fakeStartingDocker{
+				Cmd: []string{"tcsh", "-c", "echo 2"},
+			},
+		},
+		{
+			name:    "container-with-tcsh-cmd-fail",
+			inImage: "my-image",
+			inTag:   "my-tag",
+			inCmd:   `tcsh -c 'echo 2'`,
+			inSummaries: []imagetypes.Summary{
+				imagetypes.Summary{
+					RepoTags: []string{"my-image:my-tag"},
+				},
+			},
+			wantErr: status.Errorf(codes.InvalidArgument,
+				"expected shell command: tcsh -c 'echo 2' to be of the form:"+
+					` tcsh -c "<command>". Failed to unquote command with error invalid syntax`),
 		},
 	}
 
