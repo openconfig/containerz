@@ -16,6 +16,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/openconfig/containerz/containers"
 	cpb "github.com/openconfig/gnoi/containerz"
@@ -35,5 +36,8 @@ func (s *Server) StopContainer(ctx context.Context, request *cpb.StopContainerRe
 	if err := s.mgr.ContainerStop(ctx, request.GetInstanceName(), opts...); err != nil {
 		return nil, err
 	}
-	return &cpb.StopContainerResponse{}, nil
+	return &cpb.StopContainerResponse{
+		Code: cpb.StopContainerResponse_SUCCESS,
+		Details: fmt.Sprintf("stopped %q", request.GetInstanceName()),
+	}, nil
 }
