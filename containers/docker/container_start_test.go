@@ -404,15 +404,15 @@ func TestContainerStart(t *testing.T) {
 				HardMemory:  2000,
 				SoftMemory:  1000,
 			},
-		}, {
+		},
+		{
 			name:    "container-with-cmd",
 			inImage: "my-image",
 			inTag:   "my-tag",
 			inCmd:   `sleep 1000`,
 			inSummaries: []imagetypes.Summary{{
-					RepoTags: []string{"my-image:my-tag"},
-				},
-			},
+				RepoTags: []string{"my-image:my-tag"},
+			}},
 			wantState: &fakeStartingDocker{
 				Cmd: []string{"sleep", "1000"},
 			},
@@ -423,9 +423,8 @@ func TestContainerStart(t *testing.T) {
 			inTag:   "my-tag",
 			inCmd:   `sh -c "echo 2"`,
 			inSummaries: []imagetypes.Summary{{
-					RepoTags: []string{"my-image:my-tag"},
-				},
-			},
+				RepoTags: []string{"my-image:my-tag"},
+			}},
 			wantState: &fakeStartingDocker{
 				Cmd: []string{"sh", "-c", "echo 2"},
 			},
@@ -436,9 +435,8 @@ func TestContainerStart(t *testing.T) {
 			inTag:   "my-tag",
 			inCmd:   `bash -c "echo 2"`,
 			inSummaries: []imagetypes.Summary{{
-					RepoTags: []string{"my-image:my-tag"},
-				},
-			},
+				RepoTags: []string{"my-image:my-tag"},
+			}},
 			wantState: &fakeStartingDocker{
 				Cmd: []string{"bash", "-c", "echo 2"},
 			},
@@ -449,9 +447,8 @@ func TestContainerStart(t *testing.T) {
 			inTag:   "my-tag",
 			inCmd:   `zsh -c "echo 2"`,
 			inSummaries: []imagetypes.Summary{{
-					RepoTags: []string{"my-image:my-tag"},
-				},
-			},
+				RepoTags: []string{"my-image:my-tag"},
+			}},
 			wantState: &fakeStartingDocker{
 				Cmd: []string{"zsh", "-c", "echo 2"},
 			},
@@ -462,9 +459,8 @@ func TestContainerStart(t *testing.T) {
 			inTag:   "my-tag",
 			inCmd:   `ksh -c "echo 2"`,
 			inSummaries: []imagetypes.Summary{{
-					RepoTags: []string{"my-image:my-tag"},
-				},
-			},
+				RepoTags: []string{"my-image:my-tag"},
+			}},
 			wantState: &fakeStartingDocker{
 				Cmd: []string{"ksh", "-c", "echo 2"},
 			},
@@ -475,9 +471,8 @@ func TestContainerStart(t *testing.T) {
 			inTag:   "my-tag",
 			inCmd:   `fish -c "echo 2"`,
 			inSummaries: []imagetypes.Summary{{
-					RepoTags: []string{"my-image:my-tag"},
-				},
-			},
+				RepoTags: []string{"my-image:my-tag"},
+			}},
 			wantState: &fakeStartingDocker{
 				Cmd: []string{"fish", "-c", "echo 2"},
 			},
@@ -488,9 +483,8 @@ func TestContainerStart(t *testing.T) {
 			inTag:   "my-tag",
 			inCmd:   `tcsh -c "echo 2"`,
 			inSummaries: []imagetypes.Summary{{
-					RepoTags: []string{"my-image:my-tag"},
-				},
-			},
+				RepoTags: []string{"my-image:my-tag"},
+			}},
 			wantState: &fakeStartingDocker{
 				Cmd: []string{"tcsh", "-c", "echo 2"},
 			},
@@ -501,9 +495,8 @@ func TestContainerStart(t *testing.T) {
 			inTag:   "my-tag",
 			inCmd:   `tcsh -c 'echo 2'`,
 			inSummaries: []imagetypes.Summary{{
-					RepoTags: []string{"my-image:my-tag"},
-				},
-			},
+				RepoTags: []string{"my-image:my-tag"},
+			}},
 			wantErr: status.Errorf(codes.InvalidArgument,
 				"expected shell command: tcsh -c 'echo 2' to be of the form:"+
 					` tcsh -c "<command>". Failed to unquote command with error invalid syntax`),
