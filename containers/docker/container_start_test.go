@@ -409,8 +409,7 @@ func TestContainerStart(t *testing.T) {
 			inImage: "my-image",
 			inTag:   "my-tag",
 			inCmd:   `sleep 1000`,
-			inSummaries: []imagetypes.Summary{
-				imagetypes.Summary{
+			inSummaries: []imagetypes.Summary{{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
@@ -423,8 +422,7 @@ func TestContainerStart(t *testing.T) {
 			inImage: "my-image",
 			inTag:   "my-tag",
 			inCmd:   `sh -c "echo 2"`,
-			inSummaries: []imagetypes.Summary{
-				imagetypes.Summary{
+			inSummaries: []imagetypes.Summary{{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
@@ -437,8 +435,7 @@ func TestContainerStart(t *testing.T) {
 			inImage: "my-image",
 			inTag:   "my-tag",
 			inCmd:   `bash -c "echo 2"`,
-			inSummaries: []imagetypes.Summary{
-				imagetypes.Summary{
+			inSummaries: []imagetypes.Summary{{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
@@ -451,8 +448,7 @@ func TestContainerStart(t *testing.T) {
 			inImage: "my-image",
 			inTag:   "my-tag",
 			inCmd:   `zsh -c "echo 2"`,
-			inSummaries: []imagetypes.Summary{
-				imagetypes.Summary{
+			inSummaries: []imagetypes.Summary{{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
@@ -465,8 +461,7 @@ func TestContainerStart(t *testing.T) {
 			inImage: "my-image",
 			inTag:   "my-tag",
 			inCmd:   `ksh -c "echo 2"`,
-			inSummaries: []imagetypes.Summary{
-				imagetypes.Summary{
+			inSummaries: []imagetypes.Summary{{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
@@ -479,8 +474,7 @@ func TestContainerStart(t *testing.T) {
 			inImage: "my-image",
 			inTag:   "my-tag",
 			inCmd:   `fish -c "echo 2"`,
-			inSummaries: []imagetypes.Summary{
-				imagetypes.Summary{
+			inSummaries: []imagetypes.Summary{{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
@@ -493,8 +487,7 @@ func TestContainerStart(t *testing.T) {
 			inImage: "my-image",
 			inTag:   "my-tag",
 			inCmd:   `tcsh -c "echo 2"`,
-			inSummaries: []imagetypes.Summary{
-				imagetypes.Summary{
+			inSummaries: []imagetypes.Summary{{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
@@ -507,8 +500,7 @@ func TestContainerStart(t *testing.T) {
 			inImage: "my-image",
 			inTag:   "my-tag",
 			inCmd:   `tcsh -c 'echo 2'`,
-			inSummaries: []imagetypes.Summary{
-				imagetypes.Summary{
+			inSummaries: []imagetypes.Summary{{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
