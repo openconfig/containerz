@@ -37,7 +37,7 @@ func (s *Server) StopContainer(ctx context.Context, request *cpb.StopContainerRe
 		return nil, err
 	}
 	return &cpb.StopContainerResponse{
-		Code: cpb.StopContainerResponse_SUCCESS,
+		Code:    cpb.StopContainerResponse_SUCCESS,
 		Details: fmt.Sprintf("stopped %q", request.GetInstanceName()),
 	}, nil
 }
