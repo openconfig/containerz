@@ -46,7 +46,7 @@ func (m *Manager) ContainerStop(ctx context.Context, instance string, opts ...op
 		if ok {
 			// set the duration to half of the timeout, to ensure that after
 			// ContainerStop runs, the RPC context won't have expired
-			duration = int(timeoutTime.Sub(time.Now()).Seconds()) / 2
+			duration = int(time.Until(timeoutTime)) / 2
 			// cap duration at based on max timeout
 			duration = min(duration, maximumStopTimeout)
 		}
