@@ -77,6 +77,10 @@ func (m *Manager) ContainerStart(ctx context.Context, image, tag, cmd string, op
 		return "", status.Errorf(codes.InvalidArgument,
 			"failed to split command %q, got error %s", cmd, err)
 	}
+	if len(splitCmd) == 0 {
+		// shlex.Split on an empty string produces a length 0 (but non-nil) slice
+		splitCmd = nil
+	}
 
 	config := &container.Config{
 		Cmd:          splitCmd,

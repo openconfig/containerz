@@ -441,6 +441,15 @@ func TestContainerStart(t *testing.T) {
 				Cmd: []string{"echo", `echo "quoted"`},
 			},
 		},
+		{
+			name:    "container-with-no-cmd",
+			inImage: "my-image",
+			inTag:   "my-tag",
+			inSummaries: []imagetypes.Summary{{
+				RepoTags: []string{"my-image:my-tag"},
+			}},
+			wantState: &fakeStartingDocker{},
+		},
 	}
 
 	for _, tc := range tests {
