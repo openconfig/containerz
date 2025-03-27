@@ -9,6 +9,7 @@ require (
 	github.com/docker/docker v27.5.0+incompatible
 	github.com/docker/go-connections v0.5.0
 	github.com/google/go-cmp v0.6.0
+	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/moby/moby v27.5.0+incompatible
 	github.com/openconfig/gnoi v0.6.1-0.20250206212518-26d177339690
 	github.com/opencontainers/image-spec v1.1.0
