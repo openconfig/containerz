@@ -3,8 +3,6 @@ package docker
 import (
 	"context"
 	"fmt"
-	"slices"
-	"strconv"
 	"strings"
 
 	"github.com/docker/go-connections/nat"
@@ -17,22 +15,9 @@ import (
 	"google.golang.org/grpc/status"
 	"github.com/openconfig/containerz/containers"
 
+	"github.com/google/shlex"
 	cpb "github.com/openconfig/gnoi/containerz"
 )
-
-// knownShells is a slice of shells which can be used in commands that containers
-// can be started with. All of these shells can run commands using the -c flag, like:
-// <shell> -c "<command>"
-var knownShells = []string{
-	"sh",
-	"bash",
-	"zsh",
-	"ksh",
-	"fish",
-	"tcsh",
-}
-
-const commandFlag = "-c"
 
 // ContainerStart starts a container provided the image exists and that the ports requested are not
 // currently in use.
@@ -87,20 +72,10 @@ func (m *Manager) ContainerStart(ctx context.Context, image, tag, cmd string, op
 			MemoryReservation: optionz.SoftMemory, // soft
 		},
 	}
-	splitCmd := strings.Split(cmd, " ")
-	if len(splitCmd) > 2 &&
-		splitCmd[1] == commandFlag &&
-		slices.Contains(knownShells, splitCmd[0]) {
-		// command is of the form <shell> -c "<command>"
-		quoted := strings.TrimPrefix(cmd, splitCmd[0]+" "+commandFlag+" ")
-		unquoted, err := strconv.Unquote(quoted)
-		if err != nil {
-			return "", status.Errorf(codes.InvalidArgument,
-				"expected shell command: %s to be of the form: %s -c \"<command>\"."+
-					" Failed to unquote command with error %s",
-				cmd, splitCmd[0], err)
-		}
-		splitCmd = append(splitCmd[:2], unquoted)
+	splitCmd, err := shlex.Split(cmd)
+	if err != nil {
+		return "", status.Errorf(codes.InvalidArgument,
+			"failed to split command %q, got error %s", cmd, err)
 	}
 
 	config := &container.Config{

@@ -430,76 +430,16 @@ func TestContainerStart(t *testing.T) {
 			},
 		},
 		{
-			name:    "container-with-bash-cmd",
+			name:    "container-with-quoted-cmd",
 			inImage: "my-image",
 			inTag:   "my-tag",
-			inCmd:   `bash -c "echo 2"`,
+			inCmd:   `echo 'echo "quoted"'`,
 			inSummaries: []imagetypes.Summary{{
 				RepoTags: []string{"my-image:my-tag"},
 			}},
 			wantState: &fakeStartingDocker{
-				Cmd: []string{"bash", "-c", "echo 2"},
+				Cmd: []string{"echo", `echo "quoted"`},
 			},
-		},
-		{
-			name:    "container-with-zsh-cmd",
-			inImage: "my-image",
-			inTag:   "my-tag",
-			inCmd:   `zsh -c "echo 2"`,
-			inSummaries: []imagetypes.Summary{{
-				RepoTags: []string{"my-image:my-tag"},
-			}},
-			wantState: &fakeStartingDocker{
-				Cmd: []string{"zsh", "-c", "echo 2"},
-			},
-		},
-		{
-			name:    "container-with-ksh-cmd",
-			inImage: "my-image",
-			inTag:   "my-tag",
-			inCmd:   `ksh -c "echo 2"`,
-			inSummaries: []imagetypes.Summary{{
-				RepoTags: []string{"my-image:my-tag"},
-			}},
-			wantState: &fakeStartingDocker{
-				Cmd: []string{"ksh", "-c", "echo 2"},
-			},
-		},
-		{
-			name:    "container-with-fish-cmd",
-			inImage: "my-image",
-			inTag:   "my-tag",
-			inCmd:   `fish -c "echo 2"`,
-			inSummaries: []imagetypes.Summary{{
-				RepoTags: []string{"my-image:my-tag"},
-			}},
-			wantState: &fakeStartingDocker{
-				Cmd: []string{"fish", "-c", "echo 2"},
-			},
-		},
-		{
-			name:    "container-with-tcsh-cmd",
-			inImage: "my-image",
-			inTag:   "my-tag",
-			inCmd:   `tcsh -c "echo 2"`,
-			inSummaries: []imagetypes.Summary{{
-				RepoTags: []string{"my-image:my-tag"},
-			}},
-			wantState: &fakeStartingDocker{
-				Cmd: []string{"tcsh", "-c", "echo 2"},
-			},
-		},
-		{
-			name:    "container-with-tcsh-cmd-fail",
-			inImage: "my-image",
-			inTag:   "my-tag",
-			inCmd:   `tcsh -c 'echo 2'`,
-			inSummaries: []imagetypes.Summary{{
-				RepoTags: []string{"my-image:my-tag"},
-			}},
-			wantErr: status.Errorf(codes.InvalidArgument,
-				"expected shell command: tcsh -c 'echo 2' to be of the form:"+
-					` tcsh -c "<command>". Failed to unquote command with error invalid syntax`),
 		},
 	}
 
