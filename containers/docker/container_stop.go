@@ -11,6 +11,11 @@ import (
 	"github.com/openconfig/containerz/containers"
 )
 
+// maximumStopTimeout sets a cap on how long the docker can wait before
+// sending a SIGKILL after the initial SIGTERM.
+// 10 (seconds) is chosen as this is the default timeout used by container.StopOptions
+const maximumStopTimeout = 10
+
 // ContainerStop stops a container. If the Force option is set and a timeout
 // is specified in the context, the contains if forcefully terminated after that timeout.
 // If the Force option is set but no timeout is provided the container's StopTimeout
@@ -39,7 +44,11 @@ func (m *Manager) ContainerStop(ctx context.Context, instance string, opts ...op
 		duration = 0
 		timeoutTime, ok := ctx.Deadline()
 		if ok {
-			duration = int(timeoutTime.Sub(time.Now()).Seconds())
+			// set the duration to half of the timeout, to ensure that after
+			// ContainerStop runs, the RPC context won't have expired
+			duration = int(timeoutTime.Sub(time.Now()).Seconds()) / 2
+			// cap duration at based on max timeout
+			duration = min(duration, maximumStopTimeout)
 		}
 	}
 
