@@ -4,20 +4,20 @@ import (
 	"context"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/docker/go-connections/nat"
+	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	imagetypes "github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/network"
-	"github.com/docker/docker/api/types"
+	"github.com/docker/go-connections/nat"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/openconfig/containerz/containers"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"github.com/openconfig/containerz/containers"
 
-	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	cpb "github.com/openconfig/gnoi/containerz"
+	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
 type fakeStartingDocker struct {
@@ -360,9 +360,9 @@ func TestContainerStart(t *testing.T) {
 				}),
 				options.WithDevices([]*cpb.Device{
 					&cpb.Device{
-						SrcPath:      "/dev/my-device",
-						DstPath:  "/dev/my-device",
-						Permissions:     []cpb.Device_Permission{cpb.Device_READ, cpb.Device_WRITE, cpb.Device_MKNOD},
+						SrcPath:     "/dev/my-device",
+						DstPath:     "/dev/my-device",
+						Permissions: []cpb.Device_Permission{cpb.Device_READ, cpb.Device_WRITE, cpb.Device_MKNOD},
 					},
 				}),
 			},
