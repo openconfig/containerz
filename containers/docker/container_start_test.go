@@ -36,6 +36,7 @@ type fakeStartingDocker struct {
 	Network     string
 	Labels      map[string]string
 	Devices     []container.DeviceMapping
+	Cmd         []string
 
 	CPU        int64
 	HardMemory int64
@@ -44,6 +45,7 @@ type fakeStartingDocker struct {
 
 func (f *fakeStartingDocker) ContainerCreate(ctx context.Context, config *container.Config, hostConfig *container.HostConfig, networkingConfig *network.NetworkingConfig, platform *ocispec.Platform, containerName string) (container.CreateResponse, error) {
 	f.Ports = config.ExposedPorts
+	f.Cmd = config.Cmd
 	f.Env = config.Env
 	f.Volumes = hostConfig.Mounts
 	f.User = config.User
@@ -168,6 +170,7 @@ func TestContainerStart(t *testing.T) {
 			},
 			inOpts: []options.Option{options.WithInstanceName("my-container"), options.WithPorts(map[uint32]uint32{1: 1})},
 			wantState: &fakeStartingDocker{
+				Cmd:         []string{"my-cmd"},
 				Ports:       nat.PortSet{"1/tcp": struct{}{}},
 				ContainerID: "my-container",
 				Volumes:     []mount.Mount{},
@@ -194,6 +197,7 @@ func TestContainerStart(t *testing.T) {
 				}),
 			},
 			wantState: &fakeStartingDocker{
+				Cmd:  []string{"my-cmd"},
 				User: "my-user",
 			},
 		},
@@ -219,6 +223,7 @@ func TestContainerStart(t *testing.T) {
 				}),
 			},
 			wantState: &fakeStartingDocker{
+				Cmd:  []string{"my-cmd"},
 				User: "my-user:my-group",
 			},
 		},
@@ -244,6 +249,7 @@ func TestContainerStart(t *testing.T) {
 				}),
 			},
 			wantState: &fakeStartingDocker{
+				Cmd: []string{"my-cmd"},
 				Policy: container.RestartPolicy{
 					Name:              "on-failure",
 					MaximumRetryCount: 3,
@@ -272,6 +278,7 @@ func TestContainerStart(t *testing.T) {
 				}),
 			},
 			wantState: &fakeStartingDocker{
+				Cmd:    []string{"my-cmd"},
 				CapAdd: []string{"my-add-capability"},
 				CapDel: []string{"my-remove-capability"},
 			},
@@ -295,6 +302,7 @@ func TestContainerStart(t *testing.T) {
 				options.WithNetwork("my-network"),
 			},
 			wantState: &fakeStartingDocker{
+				Cmd:     []string{"my-cmd"},
 				Network: "my-network",
 			},
 		},
@@ -317,6 +325,7 @@ func TestContainerStart(t *testing.T) {
 				options.WithLabels(map[string]string{"label": "value"}),
 			},
 			wantState: &fakeStartingDocker{
+				Cmd:    []string{"my-cmd"},
 				Labels: map[string]string{"label": "value"},
 			},
 		},
@@ -332,6 +341,7 @@ func TestContainerStart(t *testing.T) {
 			},
 			inOpts: []options.Option{options.WithInstanceName("my-container"), options.WithPorts(map[uint32]uint32{1: 1}), options.WithEnv(map[string]string{"AA": "BB"})},
 			wantState: &fakeStartingDocker{
+				Cmd:         []string{"my-cmd"},
 				Ports:       nat.PortSet{"1/tcp": struct{}{}},
 				Env:         []string{"AA=BB"},
 				ContainerID: "my-container",
@@ -367,6 +377,7 @@ func TestContainerStart(t *testing.T) {
 				}),
 			},
 			wantState: &fakeStartingDocker{
+				Cmd:         []string{"my-cmd"},
 				Ports:       nat.PortSet{"1/tcp": struct{}{}},
 				Env:         []string{"AA=BB"},
 				ContainerID: "my-container",
@@ -403,11 +414,57 @@ func TestContainerStart(t *testing.T) {
 				options.WithHardLimit(2000),
 			},
 			wantState: &fakeStartingDocker{
+				Cmd:         []string{"my-cmd"},
 				ContainerID: "my-container",
 				CPU:         1000000000,
 				HardMemory:  2000,
 				SoftMemory:  1000,
 			},
+		},
+		{
+			name:    "container-with-cmd",
+			inImage: "my-image",
+			inTag:   "my-tag",
+			inCmd:   `sleep 1000`,
+			inSummaries: []imagetypes.Summary{{
+				RepoTags: []string{"my-image:my-tag"},
+			}},
+			wantState: &fakeStartingDocker{
+				Cmd: []string{"sleep", "1000"},
+			},
+		},
+		{
+			name:    "container-with-sh-cmd",
+			inImage: "my-image",
+			inTag:   "my-tag",
+			inCmd:   `sh -c "echo 2"`,
+			inSummaries: []imagetypes.Summary{{
+				RepoTags: []string{"my-image:my-tag"},
+			}},
+			wantState: &fakeStartingDocker{
+				Cmd: []string{"sh", "-c", "echo 2"},
+			},
+		},
+		{
+			name:    "container-with-quoted-cmd",
+			inImage: "my-image",
+			inTag:   "my-tag",
+			inCmd:   `echo 'echo "quoted"'`,
+			inSummaries: []imagetypes.Summary{{
+				RepoTags: []string{"my-image:my-tag"},
+			}},
+			wantState: &fakeStartingDocker{
+				Cmd: []string{"echo", `echo "quoted"`},
+			},
+		},
+		{
+			name:    "container-with-no-cmd",
+			inImage: "my-image",
+			inTag:   "my-tag",
+			inSummaries: []imagetypes.Summary{{
+				RepoTags: []string{"my-image:my-tag"},
+			}},
+			wantState: &fakeStartingDocker{},
 		},
 	}
 

@@ -15,6 +15,7 @@ import (
 	"google.golang.org/grpc/status"
 	"github.com/openconfig/containerz/containers"
 
+	"github.com/google/shlex"
 	cpb "github.com/openconfig/gnoi/containerz"
 )
 
@@ -81,9 +82,18 @@ func (m *Manager) ContainerStart(ctx context.Context, image, tag, cmd string, op
 			Devices:           devices,
 		},
 	}
+	splitCmd, err := shlex.Split(cmd)
+	if err != nil {
+		return "", status.Errorf(codes.InvalidArgument,
+			"failed to split command %q, got error %s", cmd, err)
+	}
+	if len(splitCmd) == 0 {
+		// shlex.Split on an empty string produces a length 0 (but non-nil) slice
+		splitCmd = nil
+	}
 
 	config := &container.Config{
-		Cmd:          strings.Split(cmd, " "),
+		Cmd:          splitCmd,
 		Labels:       optionz.Labels,
 		Image:        ref,
 		AttachStdin:  false,

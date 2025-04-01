@@ -87,7 +87,7 @@ func TestContainerStop(t *testing.T) {
 		{
 			name:       "stop-with-force-and-duration",
 			inInstance: "stop-with-force-and-duration",
-			inTimeout:  1500 * time.Millisecond,
+			inTimeout:  1 * time.Minute,
 			inOpts:     []options.Option{options.Force()},
 			inCnts: []types.Container{
 				types.Container{
@@ -96,7 +96,7 @@ func TestContainerStop(t *testing.T) {
 			},
 			wantState: &fakeStoppingDocker{
 				Instance:       "stop-with-force-and-duration",
-				Duration:       1,
+				Duration:       maximumStopTimeout,
 				RemoveInstance: "stop-with-force-and-duration",
 			},
 		},
