@@ -158,7 +158,7 @@ func TestWithFilter(t *testing.T) {
 func TestWithVolumes(t *testing.T) {
 	p := &options{}
 
-	WithVolumes([]*cpb.Volume{&cpb.Volume{}})(p)
+	WithVolumes([]*cpb.Volume{{}})(p)
 
 	if len(p.Volumes) != 1 {
 		t.Errorf("WithVolumes([]*cpb.Volume{&cpb.Volume{}}) did not set the volumes field")
@@ -228,7 +228,7 @@ func TestWithHardLimit(t *testing.T) {
 func TestWithDevices(t *testing.T) {
 	p := &options{}
 
-	WithDevices([]*cpb.Device{&cpb.Device{}})(p)
+	WithDevices([]*cpb.Device{{}})(p)
 
 	if len(p.Devices) != 1 {
 		t.Errorf("WithDevices([]*cpb.Device{&cpb.Device{}}) did not set the devices field")

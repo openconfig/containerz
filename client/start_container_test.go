@@ -125,11 +125,11 @@ func TestStart(t *testing.T) {
 				Cmd:          "some-cmd",
 				InstanceName: "some-instance",
 				Ports: []*cpb.StartContainerRequest_Port{
-					&cpb.StartContainerRequest_Port{
+					{
 						Internal: 1,
 						External: 1,
 					},
-					&cpb.StartContainerRequest_Port{
+					{
 						Internal: 2,
 						External: 2,
 					},
@@ -182,11 +182,11 @@ func TestStart(t *testing.T) {
 				InstanceName: "some-instance",
 				Environment:  map[string]string{"env1": "cool", "env2": "cooler"},
 				Volumes: []*cpb.Volume{
-					&cpb.Volume{
+					{
 						Name:       "vol1",
 						MountPoint: "/aa",
 					},
-					&cpb.Volume{
+					{
 						Name:       "vol2",
 						MountPoint: "/bb",
 						ReadOnly:   true,
@@ -217,17 +217,17 @@ func TestStart(t *testing.T) {
 				InstanceName: "some-instance",
 				Environment:  map[string]string{"env1": "cool", "env2": "cooler"},
 				Devices: []*cpb.Device{
-					&cpb.Device{
+					{
 						SrcPath:     "dev1",
 						DstPath:     "dev1",
 						Permissions: []cpb.Device_Permission{cpb.Device_READ, cpb.Device_WRITE, cpb.Device_MKNOD},
 					},
-					&cpb.Device{
+					{
 						SrcPath:     "dev2",
 						DstPath:     "mydev2",
 						Permissions: []cpb.Device_Permission{cpb.Device_READ, cpb.Device_WRITE, cpb.Device_MKNOD},
 					},
-					&cpb.Device{
+					{
 						SrcPath:     "dev3",
 						DstPath:     "mydev3",
 						Permissions: []cpb.Device_Permission{cpb.Device_READ, cpb.Device_WRITE},
