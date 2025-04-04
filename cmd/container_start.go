@@ -18,8 +18,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/spf13/cobra"
 	"github.com/openconfig/containerz/client"
+	"github.com/spf13/cobra"
 )
 
 var (
@@ -27,6 +27,7 @@ var (
 	ports                []string
 	envs                 []string
 	volumes              []string
+	devices              []string
 	network              string
 	runAs                string
 	restartPolicy        string
@@ -54,6 +55,9 @@ var cntStartCmd = &cobra.Command{
 		}
 		if len(volumes) > 0 {
 			opts = append(opts, client.WithVolumes(volumes))
+		}
+		if len(devices) > 0 {
+			opts = append(opts, client.WithDevices(devices))
 		}
 		if network != "" {
 			opts = append(opts, client.WithNetwork(network))
@@ -109,6 +113,7 @@ func init() {
 	cntStartCmd.PersistentFlags().StringArrayVar(&ports, "port", []string{}, "Ports to expose (format: <internal_port>:<external_port>")
 	cntStartCmd.PersistentFlags().StringArrayVar(&envs, "env", []string{}, "Environment vars to set (format: <VAR_NAMEt>=<VAR_VALUE>")
 	cntStartCmd.PersistentFlags().StringArrayVarP(&volumes, "volume", "v", []string{}, "Volumes to attach to the container (format: <volume-name>:<mountpoint>[:ro])")
+	cntStartCmd.PersistentFlags().StringArrayVarP(&devices, "device", "d", []string{}, "Devices to attach to the container (format: <src-path>[:<dst-path>[:<permissions>]])")
 	cntStartCmd.PersistentFlags().StringArrayVar(&addCaps, "add_caps", []string{}, "Capabilities to add.")
 	cntStartCmd.PersistentFlags().StringArrayVar(&delCaps, "del_caps", []string{}, "Capabilities to remove.")
 	cntStartCmd.PersistentFlags().StringArrayVar(&labels, "labels", []string{}, "Labels to add to the container (format: <key>=<value>).")

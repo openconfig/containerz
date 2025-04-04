@@ -71,6 +71,7 @@ type startOptions struct {
 	envs      []string
 	ports     []string
 	volumes   []string
+	devices   []string
 	network   string
 	capAdd    []string
 	capRemove []string
@@ -107,6 +108,13 @@ func WithPorts(ports []string) StartOption {
 func WithVolumes(volumes []string) StartOption {
 	return func(opt *startOptions) {
 		opt.volumes = volumes
+	}
+}
+
+// WithDevices sets the devices to be passed to the start operation.
+func WithDevices(devices []string) StartOption {
+	return func(opt *startOptions) {
+		opt.devices = devices
 	}
 }
 
