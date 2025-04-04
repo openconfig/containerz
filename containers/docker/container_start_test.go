@@ -104,12 +104,12 @@ func TestContainerStart(t *testing.T) {
 			inTag:   "my-tag",
 			inCmd:   "my-cmd",
 			inSummaries: []imagetypes.Summary{
-				imagetypes.Summary{
+				{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
 			inCnts: []types.Container{
-				types.Container{
+				{
 					Names: []string{"/my-container"},
 				},
 			},
@@ -122,12 +122,12 @@ func TestContainerStart(t *testing.T) {
 			inTag:   "my-tag",
 			inCmd:   "my-cmd",
 			inSummaries: []imagetypes.Summary{
-				imagetypes.Summary{
+				{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
 			inCnts: []types.Container{
-				types.Container{
+				{
 					Names: []string{"/my-container"},
 				},
 			},
@@ -142,14 +142,14 @@ func TestContainerStart(t *testing.T) {
 			inTag:   "my-tag",
 			inCmd:   "my-cmd",
 			inSummaries: []imagetypes.Summary{
-				imagetypes.Summary{
+				{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
 			inCnts: []types.Container{
-				types.Container{
+				{
 					Ports: []types.Port{
-						types.Port{
+						{
 							PublicPort: 1,
 						},
 					},
@@ -164,7 +164,7 @@ func TestContainerStart(t *testing.T) {
 			inTag:   "my-tag",
 			inCmd:   "my-cmd",
 			inSummaries: []imagetypes.Summary{
-				imagetypes.Summary{
+				{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
@@ -182,12 +182,12 @@ func TestContainerStart(t *testing.T) {
 			inTag:   "my-tag",
 			inCmd:   "my-cmd",
 			inSummaries: []imagetypes.Summary{
-				imagetypes.Summary{
+				{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
 			inCnts: []types.Container{
-				types.Container{
+				{
 					Names: []string{"/my-container"},
 				},
 			},
@@ -207,12 +207,12 @@ func TestContainerStart(t *testing.T) {
 			inTag:   "my-tag",
 			inCmd:   "my-cmd",
 			inSummaries: []imagetypes.Summary{
-				imagetypes.Summary{
+				{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
 			inCnts: []types.Container{
-				types.Container{
+				{
 					Names: []string{"/my-container"},
 				},
 			},
@@ -233,12 +233,12 @@ func TestContainerStart(t *testing.T) {
 			inTag:   "my-tag",
 			inCmd:   "my-cmd",
 			inSummaries: []imagetypes.Summary{
-				imagetypes.Summary{
+				{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
 			inCnts: []types.Container{
-				types.Container{
+				{
 					Names: []string{"/my-container"},
 				},
 			},
@@ -262,12 +262,12 @@ func TestContainerStart(t *testing.T) {
 			inTag:   "my-tag",
 			inCmd:   "my-cmd",
 			inSummaries: []imagetypes.Summary{
-				imagetypes.Summary{
+				{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
 			inCnts: []types.Container{
-				types.Container{
+				{
 					Names: []string{"/my-container"},
 				},
 			},
@@ -289,12 +289,12 @@ func TestContainerStart(t *testing.T) {
 			inTag:   "my-tag",
 			inCmd:   "my-cmd",
 			inSummaries: []imagetypes.Summary{
-				imagetypes.Summary{
+				{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
 			inCnts: []types.Container{
-				types.Container{
+				{
 					Names: []string{"/my-container"},
 				},
 			},
@@ -312,12 +312,12 @@ func TestContainerStart(t *testing.T) {
 			inTag:   "my-tag",
 			inCmd:   "my-cmd",
 			inSummaries: []imagetypes.Summary{
-				imagetypes.Summary{
+				{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
 			inCnts: []types.Container{
-				types.Container{
+				{
 					Names: []string{"/my-container"},
 				},
 			},
@@ -335,7 +335,7 @@ func TestContainerStart(t *testing.T) {
 			inTag:   "my-tag",
 			inCmd:   "my-cmd",
 			inSummaries: []imagetypes.Summary{
-				imagetypes.Summary{
+				{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
@@ -354,7 +354,7 @@ func TestContainerStart(t *testing.T) {
 			inTag:   "my-tag",
 			inCmd:   "my-cmd",
 			inSummaries: []imagetypes.Summary{
-				imagetypes.Summary{
+				{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
@@ -363,13 +363,13 @@ func TestContainerStart(t *testing.T) {
 				options.WithPorts(map[uint32]uint32{1: 1}),
 				options.WithEnv(map[string]string{"AA": "BB"}),
 				options.WithVolumes([]*cpb.Volume{
-					&cpb.Volume{
+					{
 						Name:       "my-volume",
 						MountPoint: "/tmp",
 					},
 				}),
 				options.WithDevices([]*cpb.Device{
-					&cpb.Device{
+					{
 						SrcPath:     "/dev/my-device",
 						DstPath:     "/dev/my-device",
 						Permissions: []cpb.Device_Permission{cpb.Device_READ, cpb.Device_WRITE, cpb.Device_MKNOD},
@@ -403,7 +403,7 @@ func TestContainerStart(t *testing.T) {
 			inTag:   "my-tag",
 			inCmd:   "my-cmd",
 			inSummaries: []imagetypes.Summary{
-				imagetypes.Summary{
+				{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},

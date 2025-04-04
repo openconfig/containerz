@@ -18,8 +18,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/spf13/cobra"
 	"github.com/openconfig/containerz/client"
+	"github.com/spf13/cobra"
 )
 
 var (

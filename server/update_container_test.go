@@ -134,11 +134,11 @@ func TestContainerUpdate(t *testing.T) {
 					Tag:       "some-tag",
 					Cmd:       "some-cmd",
 					Ports: []*cpb.StartContainerRequest_Port{
-						&cpb.StartContainerRequest_Port{
+						{
 							Internal: 1,
 							External: 2,
 						},
-						&cpb.StartContainerRequest_Port{
+						{
 							Internal: 3,
 							External: 4,
 						},

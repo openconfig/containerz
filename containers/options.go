@@ -20,9 +20,9 @@ import (
 	"math/big"
 	"time"
 
-	"google.golang.org/protobuf/proto"
 	cpb "github.com/openconfig/gnoi/containerz"
 	tpb "github.com/openconfig/gnoi/types"
+	"google.golang.org/protobuf/proto"
 )
 
 // Stream represents an entity capable of sending responses to the client.

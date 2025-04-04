@@ -58,11 +58,11 @@ func TestContainerStart(t *testing.T) {
 				Tag:       "some-tag",
 				Cmd:       "some-cmd",
 				Ports: []*cpb.StartContainerRequest_Port{
-					&cpb.StartContainerRequest_Port{
+					{
 						Internal: 1,
 						External: 2,
 					},
-					&cpb.StartContainerRequest_Port{
+					{
 						Internal: 3,
 						External: 4,
 					},
@@ -87,11 +87,11 @@ func TestContainerStart(t *testing.T) {
 				Tag:       "some-tag",
 				Cmd:       "some-cmd",
 				Ports: []*cpb.StartContainerRequest_Port{
-					&cpb.StartContainerRequest_Port{
+					{
 						Internal: 1,
 						External: 2,
 					},
-					&cpb.StartContainerRequest_Port{
+					{
 						Internal: 3,
 						External: 4,
 					},
@@ -324,17 +324,17 @@ func TestContainerStart(t *testing.T) {
 				Tag:       "some-tag",
 				Cmd:       "some-cmd",
 				Devices: []*cpb.Device{
-					&cpb.Device{
+					{
 						SrcPath:     "dev1",
 						DstPath:     "dev1",
 						Permissions: []cpb.Device_Permission{cpb.Device_READ, cpb.Device_WRITE, cpb.Device_MKNOD},
 					},
-					&cpb.Device{
+					{
 						SrcPath:     "dev2",
 						DstPath:     "mydev2",
 						Permissions: []cpb.Device_Permission{cpb.Device_READ, cpb.Device_WRITE, cpb.Device_MKNOD},
 					},
-					&cpb.Device{
+					{
 						SrcPath:     "dev3",
 						DstPath:     "mydev3",
 						Permissions: []cpb.Device_Permission{cpb.Device_READ, cpb.Device_WRITE},
