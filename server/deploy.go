@@ -25,10 +25,10 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"k8s.io/klog/v2"
 	"github.com/openconfig/containerz/chunker"
 	"github.com/openconfig/containerz/containers"
 	cpb "github.com/openconfig/gnoi/containerz"
+	"k8s.io/klog/v2"
 )
 
 // pluginLocation is the location where plugins are expected to be written to.
@@ -196,6 +196,11 @@ func diskSpace(loc string) (uint64, error) {
 // only works within one device (i.e. mountpoint). The replication server's temp location and
 // actual location may be on different devices.
 func moveFile(sourcePath, destPath string) error {
+	// idempotent create of the destPath directory
+	if err := os.MkdirAll(filepath.Dir(destPath), 0755); err != nil {
+		return fmt.Errorf("failed to create %s with error %s",
+			filepath.Dir(destPath))
+	}
 	inputFile, err := os.Open(sourcePath)
 	if err != nil {
 		return fmt.Errorf("unable to open source file: %s", err)
