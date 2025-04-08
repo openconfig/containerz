@@ -25,10 +25,10 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"k8s.io/klog/v2"
 	"github.com/openconfig/containerz/chunker"
 	"github.com/openconfig/containerz/containers"
 	cpb "github.com/openconfig/gnoi/containerz"
-	"k8s.io/klog/v2"
 )
 
 // pluginLocation is the location where plugins are expected to be written to.
@@ -199,7 +199,7 @@ func moveFile(sourcePath, destPath string) error {
 	// idempotent create of the destPath directory
 	if err := os.MkdirAll(filepath.Dir(destPath), 0755); err != nil {
 		return fmt.Errorf("failed to create %s with error %s",
-			filepath.Dir(destPath))
+			filepath.Dir(destPath), err)
 	}
 	inputFile, err := os.Open(sourcePath)
 	if err != nil {
