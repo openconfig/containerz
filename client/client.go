@@ -18,9 +18,9 @@ package client
 import (
 	"context"
 
-	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc"
 	cpb "github.com/openconfig/gnoi/containerz"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 var (
@@ -50,5 +50,13 @@ func NewClient(ctx context.Context, addr string) (*Client, error) {
 func NewClientWithConn(conn *grpc.ClientConn) *Client {
 	return &Client{
 		cli: cpb.NewContainerzClient(conn),
+	}
+}
+
+// NewClientFromStub allows the creation of a client using a client
+// obtained via gnoigo.
+func NewClientFromStub(c cpb.ContainerzClient) *Client {
+	return &Client{
+		cli: c,
 	}
 }
