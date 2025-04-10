@@ -20,9 +20,9 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	cpb "github.com/openconfig/gnoi/containerz"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	cpb "github.com/openconfig/gnoi/containerz"
 )
 
 type fakeUpdatingContainerzServer struct {
@@ -58,6 +58,7 @@ func TestUpdateContainer(t *testing.T) {
 		inPorts    []string
 		inEnvs     []string
 		inVols     []string
+		inDevices  []string
 		inMsg      *cpb.UpdateContainerResponse
 
 		wantMsg *cpb.UpdateContainerRequest
@@ -160,11 +161,11 @@ func TestUpdateContainer(t *testing.T) {
 					Cmd:          "some-cmd",
 					InstanceName: "some-instance",
 					Ports: []*cpb.StartContainerRequest_Port{
-						&cpb.StartContainerRequest_Port{
+						{
 							Internal: 1,
 							External: 1,
 						},
-						&cpb.StartContainerRequest_Port{
+						{
 							Internal: 2,
 							External: 2,
 						},
@@ -223,14 +224,58 @@ func TestUpdateContainer(t *testing.T) {
 					InstanceName: "some-instance",
 					Environment:  map[string]string{"env1": "cool", "env2": "cooler"},
 					Volumes: []*cpb.Volume{
-						&cpb.Volume{
+						{
 							Name:       "vol1",
 							MountPoint: "/aa",
 						},
-						&cpb.Volume{
+						{
 							Name:       "vol2",
 							MountPoint: "/bb",
 							ReadOnly:   true,
+						},
+					},
+				},
+				false,
+			),
+		},
+		{
+			name:       "simple-with-devices",
+			inImage:    "some-image",
+			inTag:      "some-tag",
+			inInstance: "some-instance",
+			inCmd:      "some-cmd",
+			inEnvs:     []string{"env1=cool", "env2=cooler"},
+			inDevices:  []string{"dev1", "dev2:mydev2", "dev3:mydev3:rw"},
+			inMsg: &cpb.UpdateContainerResponse{
+				Response: &cpb.UpdateContainerResponse_UpdateOk{
+					UpdateOk: &cpb.UpdateOK{
+						InstanceName: "some-instance",
+					},
+				},
+			},
+			wantID: "some-instance",
+			wantMsg: wrapInUpdateRequest(
+				&cpb.StartContainerRequest{
+					ImageName:    "some-image",
+					Tag:          "some-tag",
+					Cmd:          "some-cmd",
+					InstanceName: "some-instance",
+					Environment:  map[string]string{"env1": "cool", "env2": "cooler"},
+					Devices: []*cpb.Device{
+						{
+							SrcPath:     "dev1",
+							DstPath:     "dev1",
+							Permissions: []cpb.Device_Permission{cpb.Device_READ, cpb.Device_WRITE, cpb.Device_MKNOD},
+						},
+						{
+							SrcPath:     "dev2",
+							DstPath:     "mydev2",
+							Permissions: []cpb.Device_Permission{cpb.Device_READ, cpb.Device_WRITE, cpb.Device_MKNOD},
+						},
+						{
+							SrcPath:     "dev3",
+							DstPath:     "mydev3",
+							Permissions: []cpb.Device_Permission{cpb.Device_READ, cpb.Device_WRITE},
 						},
 					},
 				},
@@ -252,7 +297,7 @@ func TestUpdateContainer(t *testing.T) {
 				t.Fatalf("NewClient(%v) returned an unexpected error: %v", addr, err)
 			}
 
-			gotID, err := cli.UpdateContainer(ctx, tc.inImage, tc.inTag, tc.inCmd, tc.inInstance, tc.inAsync, WithPorts(tc.inPorts), WithEnv(tc.inEnvs), WithVolumes(tc.inVols))
+			gotID, err := cli.UpdateContainer(ctx, tc.inImage, tc.inTag, tc.inCmd, tc.inInstance, tc.inAsync, WithPorts(tc.inPorts), WithEnv(tc.inEnvs), WithVolumes(tc.inVols), WithDevices(tc.inDevices))
 			if err != nil {
 				if tc.wantErr == nil {
 					t.Fatalf("Start(%q, %q, %q, %q, %t, %v, %v) returned an unexpected error: %v", tc.inImage, tc.inTag, tc.inCmd, tc.inInstance, tc.inAsync, tc.inPorts, tc.inEnvs, err)

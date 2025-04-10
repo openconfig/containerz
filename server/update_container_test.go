@@ -134,11 +134,11 @@ func TestContainerUpdate(t *testing.T) {
 					Tag:       "some-tag",
 					Cmd:       "some-cmd",
 					Ports: []*cpb.StartContainerRequest_Port{
-						&cpb.StartContainerRequest_Port{
+						{
 							Internal: 1,
 							External: 2,
 						},
-						&cpb.StartContainerRequest_Port{
+						{
 							Internal: 3,
 							External: 4,
 						},
@@ -237,6 +237,58 @@ func TestContainerUpdate(t *testing.T) {
 						Name:       "vol2",
 						MountPoint: "/bb",
 						ReadOnly:   true,
+					},
+				},
+			},
+		},
+		{
+			name: "devices",
+			inReq: &cpb.UpdateContainerRequest{
+				InstanceName: "some-instance",
+				ImageName:    "some-image",
+				ImageTag:     "some-tag",
+				Async:        false,
+				Params: &cpb.StartContainerRequest{
+					ImageName: "some-image",
+					Tag:       "some-tag",
+					Cmd:       "some-cmd",
+					Devices: []*cpb.Device{
+						{
+							SrcPath:     "dev1",
+							DstPath:     "my-dev1",
+							Permissions: []cpb.Device_Permission{cpb.Device_READ, cpb.Device_WRITE, cpb.Device_MKNOD},
+						},
+						{
+							SrcPath:     "dev2",
+							DstPath:     "my-dev2",
+							Permissions: []cpb.Device_Permission{cpb.Device_READ, cpb.Device_WRITE, cpb.Device_MKNOD},
+						},
+					},
+				},
+			},
+			wantResp: &cpb.UpdateContainerResponse{
+				Response: &cpb.UpdateContainerResponse_UpdateOk{
+					UpdateOk: &cpb.UpdateOK{
+						InstanceName: "some-instance",
+						IsAsync:      false,
+					},
+				},
+			},
+			wantState: &fakeContainerManager{
+				Instance: "some-instance",
+				Image:    "some-image",
+				Tag:      "some-tag",
+				Cmd:      "some-cmd",
+				Devices: []*cpb.Device{
+					{
+						SrcPath:     "dev1",
+						DstPath:     "my-dev1",
+						Permissions: []cpb.Device_Permission{cpb.Device_READ, cpb.Device_WRITE, cpb.Device_MKNOD},
+					},
+					{
+						SrcPath:     "dev2",
+						DstPath:     "my-dev2",
+						Permissions: []cpb.Device_Permission{cpb.Device_READ, cpb.Device_WRITE, cpb.Device_MKNOD},
 					},
 				},
 			},

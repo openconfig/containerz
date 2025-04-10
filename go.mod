@@ -11,7 +11,7 @@ require (
 	github.com/google/go-cmp v0.6.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/moby/moby v27.5.0+incompatible
-	github.com/openconfig/gnoi v0.6.1-0.20250206212518-26d177339690
+	github.com/openconfig/gnoi v0.6.1-0.20250313184021-e65eb9d297f1
 	github.com/opencontainers/image-spec v1.1.0
 	github.com/spf13/cobra v1.8.1
 	golang.org/x/sys v0.29.0

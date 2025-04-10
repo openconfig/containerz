@@ -58,11 +58,11 @@ func TestContainerStart(t *testing.T) {
 				Tag:       "some-tag",
 				Cmd:       "some-cmd",
 				Ports: []*cpb.StartContainerRequest_Port{
-					&cpb.StartContainerRequest_Port{
+					{
 						Internal: 1,
 						External: 2,
 					},
-					&cpb.StartContainerRequest_Port{
+					{
 						Internal: 3,
 						External: 4,
 					},
@@ -87,11 +87,11 @@ func TestContainerStart(t *testing.T) {
 				Tag:       "some-tag",
 				Cmd:       "some-cmd",
 				Ports: []*cpb.StartContainerRequest_Port{
-					&cpb.StartContainerRequest_Port{
+					{
 						Internal: 1,
 						External: 2,
 					},
-					&cpb.StartContainerRequest_Port{
+					{
 						Internal: 3,
 						External: 4,
 					},
@@ -315,6 +315,58 @@ func TestContainerStart(t *testing.T) {
 				CPU:        1.0,
 				SoftMemory: 1000,
 				HardMemory: 2000,
+			},
+		},
+		{
+			name: "devices",
+			inReq: &cpb.StartContainerRequest{
+				ImageName: "some-image",
+				Tag:       "some-tag",
+				Cmd:       "some-cmd",
+				Devices: []*cpb.Device{
+					{
+						SrcPath:     "dev1",
+						DstPath:     "dev1",
+						Permissions: []cpb.Device_Permission{cpb.Device_READ, cpb.Device_WRITE, cpb.Device_MKNOD},
+					},
+					{
+						SrcPath:     "dev2",
+						DstPath:     "mydev2",
+						Permissions: []cpb.Device_Permission{cpb.Device_READ, cpb.Device_WRITE, cpb.Device_MKNOD},
+					},
+					{
+						SrcPath:     "dev3",
+						DstPath:     "mydev3",
+						Permissions: []cpb.Device_Permission{cpb.Device_READ, cpb.Device_WRITE},
+					},
+				},
+			},
+			wantResp: &cpb.StartContainerResponse{
+				Response: &cpb.StartContainerResponse_StartOk{
+					StartOk: &cpb.StartOK{},
+				},
+			},
+			wantState: &fakeContainerManager{
+				Image: "some-image",
+				Tag:   "some-tag",
+				Cmd:   "some-cmd",
+				Devices: []*cpb.Device{
+					{
+						SrcPath:     "dev1",
+						DstPath:     "dev1",
+						Permissions: []cpb.Device_Permission{cpb.Device_READ, cpb.Device_WRITE, cpb.Device_MKNOD},
+					},
+					{
+						SrcPath:     "dev2",
+						DstPath:     "mydev2",
+						Permissions: []cpb.Device_Permission{cpb.Device_READ, cpb.Device_WRITE, cpb.Device_MKNOD},
+					},
+					{
+						SrcPath:     "dev3",
+						DstPath:     "mydev3",
+						Permissions: []cpb.Device_Permission{cpb.Device_READ, cpb.Device_WRITE},
+					},
+				},
 			},
 		},
 	}

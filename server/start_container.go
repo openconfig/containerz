@@ -17,7 +17,7 @@ package server
 import (
 	"context"
 
-	"github.com/openconfig/containerz/containers"
+	options "github.com/openconfig/containerz/containers"
 	cpb "github.com/openconfig/gnoi/containerz"
 )
 
@@ -75,6 +75,6 @@ func optionsFromStartContainerRequest(request *cpb.StartContainerRequest) []opti
 		}
 	}
 
-	opts = append(opts, options.WithLabels(request.GetLabels()), options.WithEnv(request.GetEnvironment()), options.WithInstanceName(request.GetInstanceName()), options.WithVolumes(request.GetVolumes()))
+	opts = append(opts, options.WithLabels(request.GetLabels()), options.WithEnv(request.GetEnvironment()), options.WithInstanceName(request.GetInstanceName()), options.WithVolumes(request.GetVolumes()), options.WithDevices(request.GetDevices()))
 	return opts
 }

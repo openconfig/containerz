@@ -19,9 +19,9 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"google.golang.org/protobuf/testing/protocmp"
 	cpb "github.com/openconfig/gnoi/containerz"
 	tpb "github.com/openconfig/gnoi/types"
+	"google.golang.org/protobuf/testing/protocmp"
 )
 
 type fakeStream struct{}
@@ -158,7 +158,7 @@ func TestWithFilter(t *testing.T) {
 func TestWithVolumes(t *testing.T) {
 	p := &options{}
 
-	WithVolumes([]*cpb.Volume{&cpb.Volume{}})(p)
+	WithVolumes([]*cpb.Volume{{}})(p)
 
 	if len(p.Volumes) != 1 {
 		t.Errorf("WithVolumes([]*cpb.Volume{&cpb.Volume{}}) did not set the volumes field")
@@ -222,6 +222,16 @@ func TestWithHardLimit(t *testing.T) {
 
 	if p.HardMemory != 100 {
 		t.Errorf("WithHardLimit(100) did not set the hard memory field")
+	}
+}
+
+func TestWithDevices(t *testing.T) {
+	p := &options{}
+
+	WithDevices([]*cpb.Device{{}})(p)
+
+	if len(p.Devices) != 1 {
+		t.Errorf("WithDevices([]*cpb.Device{&cpb.Device{}}) did not set the devices field")
 	}
 }
 

@@ -4,20 +4,20 @@ import (
 	"context"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/docker/go-connections/nat"
+	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	imagetypes "github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/network"
-	"github.com/docker/docker/api/types"
+	"github.com/docker/go-connections/nat"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
+	options "github.com/openconfig/containerz/containers"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"github.com/openconfig/containerz/containers"
 
-	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	cpb "github.com/openconfig/gnoi/containerz"
+	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
 type fakeStartingDocker struct {
@@ -35,6 +35,7 @@ type fakeStartingDocker struct {
 	CapDel      []string
 	Network     string
 	Labels      map[string]string
+	Devices     []container.DeviceMapping
 	Cmd         []string
 
 	CPU        int64
@@ -55,6 +56,7 @@ func (f *fakeStartingDocker) ContainerCreate(ctx context.Context, config *contai
 	f.CPU = hostConfig.Resources.NanoCPUs
 	f.HardMemory = hostConfig.Resources.Memory
 	f.SoftMemory = hostConfig.Resources.MemoryReservation
+	f.Devices = hostConfig.Resources.Devices
 	// If this is not out default, remember it.
 	if !hostConfig.NetworkMode.IsHost() {
 		f.Network = string(hostConfig.NetworkMode)
@@ -102,12 +104,12 @@ func TestContainerStart(t *testing.T) {
 			inTag:   "my-tag",
 			inCmd:   "my-cmd",
 			inSummaries: []imagetypes.Summary{
-				imagetypes.Summary{
+				{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
 			inCnts: []types.Container{
-				types.Container{
+				{
 					Names: []string{"/my-container"},
 				},
 			},
@@ -120,12 +122,12 @@ func TestContainerStart(t *testing.T) {
 			inTag:   "my-tag",
 			inCmd:   "my-cmd",
 			inSummaries: []imagetypes.Summary{
-				imagetypes.Summary{
+				{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
 			inCnts: []types.Container{
-				types.Container{
+				{
 					Names: []string{"/my-container"},
 				},
 			},
@@ -140,14 +142,14 @@ func TestContainerStart(t *testing.T) {
 			inTag:   "my-tag",
 			inCmd:   "my-cmd",
 			inSummaries: []imagetypes.Summary{
-				imagetypes.Summary{
+				{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
 			inCnts: []types.Container{
-				types.Container{
+				{
 					Ports: []types.Port{
-						types.Port{
+						{
 							PublicPort: 1,
 						},
 					},
@@ -162,7 +164,7 @@ func TestContainerStart(t *testing.T) {
 			inTag:   "my-tag",
 			inCmd:   "my-cmd",
 			inSummaries: []imagetypes.Summary{
-				imagetypes.Summary{
+				{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
@@ -180,12 +182,12 @@ func TestContainerStart(t *testing.T) {
 			inTag:   "my-tag",
 			inCmd:   "my-cmd",
 			inSummaries: []imagetypes.Summary{
-				imagetypes.Summary{
+				{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
 			inCnts: []types.Container{
-				types.Container{
+				{
 					Names: []string{"/my-container"},
 				},
 			},
@@ -205,12 +207,12 @@ func TestContainerStart(t *testing.T) {
 			inTag:   "my-tag",
 			inCmd:   "my-cmd",
 			inSummaries: []imagetypes.Summary{
-				imagetypes.Summary{
+				{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
 			inCnts: []types.Container{
-				types.Container{
+				{
 					Names: []string{"/my-container"},
 				},
 			},
@@ -231,12 +233,12 @@ func TestContainerStart(t *testing.T) {
 			inTag:   "my-tag",
 			inCmd:   "my-cmd",
 			inSummaries: []imagetypes.Summary{
-				imagetypes.Summary{
+				{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
 			inCnts: []types.Container{
-				types.Container{
+				{
 					Names: []string{"/my-container"},
 				},
 			},
@@ -260,12 +262,12 @@ func TestContainerStart(t *testing.T) {
 			inTag:   "my-tag",
 			inCmd:   "my-cmd",
 			inSummaries: []imagetypes.Summary{
-				imagetypes.Summary{
+				{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
 			inCnts: []types.Container{
-				types.Container{
+				{
 					Names: []string{"/my-container"},
 				},
 			},
@@ -287,12 +289,12 @@ func TestContainerStart(t *testing.T) {
 			inTag:   "my-tag",
 			inCmd:   "my-cmd",
 			inSummaries: []imagetypes.Summary{
-				imagetypes.Summary{
+				{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
 			inCnts: []types.Container{
-				types.Container{
+				{
 					Names: []string{"/my-container"},
 				},
 			},
@@ -310,12 +312,12 @@ func TestContainerStart(t *testing.T) {
 			inTag:   "my-tag",
 			inCmd:   "my-cmd",
 			inSummaries: []imagetypes.Summary{
-				imagetypes.Summary{
+				{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
 			inCnts: []types.Container{
-				types.Container{
+				{
 					Names: []string{"/my-container"},
 				},
 			},
@@ -333,7 +335,7 @@ func TestContainerStart(t *testing.T) {
 			inTag:   "my-tag",
 			inCmd:   "my-cmd",
 			inSummaries: []imagetypes.Summary{
-				imagetypes.Summary{
+				{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
@@ -347,12 +349,12 @@ func TestContainerStart(t *testing.T) {
 			},
 		},
 		{
-			name:    "container-with-env-and-port-and-volumes",
+			name:    "container-with-env-and-port-and-volumes-and-devices",
 			inImage: "my-image",
 			inTag:   "my-tag",
 			inCmd:   "my-cmd",
 			inSummaries: []imagetypes.Summary{
-				imagetypes.Summary{
+				{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
@@ -361,9 +363,16 @@ func TestContainerStart(t *testing.T) {
 				options.WithPorts(map[uint32]uint32{1: 1}),
 				options.WithEnv(map[string]string{"AA": "BB"}),
 				options.WithVolumes([]*cpb.Volume{
-					&cpb.Volume{
+					{
 						Name:       "my-volume",
 						MountPoint: "/tmp",
+					},
+				}),
+				options.WithDevices([]*cpb.Device{
+					{
+						SrcPath:     "/dev/my-device",
+						DstPath:     "/dev/my-device",
+						Permissions: []cpb.Device_Permission{cpb.Device_READ, cpb.Device_WRITE, cpb.Device_MKNOD},
 					},
 				}),
 			},
@@ -379,6 +388,13 @@ func TestContainerStart(t *testing.T) {
 						Target: "/tmp",
 					},
 				},
+				Devices: []container.DeviceMapping{
+					{
+						PathOnHost:        "/dev/my-device",
+						PathInContainer:   "/dev/my-device",
+						CgroupPermissions: "rwm",
+					},
+				},
 			},
 		},
 		{
@@ -387,7 +403,7 @@ func TestContainerStart(t *testing.T) {
 			inTag:   "my-tag",
 			inCmd:   "my-cmd",
 			inSummaries: []imagetypes.Summary{
-				imagetypes.Summary{
+				{
 					RepoTags: []string{"my-image:my-tag"},
 				},
 			},
