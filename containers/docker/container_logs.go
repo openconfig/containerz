@@ -18,6 +18,8 @@ func (m *Manager) ContainerLogs(ctx context.Context, instance string, srv option
 	optionz := options.ApplyOptions(opts...)
 
 	cnts, err := m.client.ContainerList(ctx, container.ListOptions{
+		// list all the containers - even ones which have exited.
+		All: true,
 		// TODO(alshabib): consider filtering for the image we care about
 	})
 	if err != nil {
