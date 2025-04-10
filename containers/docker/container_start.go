@@ -11,7 +11,7 @@ import (
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/go-connections/nat"
-	"github.com/openconfig/containerz/containers"
+	options "github.com/openconfig/containerz/containers"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 

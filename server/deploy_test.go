@@ -23,7 +23,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/openconfig/containerz/containers"
+	options "github.com/openconfig/containerz/containers"
 	commonpb "github.com/openconfig/gnoi/common"
 	cpb "github.com/openconfig/gnoi/containerz"
 	"google.golang.org/grpc"

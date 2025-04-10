@@ -12,7 +12,7 @@ import (
 	"github.com/docker/go-connections/nat"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/openconfig/containerz/containers"
+	options "github.com/openconfig/containerz/containers"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
