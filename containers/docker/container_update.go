@@ -61,6 +61,10 @@ func (m *Manager) performContainerUpdate(ctx context.Context, instance, image, t
 		// If the container stop fails, there shouldn't be any changes to restore.
 		return "", status.Errorf(codes.Internal, "failed update of instance %s due to: %v", instance, err)
 	}
+	// ContainerStop will stop the container - we want to additionally remove this instance here.
+	if err := m.client.ContainerRemove(ctx, instance, container.RemoveOptions{}); err != nil {
+		return "", status.Errorf(codes.Internal, "failed update of instance %s due to: %v", instance, err)
+	}
 
 	// Attempting to create & start a container with the new config.
 	opts = append(opts, options.WithInstanceName(instance))
