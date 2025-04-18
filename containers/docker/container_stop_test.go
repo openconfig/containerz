@@ -5,13 +5,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/api/types"
+	"github.com/openconfig/containerz/containers"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"github.com/openconfig/containerz/containers"
 )
 
 type fakeStoppingDocker struct {
@@ -65,9 +65,8 @@ func TestContainerStop(t *testing.T) {
 				},
 			},
 			wantState: &fakeStoppingDocker{
-				Instance:       "stop-no-force",
-				Duration:       -1,
-				RemoveInstance: "stop-no-force",
+				Instance: "stop-no-force",
+				Duration: -1,
 			},
 		},
 		{
@@ -80,8 +79,7 @@ func TestContainerStop(t *testing.T) {
 				},
 			},
 			wantState: &fakeStoppingDocker{
-				Instance:       "stop-with-force-no-duration",
-				RemoveInstance: "stop-with-force-no-duration",
+				Instance: "stop-with-force-no-duration",
 			},
 		},
 		{
@@ -95,9 +93,8 @@ func TestContainerStop(t *testing.T) {
 				},
 			},
 			wantState: &fakeStoppingDocker{
-				Instance:       "stop-with-force-and-duration",
-				Duration:       maximumStopTimeout,
-				RemoveInstance: "stop-with-force-and-duration",
+				Instance: "stop-with-force-and-duration",
+				Duration: maximumStopTimeout,
 			},
 		},
 	}
