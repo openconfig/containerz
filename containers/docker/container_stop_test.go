@@ -5,13 +5,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/container"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/openconfig/containerz/containers"
+	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"github.com/openconfig/containerz/containers"
 )
 
 type fakeStoppingDocker struct {

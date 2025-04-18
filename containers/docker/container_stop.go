@@ -5,10 +5,10 @@ import (
 	"time"
 
 	"github.com/docker/docker/api/types/container"
-	"github.com/openconfig/containerz/containers"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"k8s.io/klog/v2"
+	"github.com/openconfig/containerz/containers"
 )
 
 // maximumStopTimeout sets a cap on how long the docker can wait before
@@ -58,7 +58,9 @@ func (m *Manager) ContainerStop(ctx context.Context, instance string, opts ...op
 	}
 
 	if err := m.client.ContainerStop(ctx, instance, container.StopOptions{Timeout: pDuration}); err != nil {
-		klog.Warningf("container %s was not running", instance)
+		klog.Warningf("container %s failed to stop", instance)
+		return status.Errorf(codes.Unknown, "failed to stop container %s with error %s",
+			instance, err)
 	}
 
 	return nil
