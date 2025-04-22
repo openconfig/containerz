@@ -58,13 +58,9 @@ func (m *Manager) ContainerStop(ctx context.Context, instance string, opts ...op
 	}
 
 	if err := m.client.ContainerStop(ctx, instance, container.StopOptions{Timeout: pDuration}); err != nil {
-		klog.Warningf("container %s was not running", instance)
-	}
-
-	if err := m.client.ContainerRemove(ctx, instance, container.RemoveOptions{
-		Force: optionz.Force,
-	}); err != nil {
-		return err
+		klog.Warningf("container %s failed to stop", instance)
+		return status.Errorf(codes.Unknown, "failed to stop container %s with error %s",
+			instance, err)
 	}
 
 	return nil

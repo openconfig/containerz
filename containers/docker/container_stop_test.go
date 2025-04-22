@@ -65,9 +65,8 @@ func TestContainerStop(t *testing.T) {
 				},
 			},
 			wantState: &fakeStoppingDocker{
-				Instance:       "stop-no-force",
-				Duration:       -1,
-				RemoveInstance: "stop-no-force",
+				Instance: "stop-no-force",
+				Duration: -1,
 			},
 		},
 		{
@@ -80,8 +79,7 @@ func TestContainerStop(t *testing.T) {
 				},
 			},
 			wantState: &fakeStoppingDocker{
-				Instance:       "stop-with-force-no-duration",
-				RemoveInstance: "stop-with-force-no-duration",
+				Instance: "stop-with-force-no-duration",
 			},
 		},
 		{
@@ -95,9 +93,8 @@ func TestContainerStop(t *testing.T) {
 				},
 			},
 			wantState: &fakeStoppingDocker{
-				Instance:       "stop-with-force-and-duration",
-				Duration:       maximumStopTimeout,
-				RemoveInstance: "stop-with-force-and-duration",
+				Instance: "stop-with-force-and-duration",
+				Duration: maximumStopTimeout,
 			},
 		},
 	}
