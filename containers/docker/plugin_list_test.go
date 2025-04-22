@@ -51,17 +51,7 @@ type fakePluginListingDocker struct {
 }
 
 func (f *fakePluginListingDocker) PluginList(ctx context.Context, args filters.Args) (types.PluginsListResponse, error) {
-	values := args.Get("name")
-	if len(values) == 0 {
-		return f.plugins, nil
-	}
-
-	for _, plugin := range f.plugins {
-		if plugin.Name == values[0] {
-			return []*types.Plugin{plugin}, nil
-		}
-	}
-	return nil, nil
+	return f.plugins, nil
 }
 
 func TestPluginList(t *testing.T) {
