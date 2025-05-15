@@ -10,8 +10,9 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/docker/docker/client"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/docker/docker/api/types"
+	imagetypes "github.com/docker/docker/api/types/image"
 	"github.com/moby/moby/pkg/jsonmessage"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -26,17 +27,17 @@ type fakePushingDocker struct {
 	Source, Target string
 }
 
-func (f fakePushingDocker) ImageLoad(ctx context.Context, input io.Reader, quiet bool) (types.ImageLoadResponse, error) {
+func (f fakePushingDocker) ImageLoad(ctx context.Context, input io.Reader, options ...client.ImageLoadOption) (imagetypes.LoadResponse, error) {
 	jm := &jsonmessage.JSONMessage{
 		Stream: fmt.Sprintf("Loaded image: %s\n", f.image+":"+f.tag),
 	}
 
 	data, err := json.Marshal(jm)
 	if err != nil {
-		return types.ImageLoadResponse{}, err
+		return imagetypes.LoadResponse{}, err
 	}
 
-	return types.ImageLoadResponse{
+	return imagetypes.LoadResponse{
 		Body: io.NopCloser(bytes.NewBuffer(data)),
 		JSON: f.isJSON,
 	}, nil
