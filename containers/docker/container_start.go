@@ -7,7 +7,7 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
-	imagetypes "github.com/docker/docker/api/types/image"
+	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/go-connections/nat"
@@ -21,17 +21,17 @@ import (
 
 // ContainerStart starts a container provided the image exists and that the ports requested are not
 // currently in use.
-func (m *Manager) ContainerStart(ctx context.Context, image, tag, cmd string, opts ...options.Option) (string, error) {
+func (m *Manager) ContainerStart(ctx context.Context, imageName, tag, cmd string, opts ...options.Option) (string, error) {
 	optionz := options.ApplyOptions(opts...)
 
-	images, err := m.client.ImageList(ctx, imagetypes.ListOptions{
+	images, err := m.client.ImageList(ctx, image.ListOptions{
 		// TODO(alshabib): consider filtering for the image we care about
 	})
 	if err != nil {
 		return "", err
 	}
 
-	ref := fmt.Sprintf("%s:%s", image, tag)
+	ref := fmt.Sprintf("%s:%s", imageName, tag)
 	if err := findImage(ref, images); err != nil {
 		return "", err
 	}

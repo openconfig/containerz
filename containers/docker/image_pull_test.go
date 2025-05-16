@@ -9,7 +9,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	imagetypes "github.com/docker/docker/api/types/image"
+	"github.com/docker/docker/api/types/image"
 	"github.com/moby/moby/pkg/jsonmessage"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -26,7 +26,7 @@ type fakePullingDocker struct {
 	TargetRef string
 }
 
-func (f *fakePullingDocker) ImagePull(ctx context.Context, ref string, options imagetypes.PullOptions) (io.ReadCloser, error) {
+func (f *fakePullingDocker) ImagePull(ctx context.Context, ref string, options image.PullOptions) (io.ReadCloser, error) {
 	f.ImageRef = ref
 	jm := &jsonmessage.JSONMessage{
 		Progress: &jsonmessage.JSONProgress{

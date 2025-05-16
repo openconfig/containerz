@@ -11,7 +11,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
-	imagetypes "github.com/docker/docker/api/types/image"
+	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/api/types/registry"
 	"github.com/docker/docker/api/types"
@@ -57,19 +57,19 @@ func (fakeDocker) ContainerStop(ctx context.Context, container string, _ contain
 	return fmt.Errorf("not implemented")
 }
 
-func (fakeDocker) ImageList(ctx context.Context, options imagetypes.ListOptions) ([]imagetypes.Summary, error) {
+func (fakeDocker) ImageList(ctx context.Context, options image.ListOptions) ([]image.Summary, error) {
 	return nil, fmt.Errorf("not implemented")
 }
 
-func (fakeDocker) ImageLoad(ctx context.Context, input io.Reader, options ...client.ImageLoadOption) (imagetypes.LoadResponse, error) {
-	return imagetypes.LoadResponse{}, fmt.Errorf("not implemented")
+func (fakeDocker) ImageLoad(ctx context.Context, input io.Reader, options ...client.ImageLoadOption) (image.LoadResponse, error) {
+	return image.LoadResponse{}, fmt.Errorf("not implemented")
 }
 
-func (fakeDocker) ImagePull(ctx context.Context, ref string, options imagetypes.PullOptions) (io.ReadCloser, error) {
+func (fakeDocker) ImagePull(ctx context.Context, ref string, options image.PullOptions) (io.ReadCloser, error) {
 	return nil, fmt.Errorf("not implemented")
 }
 
-func (fakeDocker) ImageRemove(ctx context.Context, image string, options imagetypes.RemoveOptions) ([]imagetypes.DeleteResponse, error) {
+func (fakeDocker) ImageRemove(ctx context.Context, image string, options image.RemoveOptions) ([]image.DeleteResponse, error) {
 	return nil, fmt.Errorf("not implemented")
 }
 
@@ -97,8 +97,8 @@ func (fakeDocker) ContainersPrune(_ context.Context, _ filters.Args) (container.
 	return container.PruneReport{}, fmt.Errorf("not implemented")
 }
 
-func (fakeDocker) ImagesPrune(_ context.Context, _ filters.Args) (imagetypes.PruneReport, error) {
-	return imagetypes.PruneReport{}, fmt.Errorf("not implemented")
+func (fakeDocker) ImagesPrune(_ context.Context, _ filters.Args) (image.PruneReport, error) {
+	return image.PruneReport{}, fmt.Errorf("not implemented")
 }
 
 func (fakeDocker) PluginCreate(ctx context.Context, createContext io.Reader, createOptions types.PluginCreateOptions) error {

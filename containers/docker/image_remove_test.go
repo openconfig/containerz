@@ -7,7 +7,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/docker/docker/api/types/container"
-	imagetypes "github.com/docker/docker/api/types/image"
+	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -16,7 +16,7 @@ import (
 
 type fakeRemovingDocker struct {
 	fakeDocker
-	summaries []imagetypes.Summary
+	summaries []image.Summary
 	cnts      []types.Container
 
 	Name string
@@ -26,11 +26,11 @@ func (f fakeRemovingDocker) ContainerList(ctx context.Context, options container
 	return f.cnts, nil
 }
 
-func (f fakeRemovingDocker) ImageList(ctx context.Context, options imagetypes.ListOptions) ([]imagetypes.Summary, error) {
+func (f fakeRemovingDocker) ImageList(ctx context.Context, options image.ListOptions) ([]image.Summary, error) {
 	return f.summaries, nil
 }
 
-func (f *fakeRemovingDocker) ImageRemove(ctx context.Context, image string, options imagetypes.RemoveOptions) ([]imagetypes.DeleteResponse, error) {
+func (f *fakeRemovingDocker) ImageRemove(ctx context.Context, image string, options image.RemoveOptions) ([]image.DeleteResponse, error) {
 	f.Name = image
 	return nil, nil
 }
@@ -41,7 +41,7 @@ func TestImageRemove(t *testing.T) {
 		inOpts      []options.Option
 		inImage     string
 		inTag       string
-		inSummaries []imagetypes.Summary
+		inSummaries []image.Summary
 		inCnts      []types.Container
 		wantState   *fakeRemovingDocker
 		wantErr     error
@@ -56,8 +56,8 @@ func TestImageRemove(t *testing.T) {
 			name:    "container-running",
 			inImage: "container-running",
 			inTag:   "running-tag",
-			inSummaries: []imagetypes.Summary{
-				imagetypes.Summary{
+			inSummaries: []image.Summary{
+				image.Summary{
 					RepoTags: []string{"container-running:running-tag"},
 				},
 			},
@@ -73,8 +73,8 @@ func TestImageRemove(t *testing.T) {
 			inImage: "container-running",
 			inTag:   "running-tag",
 			inOpts:  []options.Option{options.Force()},
-			inSummaries: []imagetypes.Summary{
-				imagetypes.Summary{
+			inSummaries: []image.Summary{
+				image.Summary{
 					RepoTags: []string{"container-running:running-tag"},
 				},
 			},
@@ -91,8 +91,8 @@ func TestImageRemove(t *testing.T) {
 			name:    "container-remove",
 			inImage: "container-remove",
 			inTag:   "remove-tag",
-			inSummaries: []imagetypes.Summary{
-				imagetypes.Summary{
+			inSummaries: []image.Summary{
+				image.Summary{
 					RepoTags: []string{"container-remove:remove-tag"},
 				},
 			},

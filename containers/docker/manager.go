@@ -9,7 +9,7 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
-	imagetypes "github.com/docker/docker/api/types/image"
+	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/api/types/registry"
 	"github.com/docker/docker/api/types"
@@ -27,10 +27,10 @@ type docker interface {
 	ContainerRemove(ctx context.Context, container string, options container.RemoveOptions) error
 	ContainerStart(ctx context.Context, container string, options container.StartOptions) error
 	ContainerStop(ctx context.Context, container string, options container.StopOptions) error
-	ImageList(ctx context.Context, options imagetypes.ListOptions) ([]imagetypes.Summary, error)
-	ImageLoad(ctx context.Context, input io.Reader, options ...client.ImageLoadOption) (imagetypes.LoadResponse, error)
-	ImagePull(ctx context.Context, ref string, options imagetypes.PullOptions) (io.ReadCloser, error)
-	ImageRemove(ctx context.Context, image string, options imagetypes.RemoveOptions) ([]imagetypes.DeleteResponse, error)
+	ImageList(ctx context.Context, options image.ListOptions) ([]image.Summary, error)
+	ImageLoad(ctx context.Context, input io.Reader, options ...client.ImageLoadOption) (image.LoadResponse, error)
+	ImagePull(ctx context.Context, ref string, options image.PullOptions) (io.ReadCloser, error)
+	ImageRemove(ctx context.Context, image string, options image.RemoveOptions) ([]image.DeleteResponse, error)
 	ImageTag(ctx context.Context, source, target string) error
 	PluginCreate(ctx context.Context, createContext io.Reader, createOptions types.PluginCreateOptions) error
 	PluginEnable(ctx context.Context, name string, options types.PluginEnableOptions) error
@@ -43,7 +43,7 @@ type docker interface {
 	VolumeRemove(ctx context.Context, volumeID string, force bool) error
 
 	ContainersPrune(ctx context.Context, args filters.Args) (container.PruneReport, error)
-	ImagesPrune(ctx context.Context, args filters.Args) (imagetypes.PruneReport, error)
+	ImagesPrune(ctx context.Context, args filters.Args) (image.PruneReport, error)
 }
 
 // Manager is a docker container orchestration manager.

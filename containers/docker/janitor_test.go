@@ -7,7 +7,7 @@ import (
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
-	imagetypes "github.com/docker/docker/api/types/image"
+	"github.com/docker/docker/api/types/image"
 )
 
 type fakeVacuumingDocker struct {
@@ -21,9 +21,9 @@ func (f *fakeVacuumingDocker) ContainersPrune(_ context.Context, _ filters.Args)
 	return container.PruneReport{}, nil
 }
 
-func (f *fakeVacuumingDocker) ImagesPrune(_ context.Context, _ filters.Args) (imagetypes.PruneReport, error) {
+func (f *fakeVacuumingDocker) ImagesPrune(_ context.Context, _ filters.Args) (image.PruneReport, error) {
 	f.imgCalled = true
-	return imagetypes.PruneReport{}, nil
+	return image.PruneReport{}, nil
 }
 
 func TestVacuum(t *testing.T) {

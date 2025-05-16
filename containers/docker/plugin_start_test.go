@@ -3,20 +3,15 @@ package docker
 import (
 	"context"
 	"io"
-	"github.com/docker/docker/client"
 	"testing"
 
 	"github.com/docker/docker/api/types"
-	imagetypes "github.com/docker/docker/api/types/image"
 )
 
 type fakePluginStartingDocker struct {
 	fakeDocker
 }
 
-func (f *fakePluginStartingDocker) ImageLoad(ctx context.Context, input io.Reader, options ...client.ImageLoadOption) (imagetypes.LoadResponse, error) {
-	return imagetypes.LoadResponse{}, nil
-}
 
 func (f *fakePluginStartingDocker) PluginCreate(ctx context.Context, createCtx io.Reader, options types.PluginCreateOptions) error {
 	return nil
