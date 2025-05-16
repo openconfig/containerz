@@ -8,7 +8,7 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
-	imagetypes "github.com/docker/docker/api/types/image"
+	"github.com/docker/docker/api/types/image"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"google.golang.org/grpc/codes"
@@ -25,7 +25,7 @@ func TestContainerRemove(t *testing.T) {
 		name        string
 		inOpts      []options.Option
 		inCnt       string
-		inSummaries []imagetypes.Summary
+		inSummaries []image.Summary
 		inCnts      []types.Container
 		wantState   *fakeRemovingDocker
 		wantErr     error
@@ -38,8 +38,8 @@ func TestContainerRemove(t *testing.T) {
 		{
 			name:  "container-running",
 			inCnt: "container-running",
-			inSummaries: []imagetypes.Summary{
-				imagetypes.Summary{
+			inSummaries: []image.Summary{
+				image.Summary{
 					RepoTags: []string{"container-running"},
 				},
 			},
@@ -56,8 +56,8 @@ func TestContainerRemove(t *testing.T) {
 			name:   "container-running-with-force",
 			inCnt:  "container-running",
 			inOpts: []options.Option{options.Force()},
-			inSummaries: []imagetypes.Summary{
-				imagetypes.Summary{
+			inSummaries: []image.Summary{
+				image.Summary{
 					RepoTags: []string{"container-running"},
 				},
 			},
@@ -75,8 +75,8 @@ func TestContainerRemove(t *testing.T) {
 		{
 			name:  "container-remove",
 			inCnt: "container-remove",
-			inSummaries: []imagetypes.Summary{
-				imagetypes.Summary{
+			inSummaries: []image.Summary{
+				image.Summary{
 					RepoTags: []string{"container-remove"},
 				},
 			},

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"github.com/docker/docker/client"
 	"strings"
 
 	"github.com/moby/moby/pkg/jsonmessage"
@@ -22,7 +23,7 @@ func (m *Manager) ImagePush(ctx context.Context, file *os.File, opts ...options.
 
 	options := options.ApplyOptions(opts...)
 
-	resp, err := m.client.ImageLoad(ctx, file, true)
+	resp, err := m.client.ImageLoad(ctx, file, client.ImageLoadWithQuiet(true))
 	if err != nil {
 		return "", "", status.Errorf(codes.Internal, "unable to load image: %v", err)
 	}

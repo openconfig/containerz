@@ -7,7 +7,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/docker/docker/api/types/filters"
-	imagetypes "github.com/docker/docker/api/types/image"
+	"github.com/docker/docker/api/types/image"
 	"google.golang.org/protobuf/testing/protocmp"
 	"github.com/openconfig/containerz/containers"
 	cpb "github.com/openconfig/gnoi/containerz"
@@ -24,11 +24,11 @@ func (f *fakeListImageStreamer) Send(msg *cpb.ListImageResponse) error {
 
 type fakeImageListingDocker struct {
 	fakeDocker
-	imgs []imagetypes.Summary
-	Opts imagetypes.ListOptions
+	imgs []image.Summary
+	Opts image.ListOptions
 }
 
-func (f *fakeImageListingDocker) ImageList(ctx context.Context, options imagetypes.ListOptions) ([]imagetypes.Summary, error) {
+func (f *fakeImageListingDocker) ImageList(ctx context.Context, options image.ListOptions) ([]image.Summary, error) {
 	f.Opts = options
 	return f.imgs, nil
 }
@@ -37,7 +37,7 @@ func TestImageList(t *testing.T) {
 	tests := []struct {
 		name      string
 		inOpts    []options.Option
-		inImgs    []imagetypes.Summary
+		inImgs    []image.Summary
 		inAll     bool
 		inLimit   int32
 		wantState *fakeImageListingDocker
@@ -47,7 +47,7 @@ func TestImageList(t *testing.T) {
 			name:  "no-containers",
 			inAll: true,
 			wantState: &fakeImageListingDocker{
-				Opts: imagetypes.ListOptions{
+				Opts: image.ListOptions{
 					All: true,
 				},
 			},
@@ -56,16 +56,16 @@ func TestImageList(t *testing.T) {
 			name:  "containers-no-filter",
 			inAll: true,
 			wantState: &fakeImageListingDocker{
-				Opts: imagetypes.ListOptions{
+				Opts: image.ListOptions{
 					All: true,
 				},
 			},
-			inImgs: []imagetypes.Summary{
-				imagetypes.Summary{
+			inImgs: []image.Summary{
+				image.Summary{
 					ID:       "some-id",
 					RepoTags: []string{"some-image:some-tag"},
 				},
-				imagetypes.Summary{
+				image.Summary{
 					ID:       "some-other-id",
 					RepoTags: []string{"some-other-image:some-other-tag"},
 				},
@@ -87,16 +87,16 @@ func TestImageList(t *testing.T) {
 			name:  "containers-no-filter-limited",
 			inAll: true,
 			wantState: &fakeImageListingDocker{
-				Opts: imagetypes.ListOptions{
+				Opts: image.ListOptions{
 					All: true,
 				},
 			},
-			inImgs: []imagetypes.Summary{
-				imagetypes.Summary{
+			inImgs: []image.Summary{
+				image.Summary{
 					ID:       "some-id",
 					RepoTags: []string{"some-image:some-tag"},
 				},
-				imagetypes.Summary{
+				image.Summary{
 					ID:       "some-other-id",
 					RepoTags: []string{"some-other-image:some-other-tag"},
 				},
@@ -114,16 +114,16 @@ func TestImageList(t *testing.T) {
 			name:  "containers-no-filter-multi-tags",
 			inAll: true,
 			wantState: &fakeImageListingDocker{
-				Opts: imagetypes.ListOptions{
+				Opts: image.ListOptions{
 					All: true,
 				},
 			},
-			inImgs: []imagetypes.Summary{
-				imagetypes.Summary{
+			inImgs: []image.Summary{
+				image.Summary{
 					ID:       "some-id",
 					RepoTags: []string{"some-image:some-tag", "some-image:capybara"},
 				},
-				imagetypes.Summary{
+				image.Summary{
 					ID:       "some-other-id",
 					RepoTags: []string{"some-other-image:some-other-tag"},
 				},
@@ -149,7 +149,7 @@ func TestImageList(t *testing.T) {
 				options.State: []string{"RUNNING"},
 			})},
 			wantState: &fakeImageListingDocker{
-				Opts: imagetypes.ListOptions{
+				Opts: image.ListOptions{
 					All:     true,
 					Filters: filters.NewArgs(filters.Arg("image", "some-image"), filters.Arg("state", "RUNNING")),
 				},

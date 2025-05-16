@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/docker/docker/api/types/container"
-	imagetypes "github.com/docker/docker/api/types/image"
+	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/api/types"
 	"google.golang.org/grpc/codes"
@@ -87,7 +87,7 @@ func (m *Manager) performContainerUpdate(ctx context.Context, instance, image, t
 	return instance, status.Errorf(codes.Internal, "%s; yet, restoration of previous state succeeded", errPfx)
 }
 
-func (m *Manager) performContainerUpdatePrechecks(ctx context.Context, instance, image, tag, cmd string, async bool, opts ...options.Option) ([]types.Container, error) {
+func (m *Manager) performContainerUpdatePrechecks(ctx context.Context, instance, imageName, tag, cmd string, async bool, opts ...options.Option) ([]types.Container, error) {
 	optionz := options.ApplyOptions(opts...)
 
 	// Get available images and containers to perform checks on.
@@ -95,13 +95,13 @@ func (m *Manager) performContainerUpdatePrechecks(ctx context.Context, instance,
 	if err != nil {
 		return nil, err
 	}
-	images, err := m.client.ImageList(ctx, imagetypes.ListOptions{All: true})
+	images, err := m.client.ImageList(ctx, image.ListOptions{All: true})
 	if err != nil {
 		return nil, err
 	}
 
 	// Ensure that image exists.
-	ref := fmt.Sprintf("%s:%s", image, tag)
+	ref := fmt.Sprintf("%s:%s", imageName, tag)
 	if err := findImage(ref, images); err != nil {
 		return nil, err
 	}

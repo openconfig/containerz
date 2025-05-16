@@ -5,8 +5,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
-	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/image"
 )
 
 type fakeVacuumingDocker struct {
@@ -15,14 +16,14 @@ type fakeVacuumingDocker struct {
 	imgCalled bool
 }
 
-func (f *fakeVacuumingDocker) ContainersPrune(_ context.Context, _ filters.Args) (types.ContainersPruneReport, error) {
+func (f *fakeVacuumingDocker) ContainersPrune(_ context.Context, _ filters.Args) (container.PruneReport, error) {
 	f.cntCalled = true
-	return types.ContainersPruneReport{}, nil
+	return container.PruneReport{}, nil
 }
 
-func (f *fakeVacuumingDocker) ImagesPrune(_ context.Context, _ filters.Args) (types.ImagesPruneReport, error) {
+func (f *fakeVacuumingDocker) ImagesPrune(_ context.Context, _ filters.Args) (image.PruneReport, error) {
 	f.imgCalled = true
-	return types.ImagesPruneReport{}, nil
+	return image.PruneReport{}, nil
 }
 
 func TestVacuum(t *testing.T) {

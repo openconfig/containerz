@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 
-	imagetypes "github.com/docker/docker/api/types/image"
+	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/registry"
 	"github.com/moby/moby/pkg/jsonmessage"
 	"google.golang.org/grpc/codes"
@@ -19,9 +19,9 @@ import (
 // ImagePull pull a container from a registry to this containerz server. Based on the options
 // specified  it can tag the container, stream responses to the client, and perform registry
 // authentication.
-func (m *Manager) ImagePull(ctx context.Context, image, tag string, opts ...options.Option) error {
+func (m *Manager) ImagePull(ctx context.Context, imageName, tag string, opts ...options.Option) error {
 	switch {
-	case image == "":
+	case imageName == "":
 		return status.Error(codes.InvalidArgument, "an image name must be supplied.")
 	case tag == "":
 		tag = "latest"
@@ -34,7 +34,7 @@ func (m *Manager) ImagePull(ctx context.Context, image, tag string, opts ...opti
 		return err
 	}
 
-	resp, err := m.client.ImagePull(ctx, fmt.Sprintf("%s:%s", image, tag), imagetypes.PullOptions{
+	resp, err := m.client.ImagePull(ctx, fmt.Sprintf("%s:%s", imageName, tag), image.PullOptions{
 		RegistryAuth: auth.IdentityToken,
 	})
 	if err != nil {
@@ -50,7 +50,7 @@ func (m *Manager) ImagePull(ctx context.Context, image, tag string, opts ...opti
 	}
 
 	if options.TargetName != "" && options.TargetTag != "" {
-		if err := m.client.ImageTag(ctx, fmt.Sprintf("%s:%s", image, tag), fmt.Sprintf("%s:%s", options.TargetName, options.TargetTag)); err != nil {
+		if err := m.client.ImageTag(ctx, fmt.Sprintf("%s:%s", imageName, tag), fmt.Sprintf("%s:%s", options.TargetName, options.TargetTag)); err != nil {
 			return status.Errorf(codes.Internal, "unable to tag container: %v", err)
 		}
 	}

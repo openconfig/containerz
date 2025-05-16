@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/docker/docker/api/types/filters"
-	imagetypes "github.com/docker/docker/api/types/image"
+	"github.com/docker/docker/api/types/image"
 	"github.com/openconfig/containerz/containers"
 
 	cpb "github.com/openconfig/gnoi/containerz"
@@ -16,7 +16,7 @@ import (
 func (m *Manager) ImageList(ctx context.Context, all bool, limit int32, srv options.ListImageStreamer, opts ...options.Option) error {
 	optionz := options.ApplyOptions(opts...)
 	// ImageListOptions doesn't support a limit. We add one artificially below.
-	imgOpts := imagetypes.ListOptions{All: all}
+	imgOpts := image.ListOptions{All: all}
 
 	var kvPairs []filters.KeyValuePair
 	for key, values := range optionz.Filter {
@@ -48,7 +48,7 @@ func (m *Manager) ImageList(ctx context.Context, all bool, limit int32, srv opti
 	return nil
 }
 
-func imageToResponse(image imagetypes.Summary) *cpb.ListImageResponse {
+func imageToResponse(image image.Summary) *cpb.ListImageResponse {
 	var name string
 	var tags []string
 	for _, tag := range image.RepoTags {

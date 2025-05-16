@@ -12,6 +12,7 @@ type fakePluginStartingDocker struct {
 	fakeDocker
 }
 
+
 func (f *fakePluginStartingDocker) PluginCreate(ctx context.Context, createCtx io.Reader, options types.PluginCreateOptions) error {
 	return nil
 }
