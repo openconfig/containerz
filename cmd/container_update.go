@@ -86,7 +86,7 @@ func init() {
 	cntUpdateCmd.PersistentFlags().StringVar(&instance, "instance", "", "Container to update.")
 	cntUpdateCmd.PersistentFlags().StringVar(&network, "network", "", "Network to attach container to.")
 	cntUpdateCmd.PersistentFlags().StringVar(&runAs, "runas", "", "User to use (format: <user>[:<group>]")
-	cntUpdateCmd.PersistentFlags().StringVar(&runAs, "restart_policy", "", "Restart policy to use. "+
+	cntUpdateCmd.PersistentFlags().StringVar(&restartPolicy, "restart_policy", "", "Restart policy to use. "+
 		"Valid policies are \"always\", \"on-failure\", \"unless-stopped\", and \"none\". "+
 		"Some policies (e.g., \"on-failure\") optionally accept a maximum number of restart attempts. "+
 		"(format: <policy>[:<max_attempts>])")
