@@ -171,7 +171,7 @@ type transferTypes interface {
 		*cpb.DeployResponse_ImageTransferSuccess
 }
 
-func recvMsgOrSendError[T transferTypes](ctx context.Context, ch chan *Progress, dCli cpb.Containerz_DeployClient) T {
+func recvMsgOrSendError[T transferTypes](ctx context.Context, ch chan<- *Progress, dCli cpb.Containerz_DeployClient) T {
 	msg, err := dCli.Recv()
 	if err != nil {
 		nonBlockingChannelSend(ctx, ch, &Progress{

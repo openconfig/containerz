@@ -177,7 +177,14 @@ func WithHardLimit(mem int64) StartOption {
 
 // nonBlockingChannelSend attempts to send a message in a non blocking manner. If the context is
 // cancelled it simply returns with an indication that the context was cancelled
-func nonBlockingChannelSend[T nonBlockTypes](ctx context.Context, ch chan T, data T) bool {
+func nonBlockingChannelSend[T nonBlockTypes](ctx context.Context, ch chan<- T, data T) bool {
+	// Prioritize sending the data over checking the context.
+	select {
+	case ch <- data:
+		return false
+	default:
+	}
+	
 	select {
 	case <-ctx.Done():
 		return true

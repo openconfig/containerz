@@ -42,6 +42,13 @@ func TestNonBlockingSend(t *testing.T) {
 			data:   &Progress{},
 			want:   true,
 		},
+		{
+			name:   "cancelled-with-ch-cap",
+			ch:     make(chan *Progress, 10),
+			cancel: true,
+			data:   &Progress{},
+			want:   false,
+		},
 	}
 
 	for _, tc := range tests {
