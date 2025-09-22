@@ -17,6 +17,7 @@ package cmd
 import (
 	"github.com/openconfig/containerz/client"
 	"github.com/spf13/cobra"
+	"google.golang.org/grpc/metadata"
 
 	cpb "github.com/openconfig/gnoi/containerz"
 )
@@ -25,14 +26,21 @@ var (
 	containerzClient *client.Client
 	cli              cpb.ContainerzClient
 	image, tag       string
+
+	// NewClient is the function to use to create a new containerz client.
+	NewClient = client.NewClient
 )
 
 var imageCmd = &cobra.Command{
 	Use:   "image",
 	Short: "General image operations",
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		if grpcMetadata != nil {
+			ctx := metadata.NewOutgoingContext(cmd.Context(), metadata.New(grpcMetadata))
+			cmd.SetContext(ctx)
+		}
 		var err error
-		containerzClient, err = client.NewClient(cmd.Context(), addr)
+		containerzClient, err = NewClient(cmd.Context(), addr)
 		return err
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
