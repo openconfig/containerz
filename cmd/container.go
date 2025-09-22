@@ -17,12 +17,17 @@ package cmd
 import (
 	"github.com/openconfig/containerz/client"
 	"github.com/spf13/cobra"
+	"google.golang.org/grpc/metadata"
 )
 
 var containerCmd = &cobra.Command{
 	Use:   "container",
 	Short: "General container operations",
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		if grpcMetadata != nil {
+			ctx := metadata.NewOutgoingContext(cmd.Context(), metadata.New(grpcMetadata))
+			cmd.SetContext(ctx)
+		}
 		var err error
 		containerzClient, err = client.NewClient(cmd.Context(), addr)
 		return err

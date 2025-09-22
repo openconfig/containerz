@@ -22,7 +22,8 @@ import (
 )
 
 var (
-	addr string
+	addr         string
+	grpcMetadata map[string]string
 )
 
 // RootCmd is the cmd entrypoint for all containerz commands.
@@ -39,4 +40,5 @@ var RootCmd = &cobra.Command{
 
 func init() {
 	RootCmd.PersistentFlags().StringVar(&addr, "addr", ":19999", "Containerz listen port.")
+	RootCmd.PersistentFlags().StringToStringVar(&grpcMetadata, "grpc_metadata", nil, "gRPC metadata to attach to all outgoing requests.")
 }
