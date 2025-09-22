@@ -26,6 +26,9 @@ var (
 	containerzClient *client.Client
 	cli              cpb.ContainerzClient
 	image, tag       string
+
+	// NewClient is the function to use to create a new containerz client.
+	NewClient = client.NewClient
 )
 
 var imageCmd = &cobra.Command{
@@ -37,7 +40,7 @@ var imageCmd = &cobra.Command{
 			cmd.SetContext(ctx)
 		}
 		var err error
-		containerzClient, err = client.NewClient(cmd.Context(), addr)
+		containerzClient, err = NewClient(cmd.Context(), addr)
 		return err
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {

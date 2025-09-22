@@ -15,7 +15,6 @@
 package cmd
 
 import (
-	"github.com/openconfig/containerz/client"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc/metadata"
 )
@@ -29,7 +28,7 @@ var containerCmd = &cobra.Command{
 			cmd.SetContext(ctx)
 		}
 		var err error
-		containerzClient, err = client.NewClient(cmd.Context(), addr)
+		containerzClient, err = NewClient(cmd.Context(), addr)
 		return err
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
