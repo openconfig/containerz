@@ -3,18 +3,18 @@ module github.com/openconfig/containerz
 go 1.23.0
 
 require (
-	github.com/briandowns/spinner v1.23.1
-	github.com/docker/docker v28.1.1+incompatible
-	github.com/docker/go-connections v0.5.0
+	github.com/briandowns/spinner v1.23.2
+	github.com/docker/docker v28.5.1+incompatible
+	github.com/docker/go-connections v0.6.0
 	github.com/google/go-cmp v0.7.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
-	github.com/moby/moby v28.1.1+incompatible
-	github.com/openconfig/gnoi v0.6.1-0.20250313184021-e65eb9d297f1
-	github.com/opencontainers/image-spec v1.1.0
-	github.com/spf13/cobra v1.8.1
-	golang.org/x/sys v0.31.0
-	google.golang.org/grpc v1.70.0
-	google.golang.org/protobuf v1.36.3
+	github.com/moby/moby v28.5.1+incompatible
+	github.com/openconfig/gnoi v0.7.0
+	github.com/opencontainers/image-spec v1.1.1
+	github.com/spf13/cobra v1.10.1
+	golang.org/x/sys v0.37.0
+	google.golang.org/grpc v1.76.0
+	google.golang.org/protobuf v1.36.10
 	k8s.io/klog/v2 v2.130.1
 )
 
