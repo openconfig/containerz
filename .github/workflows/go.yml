@@ -11,5 +11,8 @@ jobs:
   go:
     uses: openconfig/common-ci/.github/workflows/go.yml@88a41b190576ebf6d51b5204c1056af2bda19036
 
+    permissions:
+      statuses: write
+
   linter:
     uses: openconfig/common-ci/.github/workflows/linter.yml@88a41b190576ebf6d51b5204c1056af2bda19036
