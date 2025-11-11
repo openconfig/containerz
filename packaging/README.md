@@ -11,4 +11,3 @@ Now let's create the docker container for containerz
 Next let's create the RPM and SWIX packages.
 
 `sh rpmize.sh`
-
