@@ -51,4 +51,4 @@ linters-settings:
   staticcheck:
     checks:
       - all
-      - '-SA1019'
+      - "-SA1019"
