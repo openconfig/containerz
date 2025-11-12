@@ -1,11 +1,11 @@
-## containerz: Lifecycle management for containers on network devices
+# containerz: Lifecycle management for containers on network devices
 
 Contributors: {alshabib, robjs, morrowc}@google.com March 2024
 
 ## Problem Statement
 
 Recent advances (including the availability of g\* APIs) in vendor network
-operating systems enable custom code to be executed on network devices as docker
+operating systems enable custom code to be executed on network devices as Docker
 containers. Running software as containers on network devices requires new
 infrastructure to manage the container’s lifecycle. While this infrastructure
 largely exists in the compute world, it is currently not available for network
@@ -18,7 +18,7 @@ Currently, the common approach for transferring a container to a device is via
 proprietary or CLI methods. This process is not appropriate for
 production since under no circumstances should an operator log into a device to
 make changes, it is also inconvenient when testing in the lab as the entire
-manual process is complex and error prone.
+manual process is complex and error-prone.
 
 ## Requirements for Lifecycle Management
 
@@ -40,12 +40,12 @@ the container is operating correctly.
 The list below defines the minimum requirements for a container
 lifecycle management system.
 
-##### R-AUTH
+#### R-AUTH
 
 The proposed solution should only provide access to authenticated users;
 otherwise, it should refuse access.
 
-##### R-SCOPE
+#### R-SCOPE
 
 Users should only get access to scoped container operations. This is important
 to limit access in production versus provisioning time. For example, an
@@ -56,22 +56,22 @@ a container. The set of scopes that must be supported is:
   configure or upgrade it.
 - **READ**: Ability to fetch logs, introspect, and list existing containers.
 
-##### R-GENERIC
+#### R-GENERIC
 
 The solution should not be tied to a specific container runtime but rather
 expose the same API and adapt calls to the specific runtime.
 
-##### R-PUSH
+#### R-PUSH
 
 The solution should be able to push a container image to a target and optionally
 tag the image to a specific name.
 
-##### R-PULL (optional)
+#### R-PULL (optional)
 
 The solution should be able to pull an image from a specified registry and
 optionally tag the pulled image.
 
-##### R-START
+#### R-START
 
 The solution should be able to start a container. It should be able to provide
 parameters when starting a container. The set of features that should be
@@ -80,29 +80,29 @@ supported are:
 - _Ports_: mapping an internal container port to an arbitrary external port.
 - _Environment Variables_: Setting environment variables in the container.
 
-##### R-STOP
+#### R-STOP
 
 The solution should be able to stop a container and optionally remove the
 container after stopping it.
 
-##### R-UPGRADE
+#### R-UPGRADE
 
 The solution should provide a means for upgrading itself as well as existing
 containers.
 
-##### R-LOGS
+#### R-LOGS
 
 The solution should provide a means to obtain the logs from a running container.
 Optionally, it can follow the logs such that they are streamed back to the
 client until the client cancels the request.
 
-##### R-CLEAN
+#### R-CLEAN
 
 The solution should clean up any dangling containers (e.g., containers that have
 been stopped but not removed) and remove any unused container images. The cleanup
 process should occur periodically.
 
-##### R-VOLUME
+#### R-VOLUME
 
 The solution should support creating data volumes on the target system and
 attaching the created volumes to containers such that configuration and other
@@ -139,14 +139,14 @@ location. (i.e. a registry or other artifactory).
 
 ### Native Docker API
 
-This solution would require to secure and expose the docker API as well as run a
-docker registry. An external application could orchestrate the
+This solution would require to secure and expose the Docker API as well as run a
+Docker registry. An external application could orchestrate the
 deployment of new containers.
 
 **Advantages:**
 
-- This solution would provide the ability to pull (_R-PULL_), push (*R-PUSH),
-  upgrade (*R-UPGRADE*) and obtain logs (*R-LOGS\*) from the target system.
+- This solution would provide the ability to pull (_R-PULL_), push (_R-PUSH_),
+  upgrade (_R-UPGRADE_) and obtain logs (_R-LOGS_) from the target system.
 
 **Disadvantages:**
 
@@ -200,7 +200,7 @@ of container operations. The API then calls into a container management API
 which is a layer of abstraction for container runtimes thereby allowing
 containerz to support multiple container runtimes. containerz also supports a
 command-line client built on top of a client. The containerz client can be used
-to facilitate building of other clients that can achieve higher order functions
+to facilitate building of other clients that can achieve higher-order functions
 like initially deploying the container or upgrading a running container.
 
 ### Containerz Client Examples
