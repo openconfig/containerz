@@ -15,7 +15,10 @@
 // Package chunker is a convenience package to write and read files in chunks.
 package chunker
 
-import "os"
+import (
+	"fmt"
+	"os"
+)
 
 // Writer is an implementation of a chunked writer.
 type Writer struct {
@@ -45,6 +48,14 @@ func (w *Writer) Write(p []byte) (int, error) {
 	w.chunkIndex++
 	w.bytesWritten += uint64(written)
 	return written, nil
+}
+
+func (w *Writer) Cleanup() error {
+	if err := os.Remove(w.tmp.Name()); err != nil {
+		return fmt.Errorf("failed to remove temporary file %s with error: %s",
+			w.tmp.Name(), err)
+	}
+	return nil
 }
 
 // Size returns the number of bytes written so far.

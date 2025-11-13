@@ -89,6 +89,11 @@ func (s *Server) handleImageTransfer(ctx context.Context, srv cpb.Containerz_Dep
 	if err != nil {
 		return status.Errorf(codes.Internal, "%v", err)
 	}
+	defer func() {
+		if err := chunkWriter.Cleanup(); err != nil {
+			klog.Error(err)
+		}
+	}()
 
 	if err := srv.Send(&cpb.DeployResponse{
 		Response: &cpb.DeployResponse_ImageTransferReady{
