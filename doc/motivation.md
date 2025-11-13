@@ -183,7 +183,7 @@ additional security infrastructure than what is currently deployed on network
 devices.
 
 The API we propose to implement can be found
-[here](https://github.com/openconfig/gnoi/blob/main/containerz/containerz.proto).
+[in this proto](https://github.com/openconfig/gnoi/blob/main/containerz/containerz.proto).
 
 As the API shows this new gNOI service supports _R-PULL_, _R-PUSH_, _R-START_,
 _R-STOP_, and _R-LOGS_. _R-UPGRADE_ is supported by uploading a new version of
