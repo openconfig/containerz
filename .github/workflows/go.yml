@@ -2,14 +2,28 @@ name: Go
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
   schedule:
     - cron: "0 0 * * *"
 
+permissions: {}
+
 jobs:
   go:
-    uses: openconfig/common-ci/.github/workflows/go.yml@7955150f8f52cbe3ea2c850f918c0aaf8e162539
+    uses: openconfig/common-ci/.github/workflows/go.yml@88a41b190576ebf6d51b5204c1056af2bda19036
+
+    permissions:
+      contents: read
+      packages: read
+      # To report Github Actions status checks
+      statuses: write
 
   linter:
-    uses: openconfig/common-ci/.github/workflows/linter.yml@7955150f8f52cbe3ea2c850f918c0aaf8e162539
+    uses: openconfig/common-ci/.github/workflows/linter.yml@88a41b190576ebf6d51b5204c1056af2bda19036
+
+    permissions:
+      contents: read
+      packages: read
+      # To report Github Actions status checks
+      statuses: write
