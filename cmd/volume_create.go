@@ -38,13 +38,13 @@ var volCreateCmd = &cobra.Command{
 			opts[parts[0]] = parts[1]
 		}
 
-		labels := map[string]string{}
+		lbls := map[string]string{}
 		for _, l := range labels {
 			parts := strings.SplitN(l, "=", 2)
-			labels[parts[0]] = parts[1]
+			lbls[parts[0]] = parts[1]
 		}
 
-		resp, err := containerzClient.CreateVolume(command.Context(), name, driver, labels, opts)
+		resp, err := containerzClient.CreateVolume(command.Context(), name, driver, lbls, opts)
 		if err != nil {
 			return err
 		}
@@ -60,5 +60,5 @@ func init() {
 	volCreateCmd.PersistentFlags().StringVar(&name, "name", "", "Name of the volume to create.")
 	volCreateCmd.PersistentFlags().StringVar(&driver, "driver", "", "Type of driver to use to create the volume.")
 	volCreateCmd.PersistentFlags().StringSliceVarP(&options, "options", "o", []string{}, "Options to pass to the driver in the form k1=v1,k2=v2,...")
-	volCreateCmd.PersistentFlags().StringSliceVarP(&options, "labels", "l", []string{}, "Labels to tag. the volume with, in the form k1=v1")
+	volCreateCmd.PersistentFlags().StringSliceVarP(&labels, "labels", "l", []string{}, "Labels to tag. the volume with, in the form k1=v1")
 }
