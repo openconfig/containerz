@@ -18,11 +18,11 @@ import (
 	"context"
 	"io"
 
+	"github.com/openconfig/containerz/chunker"
+	cpb "github.com/openconfig/gnoi/containerz"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"k8s.io/klog/v2"
-	"github.com/openconfig/containerz/chunker"
-	cpb "github.com/openconfig/gnoi/containerz"
 )
 
 // State represents the state of the state machine
@@ -67,6 +67,7 @@ func (c *Client) PushImage(ctx context.Context, image string, tag string, file s
 	go func() {
 		defer close(ch)
 		defer reader.Close()
+		defer dcli.CloseSend()
 
 		var chunkSize int32
 		state := initialise
