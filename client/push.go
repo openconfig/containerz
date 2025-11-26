@@ -67,7 +67,7 @@ func (c *Client) PushImage(ctx context.Context, image string, tag string, file s
 	go func() {
 		defer close(ch)
 		defer reader.Close()
-		//CloseSend always rertuns a nil error.
+		// CloseSend always returns a nil error.
 		//nolint:errcheck
 		defer dcli.CloseSend()
 
