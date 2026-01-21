@@ -51,16 +51,8 @@ func (c *Client) UpdateContainer(ctx context.Context, image string, tag string, 
 	case *cpb.UpdateContainerResponse_UpdateOk:
 		return resp.GetUpdateOk().GetInstanceName(), nil
 	case *cpb.UpdateContainerResponse_UpdateError:
-		switch resp.GetUpdateError().GetErrorCode() {
-		case cpb.UpdateError_NOT_FOUND:
-			return "", ErrNotFound
-		case cpb.UpdateError_NOT_RUNNING:
-			return "", status.Errorf(codes.FailedPrecondition, "failed to update container as container is not running: %s", resp.GetUpdateError().GetDetails())
-		case cpb.UpdateError_PORT_USED:
-			return "", status.Errorf(codes.AlreadyExists, "failed to update container as port already exists: %s", resp.GetUpdateError().GetDetails())
-		default:
-			return "", status.Errorf(codes.Internal, "failed to update container: %s", resp.GetUpdateError().GetDetails())
-		}
+		return "", status.Errorf(codes.Unknown,
+			"got UpdateError returned - please update containerz server")
 	default:
 		return "", status.Error(codes.Unknown, "unknown container state")
 	}

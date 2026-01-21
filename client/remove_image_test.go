@@ -30,11 +30,12 @@ type fakeImageRemovingContainerzServer struct {
 
 	receivedMsg *cpb.RemoveImageRequest
 	sendMsg     *cpb.RemoveImageResponse
+	sendErr     error
 }
 
 func (f *fakeImageRemovingContainerzServer) RemoveImage(_ context.Context, req *cpb.RemoveImageRequest) (*cpb.RemoveImageResponse, error) {
 	f.receivedMsg = req
-	return f.sendMsg, nil
+	return f.sendMsg, f.sendErr
 }
 
 func TestImageRemove(t *testing.T) {
@@ -49,10 +50,8 @@ func TestImageRemove(t *testing.T) {
 		wantErr error
 	}{
 		{
-			name: "success",
-			inMsg: &cpb.RemoveImageResponse{
-				Code: cpb.RemoveImageResponse_SUCCESS,
-			},
+			name:    "success",
+			inMsg:   &cpb.RemoveImageResponse{},
 			inImage: "some-image",
 			inTag:   "some-tag",
 			wantMsg: &cpb.RemoveImageRequest{
@@ -62,10 +61,8 @@ func TestImageRemove(t *testing.T) {
 			},
 		},
 		{
-			name: "success-with-force",
-			inMsg: &cpb.RemoveImageResponse{
-				Code: cpb.RemoveImageResponse_SUCCESS,
-			},
+			name:    "success-with-force",
+			inMsg:   &cpb.RemoveImageResponse{},
 			inImage: "some-image",
 			inTag:   "some-tag",
 			inForce: true,
@@ -76,10 +73,7 @@ func TestImageRemove(t *testing.T) {
 			},
 		},
 		{
-			name: "not-found",
-			inMsg: &cpb.RemoveImageResponse{
-				Code: cpb.RemoveImageResponse_NOT_FOUND,
-			},
+			name:    "not-found",
 			inImage: "some-image",
 			inTag:   "some-tag",
 			wantMsg: &cpb.RemoveImageRequest{
@@ -90,10 +84,7 @@ func TestImageRemove(t *testing.T) {
 			wantErr: ErrNotFound,
 		},
 		{
-			name: "running",
-			inMsg: &cpb.RemoveImageResponse{
-				Code: cpb.RemoveImageResponse_RUNNING,
-			},
+			name:    "running",
 			inImage: "some-image",
 			inTag:   "some-tag",
 			wantMsg: &cpb.RemoveImageRequest{
@@ -110,6 +101,8 @@ func TestImageRemove(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			fcm := &fakeImageRemovingContainerzServer{
 				sendMsg: tc.inMsg,
+				// passthrough error from test.
+				sendErr: tc.wantErr,
 			}
 			addr, stop := newServer(t, fcm)
 			defer stop()

@@ -30,11 +30,12 @@ type fakeStartingContainerzServer struct {
 
 	receivedMsg *cpb.StartContainerRequest
 	sendMsg     *cpb.StartContainerResponse
+	sendErr     error
 }
 
 func (f *fakeStartingContainerzServer) StartContainer(ctx context.Context, req *cpb.StartContainerRequest) (*cpb.StartContainerResponse, error) {
 	f.receivedMsg = req
-	return f.sendMsg, nil
+	return f.sendMsg, f.sendErr
 }
 
 func TestStart(t *testing.T) {
@@ -89,20 +90,13 @@ func TestStart(t *testing.T) {
 			inTag:      "some-tag",
 			inInstance: "some-instance",
 			inCmd:      "some-cmd",
-			inMsg: &cpb.StartContainerResponse{
-				Response: &cpb.StartContainerResponse_StartError{
-					StartError: &cpb.StartError{
-						Details: "oh no!",
-					},
-				},
-			},
 			wantMsg: &cpb.StartContainerRequest{
 				ImageName:    "some-image",
 				Tag:          "some-tag",
 				Cmd:          "some-cmd",
 				InstanceName: "some-instance",
 			},
-			wantErr: status.Error(codes.Internal, "failed to start container: oh no!"),
+			wantErr: status.Error(codes.Unknown, "arbitrary error, passthrough from test"),
 		},
 		{
 			name:       "simple-with-ports",
@@ -442,6 +436,7 @@ func TestStart(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			fcm := &fakeStartingContainerzServer{
 				sendMsg: tc.inMsg,
+				sendErr: tc.wantErr,
 			}
 			addr, stop := newServer(t, fcm)
 			defer stop()

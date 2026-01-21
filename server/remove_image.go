@@ -16,12 +16,11 @@ package server
 
 import (
 	"context"
-	"fmt"
 
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"github.com/openconfig/containerz/containers"
 	cpb "github.com/openconfig/gnoi/containerz"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // RemoveImage deletes containers that match the spec defined in the request. If
@@ -34,30 +33,12 @@ func (s *Server) RemoveImage(ctx context.Context, request *cpb.RemoveImageReques
 	}
 
 	if err := s.mgr.ImageRemove(ctx, request.GetName(), request.GetTag(), opts...); err != nil {
-		stErr, ok := status.FromError(err)
-		if !ok {
-			return &cpb.RemoveImageResponse{
-				Code:   cpb.RemoveImageResponse_RUNNING,
-				Detail: fmt.Sprintf("unknown containerz state: %v", err),
-			}, nil
-		}
-
-		switch stErr.Code() {
-		case codes.NotFound:
-			return &cpb.RemoveImageResponse{
-				Code:   cpb.RemoveImageResponse_NOT_FOUND,
-				Detail: stErr.Message(),
-			}, nil
-		case codes.Unavailable:
-			return &cpb.RemoveImageResponse{
-				Code:   cpb.RemoveImageResponse_RUNNING,
-				Detail: stErr.Message(),
-			}, nil
+		if _, ok := status.FromError(err); !ok {
+			return nil, status.Errorf(codes.Internal,
+				"unknown containerz state: %v", err)
 		}
 		return nil, err
 	}
 
-	return &cpb.RemoveImageResponse{
-		Code: cpb.RemoveImageResponse_SUCCESS,
-	}, nil
+	return &cpb.RemoveImageResponse{}, nil
 }
