@@ -26,7 +26,7 @@ import (
 )
 
 const (
-	locationLabel = "gnoi.containerz.location"
+	locationLabel = "com.google.containerz.location"
 )
 
 type fakeStartingContainerzServer struct {
