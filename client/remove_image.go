@@ -16,8 +16,6 @@ package client
 
 import (
 	"context"
-	"errors"
-
 	cpb "github.com/openconfig/gnoi/containerz"
 )
 
@@ -25,23 +23,12 @@ import (
 // returns an error indicating whether the image was not found or is associated to running
 // container.
 func (c *Client) RemoveImage(ctx context.Context, image string, tag string, force bool) error {
-	resp, err := c.cli.RemoveImage(ctx, &cpb.RemoveImageRequest{
+	if _, err := c.cli.RemoveImage(ctx, &cpb.RemoveImageRequest{
 		Name:  image,
 		Tag:   tag,
 		Force: force,
-	})
-	if err != nil {
+	}); err != nil {
 		return err
 	}
-
-	switch resp.GetCode() {
-	case cpb.RemoveImageResponse_SUCCESS:
-		return nil
-	case cpb.RemoveImageResponse_NOT_FOUND:
-		return ErrNotFound
-	case cpb.RemoveImageResponse_RUNNING:
-		return ErrRunning
-	default:
-		return errors.New("unknown error occurred")
-	}
+	return nil
 }

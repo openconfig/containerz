@@ -16,6 +16,7 @@ package server
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -35,29 +36,19 @@ func TestImageRemove(t *testing.T) {
 		wantResp *cpb.RemoveImageResponse
 	}{
 		{
-			name:  "success",
-			inReq: &cpb.RemoveImageRequest{},
-			wantResp: &cpb.RemoveImageResponse{
-				Code: cpb.RemoveImageResponse_SUCCESS,
-			},
+			name:     "success",
+			inReq:    &cpb.RemoveImageRequest{},
+			wantResp: &cpb.RemoveImageResponse{},
 		},
 		{
 			name:  "not-found",
 			inReq: &cpb.RemoveImageRequest{},
 			inErr: status.Error(codes.NotFound, "image not found"),
-			wantResp: &cpb.RemoveImageResponse{
-				Code:   cpb.RemoveImageResponse_NOT_FOUND,
-				Detail: "image not found",
-			},
 		},
 		{
 			name:  "running-container",
 			inReq: &cpb.RemoveImageRequest{},
 			inErr: status.Error(codes.Unavailable, "container running"),
-			wantResp: &cpb.RemoveImageResponse{
-				Code:   cpb.RemoveImageResponse_RUNNING,
-				Detail: "container running",
-			},
 		},
 	}
 
@@ -71,7 +62,7 @@ func TestImageRemove(t *testing.T) {
 			defer s.Halt(ctx)
 
 			resp, err := cli.RemoveImage(ctx, tc.inReq)
-			if err != nil {
+			if !errors.Is(err, tc.inErr) {
 				t.Errorf("Remove(%+v) returned error: %v", tc.inReq, err)
 			}
 

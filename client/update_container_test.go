@@ -30,11 +30,12 @@ type fakeUpdatingContainerzServer struct {
 
 	receivedMsg *cpb.UpdateContainerRequest
 	sendMsg     *cpb.UpdateContainerResponse
+	sendErr     error
 }
 
 func (f *fakeUpdatingContainerzServer) UpdateContainer(ctx context.Context, req *cpb.UpdateContainerRequest) (*cpb.UpdateContainerResponse, error) {
 	f.receivedMsg = req
-	return f.sendMsg, nil
+	return f.sendMsg, f.sendErr
 }
 
 func wrapInUpdateRequest(req *cpb.StartContainerRequest, async bool) *cpb.UpdateContainerRequest {
@@ -121,13 +122,6 @@ func TestUpdateContainer(t *testing.T) {
 			inTag:      "some-tag",
 			inInstance: "some-instance",
 			inCmd:      "some-cmd",
-			inMsg: &cpb.UpdateContainerResponse{
-				Response: &cpb.UpdateContainerResponse_UpdateError{
-					UpdateError: &cpb.UpdateError{
-						Details: "oh no!",
-					},
-				},
-			},
 			wantMsg: wrapInUpdateRequest(
 				&cpb.StartContainerRequest{
 					ImageName:    "some-image",
@@ -137,7 +131,7 @@ func TestUpdateContainer(t *testing.T) {
 				},
 				false,
 			),
-			wantErr: status.Error(codes.Internal, "failed to update container: oh no!"),
+			wantErr: status.Error(codes.Unknown, "arbitrary error, passthrough from test"),
 		},
 		{
 			name:       "simple-with-ports",
@@ -289,6 +283,7 @@ func TestUpdateContainer(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			fcm := &fakeUpdatingContainerzServer{
 				sendMsg: tc.inMsg,
+				sendErr: tc.wantErr,
 			}
 			addr, stop := newServer(t, fcm)
 			defer stop()
