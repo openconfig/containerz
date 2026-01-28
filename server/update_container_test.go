@@ -46,6 +46,7 @@ func TestContainerUpdate(t *testing.T) {
 					ImageName: "some-image",
 					Tag:       "some-tag",
 					Cmd:       "some-cmd",
+					Location:  cpb.StartContainerRequest_L_ALL,
 				},
 			},
 			wantResp: &cpb.UpdateContainerResponse{
@@ -62,6 +63,8 @@ func TestContainerUpdate(t *testing.T) {
 				Tag:      "some-tag",
 				Cmd:      "some-cmd",
 				Async:    false,
+				Labels: map[string]string{
+					locationLabel: cpb.StartContainerRequest_L_ALL.String()},
 			},
 		},
 		{
@@ -75,6 +78,7 @@ func TestContainerUpdate(t *testing.T) {
 					ImageName: "some-image",
 					Tag:       "some-tag",
 					Cmd:       "some-cmd",
+					Location:  cpb.StartContainerRequest_L_ALL,
 				},
 			},
 			wantResp: &cpb.UpdateContainerResponse{
@@ -91,6 +95,8 @@ func TestContainerUpdate(t *testing.T) {
 				Tag:      "some-tag",
 				Cmd:      "some-cmd",
 				Async:    false,
+				Labels: map[string]string{
+					locationLabel: cpb.StartContainerRequest_L_ALL.String()},
 			},
 		},
 		{
@@ -104,6 +110,7 @@ func TestContainerUpdate(t *testing.T) {
 					ImageName: "some-image",
 					Tag:       "some-tag",
 					Cmd:       "some-cmd",
+					Location:  cpb.StartContainerRequest_L_ALL,
 				},
 			},
 			wantResp: &cpb.UpdateContainerResponse{
@@ -120,6 +127,8 @@ func TestContainerUpdate(t *testing.T) {
 				Tag:      "some-tag",
 				Cmd:      "some-cmd",
 				Async:    true,
+				Labels: map[string]string{
+					locationLabel: cpb.StartContainerRequest_L_ALL.String()},
 			},
 		},
 		{
@@ -133,6 +142,7 @@ func TestContainerUpdate(t *testing.T) {
 					ImageName: "some-image",
 					Tag:       "some-tag",
 					Cmd:       "some-cmd",
+					Location:  cpb.StartContainerRequest_L_ALL,
 					Ports: []*cpb.StartContainerRequest_Port{
 						{
 							Internal: 1,
@@ -159,6 +169,8 @@ func TestContainerUpdate(t *testing.T) {
 				Tag:      "some-tag",
 				Cmd:      "some-cmd",
 				Ports:    map[uint32]uint32{1: 2, 3: 4},
+				Labels: map[string]string{
+					locationLabel: cpb.StartContainerRequest_L_ALL.String()},
 			},
 		},
 		{
@@ -172,6 +184,7 @@ func TestContainerUpdate(t *testing.T) {
 					ImageName:   "some-image",
 					Tag:         "some-tag",
 					Cmd:         "some-cmd",
+					Location:    cpb.StartContainerRequest_L_ALL,
 					Environment: map[string]string{"1": "2", "3": "4"},
 				},
 			},
@@ -189,6 +202,8 @@ func TestContainerUpdate(t *testing.T) {
 				Tag:      "some-tag",
 				Cmd:      "some-cmd",
 				Envs:     map[string]string{"1": "2", "3": "4"},
+				Labels: map[string]string{
+					locationLabel: cpb.StartContainerRequest_L_ALL.String()},
 			},
 		},
 		{
@@ -202,6 +217,7 @@ func TestContainerUpdate(t *testing.T) {
 					ImageName: "some-image",
 					Tag:       "some-tag",
 					Cmd:       "some-cmd",
+					Location:  cpb.StartContainerRequest_L_ALL,
 					Volumes: []*cpb.Volume{
 						{
 							Name:       "vol1",
@@ -228,6 +244,8 @@ func TestContainerUpdate(t *testing.T) {
 				Image:    "some-image",
 				Tag:      "some-tag",
 				Cmd:      "some-cmd",
+				Labels: map[string]string{
+					locationLabel: cpb.StartContainerRequest_L_ALL.String()},
 				Volumes: []*cpb.Volume{
 					{
 						Name:       "vol1",
@@ -252,6 +270,7 @@ func TestContainerUpdate(t *testing.T) {
 					ImageName: "some-image",
 					Tag:       "some-tag",
 					Cmd:       "some-cmd",
+					Location:  cpb.StartContainerRequest_L_ALL,
 					Devices: []*cpb.Device{
 						{
 							SrcPath:     "dev1",
@@ -279,6 +298,8 @@ func TestContainerUpdate(t *testing.T) {
 				Image:    "some-image",
 				Tag:      "some-tag",
 				Cmd:      "some-cmd",
+				Labels: map[string]string{
+					locationLabel: cpb.StartContainerRequest_L_ALL.String()},
 				Devices: []*cpb.Device{
 					{
 						SrcPath:     "dev1",

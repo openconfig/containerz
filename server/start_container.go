@@ -19,6 +19,13 @@ import (
 
 	options "github.com/openconfig/containerz/containers"
 	cpb "github.com/openconfig/gnoi/containerz"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+)
+
+const (
+	locationLabel = "com.google.containerz.location"
 )
 
 // StartContainer starts a container. If the image does not exist on the target,
@@ -27,7 +34,10 @@ import (
 // should provide one. If the instance name already exists, the target should
 // return an error.
 func (s *Server) StartContainer(ctx context.Context, request *cpb.StartContainerRequest) (*cpb.StartContainerResponse, error) {
-	opts := optionsFromStartContainerRequest(request)
+	opts, err := optionsFromStartContainerRequest(request)
+	if err != nil {
+		return nil, err
+	}
 	resp, err := s.mgr.ContainerStart(ctx, request.GetImageName(), request.GetTag(), request.GetCmd(), opts...)
 	if err != nil {
 		return nil, err
@@ -42,7 +52,7 @@ func (s *Server) StartContainer(ctx context.Context, request *cpb.StartContainer
 	}, nil
 }
 
-func optionsFromStartContainerRequest(request *cpb.StartContainerRequest) []options.Option {
+func optionsFromStartContainerRequest(request *cpb.StartContainerRequest) ([]options.Option, error) {
 	var opts []options.Option
 	if len(request.GetPorts()) != 0 {
 		ports := make(map[uint32]uint32, len(request.GetPorts()))
@@ -75,6 +85,35 @@ func optionsFromStartContainerRequest(request *cpb.StartContainerRequest) []opti
 		}
 	}
 
-	opts = append(opts, options.WithLabels(request.GetLabels()), options.WithEnv(request.GetEnvironment()), options.WithInstanceName(request.GetInstanceName()), options.WithVolumes(request.GetVolumes()), options.WithDevices(request.GetDevices()))
-	return opts
+	labels, err := getLabelsWithLocation(request)
+	if err != nil {
+		return nil, err
+	}
+
+	opts = append(opts, options.WithLabels(labels), options.WithEnv(request.GetEnvironment()), options.WithInstanceName(request.GetInstanceName()), options.WithVolumes(request.GetVolumes()), options.WithDevices(request.GetDevices()))
+	return opts, nil
+}
+
+// buildLabels builds the labels map to include the location, based on the location
+// field in the request. L_UNKNOWN is treated as L_PRIMARY
+func getLabelsWithLocation(request *cpb.StartContainerRequest) (map[string]string, error) {
+	location := request.GetLocation()
+	if location == cpb.StartContainerRequest_L_UNKNOWN {
+		location = cpb.StartContainerRequest_L_PRIMARY
+	}
+	locationStr := cpb.StartContainerRequest_Location_name[int32(location)]
+	labels := request.GetLabels()
+	// if the label is already set but has the same value as the location, then ignore it.
+	if requestedLocation, ok := labels[locationLabel]; ok && requestedLocation != locationStr {
+		return nil, status.Errorf(codes.InvalidArgument,
+			"%q label (currently set to %q) should be not be set, or should match"+
+				" location field %q. Unspecified location field is treated as L_PRIMARY",
+			locationLabel, requestedLocation, locationStr)
+	} else if !ok {
+		if labels == nil {
+			labels = make(map[string]string)
+		}
+		labels[locationLabel] = locationStr
+	}
+	return labels, nil
 }

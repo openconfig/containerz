@@ -16,11 +16,15 @@ package server
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"google.golang.org/protobuf/testing/protocmp"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	cpb "github.com/openconfig/gnoi/containerz"
 )
@@ -32,6 +36,7 @@ func TestContainerStart(t *testing.T) {
 		inOpts    []Option
 		wantResp  *cpb.StartContainerResponse
 		wantState *fakeContainerManager
+		wantErr   error
 	}{
 		{
 			name: "simple",
@@ -39,6 +44,7 @@ func TestContainerStart(t *testing.T) {
 				ImageName: "some-image",
 				Tag:       "some-tag",
 				Cmd:       "some-cmd",
+				Location:  cpb.StartContainerRequest_L_PRIMARY,
 			},
 			wantResp: &cpb.StartContainerResponse{
 				Response: &cpb.StartContainerResponse_StartOk{
@@ -46,6 +52,8 @@ func TestContainerStart(t *testing.T) {
 				},
 			},
 			wantState: &fakeContainerManager{
+				Labels: map[string]string{
+					locationLabel: cpb.StartContainerRequest_L_PRIMARY.String()},
 				Image: "some-image",
 				Tag:   "some-tag",
 				Cmd:   "some-cmd",
@@ -57,6 +65,7 @@ func TestContainerStart(t *testing.T) {
 				ImageName: "some-image",
 				Tag:       "some-tag",
 				Cmd:       "some-cmd",
+				Location:  cpb.StartContainerRequest_L_PRIMARY,
 				Ports: []*cpb.StartContainerRequest_Port{
 					{
 						Internal: 1,
@@ -74,6 +83,8 @@ func TestContainerStart(t *testing.T) {
 				},
 			},
 			wantState: &fakeContainerManager{
+				Labels: map[string]string{
+					locationLabel: cpb.StartContainerRequest_L_PRIMARY.String()},
 				Image: "some-image",
 				Tag:   "some-tag",
 				Cmd:   "some-cmd",
@@ -86,6 +97,7 @@ func TestContainerStart(t *testing.T) {
 				ImageName: "some-image",
 				Tag:       "some-tag",
 				Cmd:       "some-cmd",
+				Location:  cpb.StartContainerRequest_L_PRIMARY,
 				Ports: []*cpb.StartContainerRequest_Port{
 					{
 						Internal: 1,
@@ -105,6 +117,8 @@ func TestContainerStart(t *testing.T) {
 				},
 			},
 			wantState: &fakeContainerManager{
+				Labels: map[string]string{
+					locationLabel: cpb.StartContainerRequest_L_PRIMARY.String()},
 				Image:    "some-image",
 				Tag:      "some-tag",
 				Cmd:      "some-cmd",
@@ -119,6 +133,7 @@ func TestContainerStart(t *testing.T) {
 				ImageName:   "some-image",
 				Tag:         "some-tag",
 				Cmd:         "some-cmd",
+				Location:    cpb.StartContainerRequest_L_ALL,
 				Environment: map[string]string{"1": "2", "3": "4"},
 			},
 			wantResp: &cpb.StartContainerResponse{
@@ -127,6 +142,8 @@ func TestContainerStart(t *testing.T) {
 				},
 			},
 			wantState: &fakeContainerManager{
+				Labels: map[string]string{
+					locationLabel: cpb.StartContainerRequest_L_ALL.String()},
 				Image: "some-image",
 				Tag:   "some-tag",
 				Cmd:   "some-cmd",
@@ -139,6 +156,7 @@ func TestContainerStart(t *testing.T) {
 				ImageName: "some-image",
 				Tag:       "some-tag",
 				Cmd:       "some-cmd",
+				Location:  cpb.StartContainerRequest_L_BACKUP,
 				Volumes: []*cpb.Volume{
 					{
 						Name:       "vol1",
@@ -160,6 +178,8 @@ func TestContainerStart(t *testing.T) {
 				Image: "some-image",
 				Tag:   "some-tag",
 				Cmd:   "some-cmd",
+				Labels: map[string]string{
+					locationLabel: cpb.StartContainerRequest_L_BACKUP.String()},
 				Volumes: []*cpb.Volume{
 					{
 						Name:       "vol1",
@@ -180,6 +200,7 @@ func TestContainerStart(t *testing.T) {
 				Tag:       "some-tag",
 				Cmd:       "some-cmd",
 				Network:   "some-network",
+				Location:  cpb.StartContainerRequest_L_PRIMARY,
 			},
 			wantResp: &cpb.StartContainerResponse{
 				Response: &cpb.StartContainerResponse_StartOk{
@@ -187,6 +208,8 @@ func TestContainerStart(t *testing.T) {
 				},
 			},
 			wantState: &fakeContainerManager{
+				Labels: map[string]string{
+					locationLabel: cpb.StartContainerRequest_L_PRIMARY.String()},
 				Image:   "some-image",
 				Tag:     "some-tag",
 				Cmd:     "some-cmd",
@@ -203,6 +226,7 @@ func TestContainerStart(t *testing.T) {
 					Add:    []string{"cap1", "cap2"},
 					Remove: []string{"cap3", "cap4"},
 				},
+				Location: cpb.StartContainerRequest_L_ALL,
 			},
 			wantResp: &cpb.StartContainerResponse{
 				Response: &cpb.StartContainerResponse_StartOk{
@@ -210,6 +234,8 @@ func TestContainerStart(t *testing.T) {
 				},
 			},
 			wantState: &fakeContainerManager{
+				Labels: map[string]string{
+					locationLabel: cpb.StartContainerRequest_L_ALL.String()},
 				Image: "some-image",
 				Tag:   "some-tag",
 				Cmd:   "some-cmd",
@@ -225,6 +251,7 @@ func TestContainerStart(t *testing.T) {
 				ImageName: "some-image",
 				Tag:       "some-tag",
 				Cmd:       "some-cmd",
+				Location:  cpb.StartContainerRequest_L_ALL,
 				Restart: &cpb.StartContainerRequest_Restart{
 					Policy:   cpb.StartContainerRequest_Restart_ON_FAILURE,
 					Attempts: 3,
@@ -236,6 +263,8 @@ func TestContainerStart(t *testing.T) {
 				},
 			},
 			wantState: &fakeContainerManager{
+				Labels: map[string]string{
+					locationLabel: cpb.StartContainerRequest_L_ALL.String()},
 				Image: "some-image",
 				Tag:   "some-tag",
 				Cmd:   "some-cmd",
@@ -251,6 +280,7 @@ func TestContainerStart(t *testing.T) {
 				ImageName: "some-image",
 				Tag:       "some-tag",
 				Cmd:       "some-cmd",
+				Location:  cpb.StartContainerRequest_L_ALL,
 				RunAs: &cpb.StartContainerRequest_RunAs{
 					User:  "some-user",
 					Group: "some-group",
@@ -262,6 +292,8 @@ func TestContainerStart(t *testing.T) {
 				},
 			},
 			wantState: &fakeContainerManager{
+				Labels: map[string]string{
+					locationLabel: cpb.StartContainerRequest_L_ALL.String()},
 				Image: "some-image",
 				Tag:   "some-tag",
 				Cmd:   "some-cmd",
@@ -278,6 +310,7 @@ func TestContainerStart(t *testing.T) {
 				Tag:       "some-tag",
 				Cmd:       "some-cmd",
 				Labels:    map[string]string{"key1": "value1"},
+				Location:  cpb.StartContainerRequest_L_ALL,
 			},
 			wantResp: &cpb.StartContainerResponse{
 				Response: &cpb.StartContainerResponse_StartOk{
@@ -285,10 +318,11 @@ func TestContainerStart(t *testing.T) {
 				},
 			},
 			wantState: &fakeContainerManager{
-				Image:  "some-image",
-				Tag:    "some-tag",
-				Cmd:    "some-cmd",
-				Labels: map[string]string{"key1": "value1"},
+				Image: "some-image",
+				Tag:   "some-tag",
+				Cmd:   "some-cmd",
+				Labels: map[string]string{"key1": "value1",
+					locationLabel: cpb.StartContainerRequest_L_ALL.String()},
 			},
 		},
 		{
@@ -302,6 +336,7 @@ func TestContainerStart(t *testing.T) {
 					SoftMemBytes: 1000,
 					HardMemBytes: 2000,
 				},
+				Location: cpb.StartContainerRequest_L_ALL,
 			},
 			wantResp: &cpb.StartContainerResponse{
 				Response: &cpb.StartContainerResponse_StartOk{
@@ -309,6 +344,7 @@ func TestContainerStart(t *testing.T) {
 				},
 			},
 			wantState: &fakeContainerManager{
+				Labels:     map[string]string{locationLabel: cpb.StartContainerRequest_L_ALL.String()},
 				Image:      "some-image",
 				Tag:        "some-tag",
 				Cmd:        "some-cmd",
@@ -323,6 +359,7 @@ func TestContainerStart(t *testing.T) {
 				ImageName: "some-image",
 				Tag:       "some-tag",
 				Cmd:       "some-cmd",
+				Labels:    map[string]string{locationLabel: cpb.StartContainerRequest_L_ALL.String()},
 				Devices: []*cpb.Device{
 					{
 						SrcPath:     "dev1",
@@ -340,6 +377,7 @@ func TestContainerStart(t *testing.T) {
 						Permissions: []cpb.Device_Permission{cpb.Device_READ, cpb.Device_WRITE},
 					},
 				},
+				Location: cpb.StartContainerRequest_L_ALL,
 			},
 			wantResp: &cpb.StartContainerResponse{
 				Response: &cpb.StartContainerResponse_StartOk{
@@ -347,9 +385,10 @@ func TestContainerStart(t *testing.T) {
 				},
 			},
 			wantState: &fakeContainerManager{
-				Image: "some-image",
-				Tag:   "some-tag",
-				Cmd:   "some-cmd",
+				Image:  "some-image",
+				Tag:    "some-tag",
+				Cmd:    "some-cmd",
+				Labels: map[string]string{locationLabel: cpb.StartContainerRequest_L_ALL.String()},
 				Devices: []*cpb.Device{
 					{
 						SrcPath:     "dev1",
@@ -369,6 +408,171 @@ func TestContainerStart(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "location-unknown-set-in-map",
+			inReq: &cpb.StartContainerRequest{
+				ImageName: "some-image",
+				Tag:       "some-tag",
+				Cmd:       "some-cmd",
+				Labels: map[string]string{
+					locationLabel: cpb.StartContainerRequest_L_UNKNOWN.String(),
+				},
+			},
+			wantErr: status.Errorf(codes.InvalidArgument,
+				"%q label (currently set to %q) should be not be set, or should match"+
+					" location field %q. Unspecified location field is treated as L_PRIMARY",
+				locationLabel, cpb.StartContainerRequest_L_UNKNOWN.String(),
+				cpb.StartContainerRequest_L_PRIMARY.String()),
+			wantState: &fakeContainerManager{},
+		},
+		{
+			name: "non-location-label-set",
+			inReq: &cpb.StartContainerRequest{
+				ImageName: "some-image",
+				Tag:       "some-tag",
+				Cmd:       "some-cmd",
+				Labels:    map[string]string{"foo": "bar"},
+			},
+			wantResp: &cpb.StartContainerResponse{
+				Response: &cpb.StartContainerResponse_StartOk{
+					StartOk: &cpb.StartOK{},
+				},
+			},
+			wantState: &fakeContainerManager{
+				Labels: map[string]string{
+					"foo":         "bar",
+					locationLabel: cpb.StartContainerRequest_L_PRIMARY.String()},
+				Image: "some-image",
+				Tag:   "some-tag",
+				Cmd:   "some-cmd",
+			},
+		},
+		{
+			name: "location-unknown-treated-as-primary",
+			inReq: &cpb.StartContainerRequest{
+				ImageName: "some-image",
+				Tag:       "some-tag",
+				Cmd:       "some-cmd",
+			},
+			wantResp: &cpb.StartContainerResponse{
+				Response: &cpb.StartContainerResponse_StartOk{
+					StartOk: &cpb.StartOK{},
+				},
+			},
+			wantState: &fakeContainerManager{
+				Labels: map[string]string{
+					locationLabel: cpb.StartContainerRequest_L_PRIMARY.String()},
+				Image: "some-image",
+				Tag:   "some-tag",
+				Cmd:   "some-cmd",
+			},
+		},
+		{
+			name: "mismatching-location",
+			inReq: &cpb.StartContainerRequest{
+				ImageName: "some-image",
+				Tag:       "some-tag",
+				Cmd:       "some-cmd",
+				Labels: map[string]string{
+					locationLabel: cpb.StartContainerRequest_L_ALL.String(),
+				},
+				Location: cpb.StartContainerRequest_L_BACKUP,
+			},
+			wantState: &fakeContainerManager{},
+			wantErr: status.Errorf(codes.InvalidArgument,
+				"%q label (currently set to %q) should be not be set, or should match"+
+					" location field %q. Unspecified location field is treated as L_PRIMARY",
+				locationLabel, cpb.StartContainerRequest_L_ALL.String(),
+				cpb.StartContainerRequest_L_BACKUP.String()),
+		},
+		{
+			name: "location-label-only",
+			inReq: &cpb.StartContainerRequest{
+				ImageName: "some-image",
+				Tag:       "some-tag",
+				Cmd:       "some-cmd",
+				Labels: map[string]string{
+					locationLabel: cpb.StartContainerRequest_L_ALL.String(),
+				},
+			},
+			wantState: &fakeContainerManager{},
+			wantErr: status.Errorf(codes.InvalidArgument,
+				"%q label (currently set to %q) should be not be set, or should match"+
+					" location field %q. Unspecified location field is treated as L_PRIMARY",
+				locationLabel, cpb.StartContainerRequest_L_ALL.String(),
+				cpb.StartContainerRequest_L_PRIMARY.String()),
+		},
+		{
+			name: "matching-location",
+			inReq: &cpb.StartContainerRequest{
+				ImageName: "some-image",
+				Tag:       "some-tag",
+				Cmd:       "some-cmd",
+				Labels: map[string]string{
+					locationLabel: cpb.StartContainerRequest_L_PRIMARY.String(),
+				},
+				Location: cpb.StartContainerRequest_L_PRIMARY,
+			},
+			wantResp: &cpb.StartContainerResponse{
+				Response: &cpb.StartContainerResponse_StartOk{
+					StartOk: &cpb.StartOK{},
+				},
+			},
+			wantState: &fakeContainerManager{
+				Labels: map[string]string{
+					locationLabel: cpb.StartContainerRequest_L_PRIMARY.String()},
+				Image: "some-image",
+				Tag:   "some-tag",
+				Cmd:   "some-cmd",
+			},
+		},
+		{
+			name: "location-field-only",
+			inReq: &cpb.StartContainerRequest{
+				ImageName: "some-image",
+				Tag:       "some-tag",
+				Cmd:       "some-cmd",
+				Location:  cpb.StartContainerRequest_L_PRIMARY,
+			},
+			wantResp: &cpb.StartContainerResponse{
+				Response: &cpb.StartContainerResponse_StartOk{
+					StartOk: &cpb.StartOK{},
+				},
+			},
+			wantState: &fakeContainerManager{
+				Labels: map[string]string{
+					locationLabel: cpb.StartContainerRequest_L_PRIMARY.String()},
+				Image: "some-image",
+				Tag:   "some-tag",
+				Cmd:   "some-cmd",
+			},
+		},
+		{
+			name: "location-label-among-other-labels",
+			inReq: &cpb.StartContainerRequest{
+				ImageName: "some-image",
+				Tag:       "some-tag",
+				Cmd:       "some-cmd",
+				Labels: map[string]string{
+					"x":           "y",
+					locationLabel: cpb.StartContainerRequest_L_ALL.String(),
+				},
+				Location: cpb.StartContainerRequest_L_ALL,
+			},
+			wantResp: &cpb.StartContainerResponse{
+				Response: &cpb.StartContainerResponse_StartOk{
+					StartOk: &cpb.StartOK{},
+				},
+			},
+			wantState: &fakeContainerManager{
+				Labels: map[string]string{
+					"x":           "y",
+					locationLabel: cpb.StartContainerRequest_L_ALL.String()},
+				Image: "some-image",
+				Tag:   "some-tag",
+				Cmd:   "some-cmd",
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -380,12 +584,13 @@ func TestContainerStart(t *testing.T) {
 			defer s.Halt(ctx)
 
 			resp, err := cli.StartContainer(ctx, tc.inReq)
-			if err != nil {
-				t.Errorf("Start(%+v) returned error: %v", tc.inReq, err)
+			if !errors.Is(err, tc.wantErr) {
+				t.Errorf("expected Start(%+v) to return error %v, got error: %v",
+					tc.inReq, tc.wantErr, err)
 			}
 
 			if diff := cmp.Diff(tc.wantResp, resp, protocmp.Transform()); diff != "" {
-				t.Errorf("Start(%+v) returned diff (-want +got):\n%s", tc.inReq, diff)
+				t.Errorf("Start(%+v) returned resp diff (-want +got):\n%s", tc.inReq, diff)
 			}
 
 			if diff := cmp.Diff(tc.wantState, fake, protocmp.Transform(), cmpopts.IgnoreUnexported(fakeContainerManager{}), cmpopts.SortMaps(func(a, b string) bool { return a < b })); diff != "" {
