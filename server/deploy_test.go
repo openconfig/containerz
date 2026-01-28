@@ -153,6 +153,7 @@ func (f *fakeContainerManager) ContainerUpdate(_ context.Context, instance, imag
 	f.Envs = optionz.EnvMapping
 	f.Volumes = optionz.Volumes
 	f.Devices = optionz.Devices
+	f.Labels = optionz.Labels
 	f.Network = optionz.Network
 	f.Capabilities = optionz.Capabilities
 	f.RunAs = optionz.RunAs

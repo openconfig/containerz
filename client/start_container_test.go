@@ -25,6 +25,10 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+const (
+	locationLabel = "gnoi.containerz.location"
+)
+
 type fakeStartingContainerzServer struct {
 	fakeContainerzServer
 
@@ -405,7 +409,8 @@ func TestStart(t *testing.T) {
 				Tag:          "some-tag",
 				Cmd:          "some-cmd",
 				InstanceName: "some-instance",
-				Labels:       map[string]string{"key1": "value1"},
+				Labels: map[string]string{"key1": "value1",
+					locationLabel: cpb.StartContainerRequest_L_UNKNOWN.String()},
 				Limits: &cpb.StartContainerRequest_Limits{
 					MaxCpu:       1.0,
 					SoftMemBytes: 1000,
