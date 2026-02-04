@@ -51,7 +51,10 @@ func (s *Server) UpdateContainer(ctx context.Context, request *cpb.UpdateContain
 		return nil, status.Errorf(codes.FailedPrecondition, "expected request to contain populated params, yet was nil")
 	}
 
-	opts := optionsFromStartContainerRequest(startReq)
+	opts, err := optionsFromStartContainerRequest(startReq)
+	if err != nil {
+		return nil, err
+	}
 	instance, err := s.mgr.ContainerUpdate(ctx, request.GetInstanceName(), startReq.GetImageName(), startReq.GetTag(), startReq.GetCmd(), request.GetAsync(), opts...)
 	if err != nil {
 		return nil, err
