@@ -85,7 +85,7 @@ func optionsFromStartContainerRequest(request *cpb.StartContainerRequest) ([]opt
 		}
 	}
 
-	labels, err := getLabelsWithLocation(request)
+	labels, err := labelsWithLocation(request)
 	if err != nil {
 		return nil, err
 	}
@@ -94,9 +94,9 @@ func optionsFromStartContainerRequest(request *cpb.StartContainerRequest) ([]opt
 	return opts, nil
 }
 
-// buildLabels builds the labels map to include the location, based on the location
+// labelsWithLocation updates the labels map to include the location, based on the location
 // field in the request. L_UNKNOWN is treated as L_PRIMARY
-func getLabelsWithLocation(request *cpb.StartContainerRequest) (map[string]string, error) {
+func labelsWithLocation(request *cpb.StartContainerRequest) (map[string]string, error) {
 	location := request.GetLocation()
 	if location == cpb.StartContainerRequest_L_UNKNOWN {
 		location = cpb.StartContainerRequest_L_PRIMARY
