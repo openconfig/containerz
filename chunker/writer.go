@@ -51,6 +51,7 @@ func (w *Writer) Write(p []byte) (int, error) {
 }
 
 func (w *Writer) Cleanup() error {
+	w.tmp.Close()
 	if err := os.Remove(w.tmp.Name()); err != nil {
 		return fmt.Errorf("failed to remove temporary file %s with error: %s",
 			w.tmp.Name(), err)
