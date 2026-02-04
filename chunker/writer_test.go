@@ -88,6 +88,13 @@ func TestWrite(t *testing.T) {
 			if uint64(len(tc.want)) != w.Size() {
 				t.Errorf("Write(%q) = %d, want: %d", string(tc.inChunks), w.Size(), len(tc.want))
 			}
+
+			if err := w.Cleanup(); err != nil {
+				t.Errorf("Cleanup() returned an unexpected error: %v", err)
+			}
+			if _, err := os.Stat(w.File().Name()); !os.IsNotExist(err) {
+				t.Errorf("Cleanup() did not remove the temporary file: %s", w.File().Name())
+			}
 		})
 	}
 }
