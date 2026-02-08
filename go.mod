@@ -2,7 +2,7 @@ module github.com/openconfig/containerz
 
 go 1.24.0
 
-toolchain go1.25.6
+toolchain go1.25.7
 
 require (
 	github.com/briandowns/spinner v1.23.2
@@ -14,7 +14,7 @@ require (
 	github.com/openconfig/gnoi v0.8.0
 	github.com/opencontainers/image-spec v1.1.1
 	github.com/spf13/cobra v1.10.2
-	golang.org/x/sys v0.40.0
+	golang.org/x/sys v0.41.0
 	google.golang.org/grpc v1.78.0
 	google.golang.org/protobuf v1.36.11
 	k8s.io/klog/v2 v2.130.1
