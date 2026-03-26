@@ -26,7 +26,7 @@ import (
 )
 
 const (
-	locationLabel = "com.google.containerz.location.intended"
+	locationLabel = "net.openconfig.containerz.location.intended"
 )
 
 type fakeStartingContainerzServer struct {
