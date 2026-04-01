@@ -15,6 +15,7 @@
 package chunker
 
 import (
+	"fmt"
 	"io"
 	"math"
 	"os"
@@ -87,6 +88,44 @@ func TestWrite(t *testing.T) {
 
 			if uint64(len(tc.want)) != w.Size() {
 				t.Errorf("Write(%q) = %d, want: %d", string(tc.inChunks), w.Size(), len(tc.want))
+			}
+		})
+	}
+}
+
+// TestCleanupOnce tests that Cleanup can be called multiple times,
+// and all calls to Cleanup will return the same error.
+func TestCleanupOnce(t *testing.T) {
+	for _, tc := range []struct {
+		name                    string
+		removeFileBeforeCleanup bool
+	}{{
+		name: "multiple_cleanups_no_err",
+	}, {
+		name:                    "multiple_cleanups_with_err",
+		removeFileBeforeCleanup: true,
+	}} {
+		t.Run(tc.name, func(t *testing.T) {
+			const inChunkSize = 100
+			w, err := NewWriter(os.TempDir(), inChunkSize)
+			if err != nil {
+				t.Fatalf("NewWriter(%q, %v) returned an error: %v",
+					os.TempDir(), inChunkSize, err)
+			}
+			var expectedErr error
+			if tc.removeFileBeforeCleanup {
+				if err := os.Remove(w.File().Name()); err != nil {
+					t.Fatal(err)
+				}
+				expectedErr = fmt.Errorf(
+					"failed to remove temporary file %s with error: %s",
+					w.File().Name(), os.Remove(w.File().Name()))
+			}
+			for i := 0; i < 3; i++ {
+				if err := w.Cleanup(); (err == nil) != (expectedErr == nil) ||
+					err != nil && err.Error() != expectedErr.Error() {
+					t.Fatal(err)
+				}
 			}
 		})
 	}
