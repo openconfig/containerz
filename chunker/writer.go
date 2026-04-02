@@ -18,6 +18,7 @@ package chunker
 import (
 	"fmt"
 	"os"
+	"sync"
 )
 
 // Writer is an implementation of a chunked writer.
@@ -25,6 +26,11 @@ type Writer struct {
 	tmp        *os.File
 	chunkSize  int
 	chunkIndex int
+
+	// cleanupOnce and cleanupErr are for use
+	// within the Cleanup function only.
+	cleanupOnce sync.Once
+	cleanupErr  error
 
 	bytesWritten uint64
 }
@@ -51,11 +57,13 @@ func (w *Writer) Write(p []byte) (int, error) {
 }
 
 func (w *Writer) Cleanup() error {
-	if err := os.Remove(w.tmp.Name()); err != nil {
-		return fmt.Errorf("failed to remove temporary file %s with error: %s",
-			w.tmp.Name(), err)
-	}
-	return nil
+	w.cleanupOnce.Do(func() {
+		if err := os.Remove(w.tmp.Name()); err != nil {
+			w.cleanupErr = fmt.Errorf("failed to remove temporary file %s with error: %s",
+				w.tmp.Name(), err)
+		}
+	})
+	return w.cleanupErr
 }
 
 // Size returns the number of bytes written so far.

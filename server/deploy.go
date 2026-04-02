@@ -138,7 +138,7 @@ func (s *Server) handleImageTransfer(ctx context.Context, srv cpb.Containerz_Dep
 
 		case *cpb.DeployRequest_ImageTransferEnd:
 			if transfer.IsPlugin {
-				if err := moveFile(chunkWriter.File().Name(), filepath.Join(pluginLocation, fmt.Sprintf("%s.tar", transfer.GetName()))); err != nil {
+				if err := moveFile(chunkWriter, filepath.Join(pluginLocation, fmt.Sprintf("%s.tar", transfer.GetName()))); err != nil {
 					return status.Errorf(codes.Internal, "unable to move plugin: %v", err)
 				}
 
@@ -207,7 +207,8 @@ func diskSpace(loc string) (uint64, error) {
 // actual location may be on different devices.
 // To ensure that the completed file is created atomically, the copy is done to a temp location
 // within the destination directory, and then the file is renamed within that destination directory.
-func moveFile(sourcePath, destPath string) error {
+func moveFile(writer *chunker.Writer, destPath string) error {
+	sourcePath := writer.File().Name()
 	// idempotent create of the destPath directory
 	if err := os.MkdirAll(filepath.Dir(destPath), 0755); err != nil {
 		return fmt.Errorf("failed to create %s with error %s",
@@ -238,8 +239,7 @@ func moveFile(sourcePath, destPath string) error {
 			outputTmp.Name(), destPath, err)
 	}
 	// Success, now delete the original file.
-	err = os.Remove(sourcePath)
-	if err != nil {
+	if err := writer.Cleanup(); err != nil {
 		return fmt.Errorf("failed removing original file: %s", err)
 	}
 	return nil
