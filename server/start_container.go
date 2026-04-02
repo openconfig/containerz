@@ -25,7 +25,7 @@ import (
 )
 
 const (
-	locationLabel = "com.google.containerz.location"
+	locationLabel = "net.openconfig.containerz.location.intended"
 )
 
 // StartContainer starts a container. If the image does not exist on the target,
