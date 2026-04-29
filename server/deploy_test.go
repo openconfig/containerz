@@ -293,6 +293,20 @@ func TestDeploy(t *testing.T) {
 			}),
 		},
 		{
+			name:   "no-data-sent",
+			inOpts: []Option{WithAddr("localhost:0"), WithChunkSize(8)},
+			inReqs: buildRequests(t, &cpb.ImageTransfer{
+				Name:      "some-image",
+				Tag:       "some-tag",
+				ImageSize: 16,
+			}, &cpb.ImageTransferEnd{}),
+			wantResponses: buildResponses(t, &cpb.ImageTransferReady{
+				ChunkSize: 8,
+			}),
+			wantErr: status.Errorf(codes.Aborted,
+				"no content was transferred over this stream"),
+		},
+		{
 			name:   "too-much-data-sent",
 			inOpts: []Option{WithAddr("localhost:0"), WithChunkSize(8)},
 			inReqs: buildRequests(t, &cpb.ImageTransfer{
