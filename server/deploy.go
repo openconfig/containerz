@@ -137,6 +137,11 @@ func (s *Server) handleImageTransfer(ctx context.Context, srv cpb.Containerz_Dep
 			}
 
 		case *cpb.DeployRequest_ImageTransferEnd:
+			if chunkWriter.Size() == 0 {
+				// the client has not actually sent us anything.
+				return status.Errorf(codes.Aborted,
+					"no content was transferred over this stream")
+			}
 			if transfer.IsPlugin {
 				if err := moveFile(chunkWriter, filepath.Join(pluginLocation, fmt.Sprintf("%s.tar", transfer.GetName()))); err != nil {
 					return status.Errorf(codes.Internal, "unable to move plugin: %v", err)
