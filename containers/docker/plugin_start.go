@@ -66,6 +66,12 @@ func (m *Manager) PluginStart(ctx context.Context, name, instance, config string
 		return fmt.Errorf("failed to create plugin tar: %w", err)
 	}
 
+	if hook := startPluginHookFromContext(ctx); hook != nil {
+		if createCtx, err = hook(ctx, createCtx); err != nil {
+			return fmt.Errorf("failed to run startup plugin hook with error %s", err)
+		}
+	}
+
 	if err := m.client.PluginCreate(ctx, createCtx, types.PluginCreateOptions{
 		RepoName: instance,
 	}); err != nil {
