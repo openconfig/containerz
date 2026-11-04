@@ -55,6 +55,7 @@ func TestContainerStop(t *testing.T) {
 	tests := []struct {
 		name       string
 		inTimeout  time.Duration
+		inExpired  bool
 		inOpts     []options.Option
 		inInstance string
 		inCnts     []types.Container
@@ -155,6 +156,36 @@ func TestContainerStop(t *testing.T) {
 			inOpts:     []options.Option{options.Restart()},
 			wantErr:    status.Errorf(codes.NotFound, "container restart-no-such-instance was not found"),
 		},
+		{
+			name:       "stop-with-force-and-short-duration",
+			inInstance: "stop-with-force-and-short-duration",
+			inTimeout:  10 * time.Second,
+			inOpts:     []options.Option{options.Force()},
+			inCnts: []types.Container{
+				types.Container{
+					Names: []string{"stop-with-force-and-short-duration"},
+				},
+			},
+			wantState: &fakeStoppingDocker{
+				Instance: "stop-with-force-and-short-duration",
+				Duration: 5,
+			},
+		},
+		{
+			name:       "stop-with-force-and-expired-deadline",
+			inInstance: "stop-with-force-and-expired-deadline",
+			inExpired:  true,
+			inOpts:     []options.Option{options.Force()},
+			inCnts: []types.Container{
+				types.Container{
+					Names: []string{"stop-with-force-and-expired-deadline"},
+				},
+			},
+			wantState: &fakeStoppingDocker{
+				Instance: "stop-with-force-and-expired-deadline",
+				Duration: minimumStopTimeout,
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -163,6 +194,11 @@ func TestContainerStop(t *testing.T) {
 			if tc.inTimeout != 0 {
 				var cancel context.CancelFunc
 				ctx, cancel = context.WithTimeout(context.Background(), tc.inTimeout)
+				defer cancel()
+			}
+			if tc.inExpired {
+				var cancel context.CancelFunc
+				ctx, cancel = context.WithDeadline(context.Background(), time.Now().Add(-time.Second))
 				defer cancel()
 			}
 			fsd := &fakeStoppingDocker{
@@ -184,6 +220,29 @@ func TestContainerStop(t *testing.T) {
 				if diff := cmp.Diff(tc.wantState, fsd, cmpopts.IgnoreUnexported(fakeStoppingDocker{})); diff != "" {
 					t.Errorf("ContainerStop(%q, %+v) returned diff(-want, +got):\n%s", tc.inInstance, tc.inOpts, diff)
 				}
+			}
+		})
+	}
+}
+
+func TestForcedStopTimeout(t *testing.T) {
+	tests := []struct {
+		name        string
+		inRemaining time.Duration
+		want        int
+	}{
+		{name: "long-deadline-is-capped", inRemaining: time.Minute, want: maximumStopTimeout},
+		{name: "half-of-remaining", inRemaining: 10 * time.Second, want: 5},
+		{name: "rounds-to-nearest-second", inRemaining: 9*time.Second - 10*time.Millisecond, want: 4},
+		{name: "short-deadline-uses-minimum", inRemaining: 500 * time.Millisecond, want: minimumStopTimeout},
+		{name: "zero-uses-minimum", inRemaining: 0, want: minimumStopTimeout},
+		{name: "expired-deadline-uses-minimum", inRemaining: -5 * time.Second, want: minimumStopTimeout},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := forcedStopTimeout(tc.inRemaining); got != tc.want {
+				t.Errorf("forcedStopTimeout(%v) = %d, want %d", tc.inRemaining, got, tc.want)
 			}
 		})
 	}

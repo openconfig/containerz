@@ -16,6 +16,22 @@ import (
 // 10 (seconds) is chosen as this is the default timeout used by container.StopOptions
 const maximumStopTimeout = 10
 
+// minimumStopTimeout is the lower bound (in seconds) for the timeout that is
+// derived from the context deadline. It gives the container at least some time
+// to handle SIGTERM, and avoids passing 0 (immediate SIGKILL) or a negative
+// value (no SIGKILL at all) to docker when the deadline is close or has passed.
+const minimumStopTimeout = 1
+
+// forcedStopTimeout returns the number of seconds docker should wait after
+// SIGTERM before sending SIGKILL, given the time remaining until the RPC
+// deadline. It uses half of the remaining time, so that the RPC context has not
+// expired when ContainerStop returns, bounded by [minimumStopTimeout,
+// maximumStopTimeout].
+func forcedStopTimeout(remaining time.Duration) int {
+	seconds := int((remaining / 2).Round(time.Second) / time.Second)
+	return max(minimumStopTimeout, min(seconds, maximumStopTimeout))
+}
+
 // ContainerStop stops a container. If the Force option is set and a timeout
 // is specified in the context, the contains if forcefully terminated after that timeout.
 // If the Force option is set but no timeout is provided the container's StopTimeout
@@ -39,24 +55,16 @@ func (m *Manager) ContainerStop(ctx context.Context, instance string, opts ...op
 	}
 
 	// a negative timeout indicates to docker that no forceful termination should
-	// occur.
+	// occur. A nil timeout makes docker use the container's StopTimeout, if set,
+	// otherwise the engine default.
 	duration := -1
-	if optionz.Force {
-		// compute duration from context deadline
-		duration = 0
-		timeoutTime, ok := ctx.Deadline()
-		if ok {
-			// set the duration to half of the timeout, to ensure that after
-			// ContainerStop runs, the RPC context won't have expired
-			duration = int(time.Until(timeoutTime)) / 2
-			// cap duration at based on max timeout
-			duration = min(duration, maximumStopTimeout)
-		}
-	}
-
 	pDuration := &duration
-	if duration == 0 {
+	if optionz.Force {
 		pDuration = nil
+		if timeoutTime, ok := ctx.Deadline(); ok {
+			duration = forcedStopTimeout(time.Until(timeoutTime))
+			pDuration = &duration
+		}
 	}
 
 	if optionz.Restart {
