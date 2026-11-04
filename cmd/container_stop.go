@@ -17,11 +17,13 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/openconfig/containerz/client"
 	"github.com/spf13/cobra"
 )
 
 var (
-	force bool
+	force   bool
+	restart bool
 )
 
 var cntStopCmd = &cobra.Command{
@@ -32,10 +34,19 @@ var cntStopCmd = &cobra.Command{
 			fmt.Println("--instance must be provided")
 		}
 
-		if err := containerzClient.StopContainer(command.Context(), instance, force); err != nil {
+		var opts []client.StopOption
+		if restart {
+			opts = append(opts, client.WithRestart())
+		}
+
+		if err := containerzClient.StopContainer(command.Context(), instance, force, opts...); err != nil {
 			return err
 		}
 
+		if restart {
+			fmt.Printf("Successfully restarted %s\n", instance)
+			return nil
+		}
 		fmt.Printf("Successfully stopped %s\n", instance)
 		return nil
 	},
@@ -46,4 +57,5 @@ func init() {
 
 	cntStopCmd.PersistentFlags().StringVar(&instance, "instance", "", "Container instance to stop.")
 	cntStopCmd.PersistentFlags().BoolVar(&force, "force", false, "Forcefully stop the container.")
+	cntStopCmd.PersistentFlags().BoolVar(&restart, "restart", false, "Start the container again after stopping it.")
 }

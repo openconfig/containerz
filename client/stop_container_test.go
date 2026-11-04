@@ -40,6 +40,7 @@ func TestStop(t *testing.T) {
 		name       string
 		inInstance string
 		inForce    bool
+		inOpts     []StopOption
 
 		wantMsg *cpb.StopContainerRequest
 	}{
@@ -50,6 +51,33 @@ func TestStop(t *testing.T) {
 			wantMsg: &cpb.StopContainerRequest{
 				InstanceName: "some-instance",
 				Force:        true,
+			},
+		},
+		{
+			name:       "no-force",
+			inInstance: "some-instance",
+			wantMsg: &cpb.StopContainerRequest{
+				InstanceName: "some-instance",
+			},
+		},
+		{
+			name:       "restart",
+			inInstance: "some-instance",
+			inOpts:     []StopOption{WithRestart()},
+			wantMsg: &cpb.StopContainerRequest{
+				InstanceName: "some-instance",
+				Restart:      true,
+			},
+		},
+		{
+			name:       "force-and-restart",
+			inInstance: "some-instance",
+			inForce:    true,
+			inOpts:     []StopOption{WithRestart()},
+			wantMsg: &cpb.StopContainerRequest{
+				InstanceName: "some-instance",
+				Force:        true,
+				Restart:      true,
 			},
 		},
 	}
@@ -65,7 +93,7 @@ func TestStop(t *testing.T) {
 				t.Fatalf("NewClient(%v) returned an unexpected error: %v", addr, err)
 			}
 
-			if err := cli.StopContainer(ctx, tc.inInstance, tc.inForce); err != nil {
+			if err := cli.StopContainer(ctx, tc.inInstance, tc.inForce, tc.inOpts...); err != nil {
 				t.Fatalf("Stop(%q, %t) returned an unexpected error: %v", tc.inInstance, tc.inForce, err)
 			}
 
