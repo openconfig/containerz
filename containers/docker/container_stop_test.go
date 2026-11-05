@@ -18,13 +18,23 @@ type fakeStoppingDocker struct {
 	fakeDocker
 	cnts []types.Container
 
-	Instance       string
-	Duration       int
-	RemoveInstance string
+	Instance        string
+	Duration        int
+	RemoveInstance  string
+	RestartInstance string
 }
 
 func (f *fakeStoppingDocker) ContainerStop(ctx context.Context, container string, options container.StopOptions) error {
 	f.Instance = container
+
+	if options.Timeout != nil {
+		f.Duration = *options.Timeout
+	}
+	return nil
+}
+
+func (f *fakeStoppingDocker) ContainerRestart(ctx context.Context, container string, options container.StopOptions) error {
+	f.RestartInstance = container
 
 	if options.Timeout != nil {
 		f.Duration = *options.Timeout
@@ -96,6 +106,54 @@ func TestContainerStop(t *testing.T) {
 				Instance: "stop-with-force-and-duration",
 				Duration: maximumStopTimeout,
 			},
+		},
+		{
+			name:       "restart-no-force",
+			inInstance: "restart-no-force",
+			inOpts:     []options.Option{options.Restart()},
+			inCnts: []types.Container{
+				types.Container{
+					Names: []string{"restart-no-force"},
+				},
+			},
+			wantState: &fakeStoppingDocker{
+				RestartInstance: "restart-no-force",
+				Duration:        -1,
+			},
+		},
+		{
+			name:       "restart-with-force-no-duration",
+			inInstance: "restart-with-force-no-duration",
+			inOpts:     []options.Option{options.Force(), options.Restart()},
+			inCnts: []types.Container{
+				types.Container{
+					Names: []string{"restart-with-force-no-duration"},
+				},
+			},
+			wantState: &fakeStoppingDocker{
+				RestartInstance: "restart-with-force-no-duration",
+			},
+		},
+		{
+			name:       "restart-with-force-and-duration",
+			inInstance: "restart-with-force-and-duration",
+			inTimeout:  1 * time.Minute,
+			inOpts:     []options.Option{options.Force(), options.Restart()},
+			inCnts: []types.Container{
+				types.Container{
+					Names: []string{"restart-with-force-and-duration"},
+				},
+			},
+			wantState: &fakeStoppingDocker{
+				RestartInstance: "restart-with-force-and-duration",
+				Duration:        maximumStopTimeout,
+			},
+		},
+		{
+			name:       "restart-no-such-instance",
+			inInstance: "restart-no-such-instance",
+			inOpts:     []options.Option{options.Restart()},
+			wantErr:    status.Errorf(codes.NotFound, "container restart-no-such-instance was not found"),
 		},
 	}
 

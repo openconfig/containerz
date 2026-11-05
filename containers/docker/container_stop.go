@@ -21,6 +21,8 @@ const maximumStopTimeout = 10
 // If the Force option is set but no timeout is provided the container's StopTimeout
 // value is used, if set, otherwise the engine default.
 // If the Force option is not set, no forceful termination is performed.
+// If the Restart option is set, the container is started again after it has
+// stopped, using the same termination semantics.
 func (m *Manager) ContainerStop(ctx context.Context, instance string, opts ...options.Option) error {
 	optionz := options.ApplyOptions(opts...)
 
@@ -55,6 +57,18 @@ func (m *Manager) ContainerStop(ctx context.Context, instance string, opts ...op
 	pDuration := &duration
 	if duration == 0 {
 		pDuration = nil
+	}
+
+	if optionz.Restart {
+		// ContainerRestart stops the container using the same timeout semantics
+		// as ContainerStop and then starts it again. The container keeps its ID,
+		// configuration and restart policy.
+		if err := m.client.ContainerRestart(ctx, instance, container.StopOptions{Timeout: pDuration}); err != nil {
+			klog.Warningf("container %s failed to restart", instance)
+			return status.Errorf(codes.Unknown, "failed to restart container %s with error %s",
+				instance, err)
+		}
+		return nil
 	}
 
 	if err := m.client.ContainerStop(ctx, instance, container.StopOptions{Timeout: pDuration}); err != nil {

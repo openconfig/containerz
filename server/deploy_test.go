@@ -45,6 +45,7 @@ type fakeContainerManager struct {
 	Ports         map[uint32]uint32
 	Envs          map[string]string
 	Force         bool
+	Restart       bool
 	Follow        bool
 	All           bool
 	Async         bool
@@ -133,6 +134,7 @@ func (f *fakeContainerManager) ContainerStop(_ context.Context, instance string,
 	optionz := options.ApplyOptions(opts...)
 	f.Instance = instance
 	f.Force = optionz.Force
+	f.Restart = optionz.Restart
 	return nil
 }
 

@@ -20,11 +20,34 @@ import (
 	cpb "github.com/openconfig/gnoi/containerz"
 )
 
-// StopContainer stops the requested instance. Stop can also force termination.
-func (c *Client) StopContainer(ctx context.Context, instance string, force bool) error {
+// stopOptions contains the optional parameters of a stop container call.
+type stopOptions struct {
+	restart bool
+}
+
+// StopOption is an option passed to a stop container call.
+type StopOption func(*stopOptions)
+
+// WithRestart requests that the target starts the container again immediately
+// after stopping it.
+func WithRestart() StopOption {
+	return func(opt *stopOptions) {
+		opt.restart = true
+	}
+}
+
+// StopContainer stops the requested instance. Stop can also force termination
+// and restart the container after it has stopped.
+func (c *Client) StopContainer(ctx context.Context, instance string, force bool, opts ...StopOption) error {
+	optionz := &stopOptions{}
+	for _, opt := range opts {
+		opt(optionz)
+	}
+
 	if _, err := c.cli.StopContainer(ctx, &cpb.StopContainerRequest{
 		InstanceName: instance,
 		Force:        force,
+		Restart:      optionz.restart,
 	}); err != nil {
 		return err
 	}

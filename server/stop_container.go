@@ -23,13 +23,17 @@ import (
 
 // StopContainer stops a container. If the container does not exist or is not running
 // this operation returns an error. This operation can, optionally, force
-// (i.e. kill) a container.
+// (i.e. kill) a container and restart it immediately after it has stopped.
 func (s *Server) StopContainer(ctx context.Context, request *cpb.StopContainerRequest) (*cpb.StopContainerResponse, error) {
 	// TODO (alshabib): Consider adding a timeout to the request or use a containerz default.s
 	opts := []options.Option{}
 
 	if request.GetForce() {
 		opts = append(opts, options.Force())
+	}
+
+	if request.GetRestart() {
+		opts = append(opts, options.Restart())
 	}
 
 	if err := s.mgr.ContainerStop(ctx, request.GetInstanceName(), opts...); err != nil {

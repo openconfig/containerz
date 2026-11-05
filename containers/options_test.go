@@ -105,6 +105,16 @@ func TestForce(t *testing.T) {
 	}
 }
 
+func TestRestart(t *testing.T) {
+	p := &options{}
+
+	Restart()(p)
+
+	if !p.Restart {
+		t.Errorf("Restart() did not set the restart flag")
+	}
+}
+
 func TestFollow(t *testing.T) {
 	p := &options{}
 

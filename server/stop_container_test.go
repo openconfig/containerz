@@ -55,6 +55,32 @@ func TestStop(t *testing.T) {
 				Force:    true,
 			},
 		},
+		{
+			name: "restart",
+			inReq: &cpb.StopContainerRequest{
+				InstanceName: "some-name",
+				Restart:      true,
+			},
+			wantResp: &cpb.StopContainerResponse{},
+			wantState: &fakeContainerManager{
+				Instance: "some-name",
+				Restart:  true,
+			},
+		},
+		{
+			name: "force-and-restart",
+			inReq: &cpb.StopContainerRequest{
+				InstanceName: "some-name",
+				Force:        true,
+				Restart:      true,
+			},
+			wantResp: &cpb.StopContainerResponse{},
+			wantState: &fakeContainerManager{
+				Instance: "some-name",
+				Force:    true,
+				Restart:  true,
+			},
+		},
 	}
 
 	for _, tc := range tests {

@@ -90,6 +90,9 @@ type options struct {
 	// Force indicates that the container implementation should attempt to force the operation.
 	Force bool
 
+	// Restart indicates that a stopped container should be started again immediately.
+	Restart bool
+
 	// InstanceName is the name of a running container instance.
 	InstanceName string
 
@@ -204,6 +207,15 @@ func WithStream(client Stream) Option {
 func Force() Option {
 	return func(p *options) {
 		p.Force = true
+	}
+}
+
+// Restart requests that the container is started again immediately after it
+// has been stopped.
+// Supported by: ContainerStop
+func Restart() Option {
+	return func(p *options) {
+		p.Restart = true
 	}
 }
 

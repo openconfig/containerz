@@ -49,6 +49,10 @@ func (fakeDocker) ContainerRemove(ctx context.Context, container string, options
 	return fmt.Errorf("not implemented")
 }
 
+func (fakeDocker) ContainerRestart(ctx context.Context, container string, _ container.StopOptions) error {
+	return fmt.Errorf("not implemented")
+}
+
 func (fakeDocker) ContainerStart(ctx context.Context, container string, options container.StartOptions) error {
 	return fmt.Errorf("not implemented")
 }

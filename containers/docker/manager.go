@@ -25,6 +25,7 @@ type docker interface {
 	ContainerList(ctx context.Context, options container.ListOptions) ([]types.Container, error)
 	ContainerLogs(ctx context.Context, container string, options container.LogsOptions) (io.ReadCloser, error)
 	ContainerRemove(ctx context.Context, container string, options container.RemoveOptions) error
+	ContainerRestart(ctx context.Context, container string, options container.StopOptions) error
 	ContainerStart(ctx context.Context, container string, options container.StartOptions) error
 	ContainerStop(ctx context.Context, container string, options container.StopOptions) error
 	ImageList(ctx context.Context, options image.ListOptions) ([]image.Summary, error)
