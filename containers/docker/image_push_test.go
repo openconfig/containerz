@@ -23,22 +23,30 @@ type fakePushingDocker struct {
 	fakeDocker
 	image, tag string
 	isJSON     bool
+	// msgs, if set, replaces the default "Loaded image" message.
+	msgs []*jsonmessage.JSONMessage
 
 	Source, Target string
 }
 
 func (f fakePushingDocker) ImageLoad(ctx context.Context, input io.Reader, options ...client.ImageLoadOption) (image.LoadResponse, error) {
-	jm := &jsonmessage.JSONMessage{
-		Stream: fmt.Sprintf("Loaded image: %s\n", f.image+":"+f.tag),
+	msgs := f.msgs
+	if msgs == nil {
+		msgs = []*jsonmessage.JSONMessage{{
+			Stream: fmt.Sprintf("Loaded image: %s\n", f.image+":"+f.tag),
+		}}
 	}
 
-	data, err := json.Marshal(jm)
-	if err != nil {
-		return image.LoadResponse{}, err
+	var buf bytes.Buffer
+	enc := json.NewEncoder(&buf)
+	for _, jm := range msgs {
+		if err := enc.Encode(jm); err != nil {
+			return image.LoadResponse{}, err
+		}
 	}
 
 	return image.LoadResponse{
-		Body: io.NopCloser(bytes.NewBuffer(data)),
+		Body: io.NopCloser(&buf),
 		JSON: f.isJSON,
 	}, nil
 }
@@ -55,6 +63,7 @@ func TestImagePush(t *testing.T) {
 		inOpts             []options.Option
 		inFile             *os.File
 		inImage, inTag     string
+		inMsgs             []*jsonmessage.JSONMessage
 		isJSON             bool
 		wantState          *fakePushingDocker
 		wantImage, wantTag string
@@ -87,6 +96,123 @@ func TestImagePush(t *testing.T) {
 			wantImage: "another-image",
 			wantTag:   "another-tag",
 		},
+		{
+			name:   "existing-image-warning-then-loaded",
+			isJSON: true,
+			inFile: os.Stdin,
+			inMsgs: []*jsonmessage.JSONMessage{
+				{Stream: "The image some-image:latest already exists, renaming the old one with ID sha256:1234 to empty string\n"},
+				{Stream: "Loaded image: some-image:latest\n"},
+			},
+			wantImage: "some-image",
+			wantTag:   "latest",
+		},
+		{
+			name:   "existing-image-warning-then-loaded-with-tagging",
+			isJSON: true,
+			inFile: os.Stdin,
+			inMsgs: []*jsonmessage.JSONMessage{
+				{Stream: "The image some-image:latest already exists, renaming the old one with ID sha256:1234 to empty string\n"},
+				{Stream: "Loaded image: some-image:latest\n"},
+			},
+			inOpts: []options.Option{options.WithTarget("another-image", "another-tag")},
+			wantState: &fakePushingDocker{
+				Source: "some-image:latest",
+				Target: "another-image:another-tag",
+			},
+			wantImage: "another-image",
+			wantTag:   "another-tag",
+		},
+		{
+			name:   "warning-and-loaded-in-one-message",
+			isJSON: true,
+			inFile: os.Stdin,
+			inMsgs: []*jsonmessage.JSONMessage{
+				{Stream: "The image some-image:latest already exists, renaming the old one with ID sha256:1234 to empty string\nLoaded image: some-image:latest\n"},
+			},
+			wantImage: "some-image",
+			wantTag:   "latest",
+		},
+		{
+			name:   "registry-with-port",
+			isJSON: true,
+			inFile: os.Stdin,
+			inMsgs: []*jsonmessage.JSONMessage{
+				{Stream: "Loaded image: registry:5000/some-image:some-tag\n"},
+			},
+			wantImage: "registry:5000/some-image",
+			wantTag:   "some-tag",
+		},
+		{
+			name:   "no-tag-defaults-to-latest",
+			isJSON: true,
+			inFile: os.Stdin,
+			inMsgs: []*jsonmessage.JSONMessage{
+				{Stream: "Loaded image: registry:5000/some-image\n"},
+			},
+			wantImage: "registry:5000/some-image",
+			wantTag:   "latest",
+		},
+		{
+			name:   "image-id-only-with-tagging",
+			isJSON: true,
+			inFile: os.Stdin,
+			inMsgs: []*jsonmessage.JSONMessage{
+				{Stream: "Loaded image ID: sha256:1234\n"},
+			},
+			inOpts: []options.Option{options.WithTarget("another-image", "another-tag")},
+			wantState: &fakePushingDocker{
+				Source: "sha256:1234",
+				Target: "another-image:another-tag",
+			},
+			wantImage: "another-image",
+			wantTag:   "another-tag",
+		},
+		{
+			name:   "image-id-only-without-target",
+			isJSON: true,
+			inFile: os.Stdin,
+			inMsgs: []*jsonmessage.JSONMessage{
+				{Stream: "Loaded image ID: sha256:1234\n"},
+			},
+			wantErr: status.Error(codes.InvalidArgument, "image was loaded as sha256:1234 without a name and tag; a target name must be provided"),
+		},
+		{
+			name:   "error-detail",
+			isJSON: true,
+			inFile: os.Stdin,
+			inMsgs: []*jsonmessage.JSONMessage{
+				{Error: &jsonmessage.JSONError{Message: "archive/tar: invalid tar header"}},
+			},
+			wantErr: status.Error(codes.Internal, "unable to load image: archive/tar: invalid tar header"),
+		},
+		{
+			name:   "error-after-loaded",
+			isJSON: true,
+			inFile: os.Stdin,
+			inMsgs: []*jsonmessage.JSONMessage{
+				{Stream: "Loaded image: some-image:latest\n"},
+				{ErrorMessage: "something went wrong"},
+			},
+			wantErr: status.Error(codes.Internal, "unable to load image: something went wrong"),
+		},
+		{
+			name:    "empty-stream",
+			isJSON:  true,
+			inFile:  os.Stdin,
+			inMsgs:  []*jsonmessage.JSONMessage{},
+			wantErr: status.Error(codes.Internal, "image load response did not report a loaded image"),
+		},
+		{
+			name:   "empty-stream-with-tagging",
+			isJSON: true,
+			inFile: os.Stdin,
+			inMsgs: []*jsonmessage.JSONMessage{
+				{Stream: "\n"},
+			},
+			inOpts:  []options.Option{options.WithTarget("another-image", "another-tag")},
+			wantErr: status.Error(codes.Internal, "image load response did not report a loaded image"),
+		},
 	}
 
 	for _, tc := range tests {
@@ -95,6 +221,7 @@ func TestImagePush(t *testing.T) {
 				isJSON: tc.isJSON,
 				tag:    tc.inTag,
 				image:  tc.inImage,
+				msgs:   tc.inMsgs,
 			}
 			mgr := New(fd)
 
@@ -107,6 +234,10 @@ func TestImagePush(t *testing.T) {
 					return
 				}
 				t.Errorf("ImagePush(file) returned error: %v", err)
+			}
+
+			if tc.wantErr != nil {
+				t.Fatalf("ImagePush(file) returned no error, want %v", tc.wantErr)
 			}
 
 			if gotImage != tc.wantImage || gotTag != tc.wantTag {
