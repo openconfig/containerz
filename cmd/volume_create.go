@@ -32,16 +32,14 @@ var volCreateCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create volumes",
 	RunE: func(command *cobra.Command, args []string) error {
-		opts := map[string]string{}
-		for _, o := range options {
-			parts := strings.SplitN(o, "=", 2)
-			opts[parts[0]] = parts[1]
+		opts, err := parseKeyValues("option", options)
+		if err != nil {
+			return err
 		}
 
-		lbls := map[string]string{}
-		for _, l := range labels {
-			parts := strings.SplitN(l, "=", 2)
-			lbls[parts[0]] = parts[1]
+		lbls, err := parseKeyValues("label", labels)
+		if err != nil {
+			return err
 		}
 
 		resp, err := containerzClient.CreateVolume(command.Context(), name, driver, lbls, opts)
@@ -54,11 +52,26 @@ var volCreateCmd = &cobra.Command{
 	},
 }
 
+// parseKeyValues parses a list of key=value entries into a map. Only the first
+// "=" separates the key from the value, so values may contain "=" and ",".
+// kind names the entry type in error messages.
+func parseKeyValues(kind string, entries []string) (map[string]string, error) {
+	kvs := map[string]string{}
+	for _, e := range entries {
+		key, value, ok := strings.Cut(e, "=")
+		if !ok || key == "" {
+			return nil, fmt.Errorf("invalid %s %q: expected key=value", kind, e)
+		}
+		kvs[key] = value
+	}
+	return kvs, nil
+}
+
 func init() {
 	volumesCmd.AddCommand(volCreateCmd)
 
 	volCreateCmd.PersistentFlags().StringVar(&name, "name", "", "Name of the volume to create.")
 	volCreateCmd.PersistentFlags().StringVar(&driver, "driver", "", "Type of driver to use to create the volume.")
-	volCreateCmd.PersistentFlags().StringSliceVarP(&options, "options", "o", []string{}, "Options to pass to the driver in the form k1=v1,k2=v2,...")
-	volCreateCmd.PersistentFlags().StringSliceVarP(&labels, "labels", "l", []string{}, "Labels to tag. the volume with, in the form k1=v1")
+	volCreateCmd.PersistentFlags().StringArrayVarP(&options, "options", "o", []string{}, "Option to pass to the driver in the form key=value. Repeat for multiple options, e.g. -o options=rbind,ro -o mountpoint=/data")
+	volCreateCmd.PersistentFlags().StringArrayVarP(&labels, "labels", "l", []string{}, "Label to tag the volume with in the form key=value. Repeat for multiple labels.")
 }
