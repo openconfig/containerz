@@ -30,9 +30,7 @@ func (s *Server) CreateVolume(ctx context.Context, request *cpb.CreateVolumeRequ
 	name, driver := request.GetName(), request.GetDriver()
 
 	switch driver {
-	case cpb.Driver_DS_UNSPECIFIED:
-		driver = cpb.Driver_DS_LOCAL
-	case cpb.Driver_DS_LOCAL:
+	case cpb.Driver_DS_UNSPECIFIED, cpb.Driver_DS_LOCAL:
 		driver = cpb.Driver_DS_LOCAL
 		opts = append(opts, options.WithVolumeDriverOpts(request.GetLocalMountOptions()))
 	case cpb.Driver_DS_CUSTOM:
