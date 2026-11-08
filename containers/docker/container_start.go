@@ -34,7 +34,11 @@ func (m *Manager) ContainerRestart(ctx context.Context, instance string, _ ...op
 		return status.Errorf(codes.Aborted, "expected container state to be %q, got %q",
 			container.StateExited, j.State.Status)
 	}
-	return m.restartContainer(ctx, j, true)
+	if err := m.client.ContainerStart(ctx, instance, container.StartOptions{}); err != nil {
+		return status.Errorf(codes.Internal,
+			"failed when starting container: %v", err)
+	}
+	return nil
 }
 
 // ContainerStart starts a container provided the image exists and that the ports requested are not
