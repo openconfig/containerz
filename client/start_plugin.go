@@ -11,6 +11,17 @@ import (
 
 // StartPlugin starts the requested plugin identified by instance.
 func (c *Client) StartPlugin(ctx context.Context, name, instance, configFile string) error {
+	if instance == "" {
+		return fmt.Errorf("instance name cannot be empty")
+	}
+	if configFile == "" && name == "" {
+		// restart an existing plugin instance.
+		_, err := c.cli.StartPlugin(ctx, &cpb.StartPluginRequest{
+			InstanceName: instance,
+		})
+		return err
+	}
+
 	buf, err := os.ReadFile(configFile)
 	if err != nil {
 		return fmt.Errorf("failed to read config file: %w", err)

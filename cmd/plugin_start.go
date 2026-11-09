@@ -29,15 +29,15 @@ var pluginStartCmd = &cobra.Command{
 	Short: "Start a plugin",
 	RunE: func(command *cobra.Command, args []string) error {
 		if instance == "" {
-			fmt.Println("--instance must be provided")
+			return fmt.Errorf("--instance must be provided")
 		}
 
 		if name == "" {
-			fmt.Println("--name must be provided")
+			return fmt.Errorf("--name must be provided")
 		}
 
 		if configFile == "" {
-			fmt.Println("--config must be provided")
+			return fmt.Errorf("--config must be provided")
 		}
 
 		if err := containerzClient.StartPlugin(command.Context(), name, instance, configFile); err != nil {
@@ -49,9 +49,29 @@ var pluginStartCmd = &cobra.Command{
 	},
 }
 
+var pluginRestartCmd = &cobra.Command{
+	Use:   "restart",
+	Short: "Restart a plugin",
+	RunE: func(command *cobra.Command, args []string) error {
+		if instance == "" {
+			return fmt.Errorf("--instance must be provided")
+		}
+
+		if err := containerzClient.StartPlugin(command.Context(), name, instance, configFile); err != nil {
+			return err
+		}
+
+		fmt.Printf("Successfully restarted %s\n", instance)
+		return nil
+	},
+}
+
 func init() {
 	pluginCmd.AddCommand(pluginStartCmd)
 	pluginStartCmd.PersistentFlags().StringVar(&instance, "instance", "", "plugin instance name")
 	pluginStartCmd.PersistentFlags().StringVar(&name, "name", "", "plugin name")
 	pluginStartCmd.PersistentFlags().StringVar(&configFile, "config", "", "plugin config file")
+
+	pluginCmd.AddCommand(pluginRestartCmd)
+	pluginRestartCmd.PersistentFlags().StringVar(&instance, "instance", "", "plugin instance name")
 }
